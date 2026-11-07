@@ -1,4 +1,4 @@
-name: Build and deploy GauKripa
+name: Build GauKripa
 
 on:
   push:
@@ -8,15 +8,14 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
-  group: gaukripa-production
+  group: gaukripa-build
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    name: Build and deploy to Google Cloud Run
+  build:
+    name: Build frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,72 +25,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm install
 
       - name: Build frontend
         run: npm run build
-
-      - name: Check Google Cloud deployment credentials
-        id: cloud-secrets
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-        run: |
-          missing=0
-          for key in GCP_PROJECT_ID GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SERVICE_ACCOUNT; do
-            if [ -z "${!key}" ]; then
-              echo "::warning::Missing GitHub Actions secret: $key"
-              missing=1
-            fi
-          done
-          if [ "$missing" -eq 0 ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "Google Cloud credentials are configured."
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Frontend build passed. Cloud Run deployment was skipped because Google Cloud credentials are not configured."
-          fi
-
-      - name: Authenticate to Google Cloud
-        if: steps.cloud-secrets.outputs.configured == 'true'
-        uses: google-github-actions/auth@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-      - name: Set up Google Cloud CLI
-        if: steps.cloud-secrets.outputs.configured == 'true'
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Deploy Express and Vite application
-        if: steps.cloud-secrets.outputs.configured == 'true'
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          REGION="${GCP_REGION:-asia-south1}"
-          gcloud run deploy gaukripa \
-            --source . \
-            --project "$GCP_PROJECT_ID" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --quiet
-
-      - name: Verify deployed API health
-        if: steps.cloud-secrets.outputs.configured == 'true'
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          REGION="${GCP_REGION:-asia-south1}"
-          SERVICE_URL=$(gcloud run services describe gaukripa \
-            --project "$GCP_PROJECT_ID" \
-            --region "$REGION" \
-            --format='value(status.url)')
-          echo "Deployed URL: $SERVICE_URL"
-          curl --fail --retry 10 --retry-delay 5 "$SERVICE_URL/api/health"
