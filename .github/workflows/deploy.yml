@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check deployment configuration
+        id: config
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
@@ -24,19 +25,33 @@ jobs:
           missing=0
           for key in GCP_PROJECT_ID GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SERVICE_ACCOUNT GCP_REGION; do
             if [ -z "${!key}" ]; then
-              echo "::error::Missing GitHub Actions secret: $key"
+              echo "Missing GitHub Actions secret: $key"
               missing=1
             fi
           done
-          if [ "$missing" -ne 0 ]; then
-            echo "Add the four repository secrets listed in the workflow setup instructions."
-            exit 1
+          if [ "$missing" -eq 1 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Deployment not started"
+              echo "The repository workflow is configured, but Google Cloud credentials are not connected."
+              echo "Add these repository Actions secrets, then run this workflow again:"
+              echo "- GCP_PROJECT_ID"
+              echo "- GCP_WORKLOAD_IDENTITY_PROVIDER"
+              echo "- GCP_SERVICE_ACCOUNT"
+              echo "- GCP_REGION"
+              echo "Open Settings → Secrets and variables → Actions."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Google Cloud deployment credentials detected."
           fi
 
       - name: Checkout repository
+        if: steps.config.outputs.ready == 'true'
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
+        if: steps.config.outputs.ready == 'true'
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -44,9 +59,11 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up Google Cloud CLI
+        if: steps.config.outputs.ready == 'true'
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy Express + Vite application to Cloud Run
+        if: steps.config.outputs.ready == 'true'
         run: |
           gcloud run deploy gaukripa \
             --source . \
@@ -57,6 +74,7 @@ jobs:
             --quiet
 
       - name: Verify deployed API health
+        if: steps.config.outputs.ready == 'true'
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
