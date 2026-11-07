@@ -82,6 +82,9 @@ export interface DbChatSession {
   customerName: string;
   customerPhone: string;
   customerConcern: string;
+  birthDate?: string;
+  birthTime?: string;
+  birthPlace?: string;
   status: 'waiting_approval' | 'active' | 'rejected' | 'ended';
   ratePerMin: number;
   hasDiscount: boolean;
