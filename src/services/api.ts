@@ -80,6 +80,9 @@ export interface ChatSession {
   customerName: string;
   customerPhone: string;
   customerConcern: string;
+  birthDate?: string;
+  birthTime?: string;
+  birthPlace?: string;
   status: 'waiting_approval' | 'active' | 'rejected' | 'ended';
   ratePerMin: number;
   hasDiscount: boolean;
@@ -252,17 +255,26 @@ export const api = {
     customerName: string;
     customerPhone: string;
     customerConcern: string;
+    birthDate: string;
+    birthTime: string;
+    birthPlace: string;
   }): Promise<{ success: boolean; session: ChatSession }> => {
     const res = await fetch(`${API_BASE}/chat/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to request chat');
+    const contentType = res.headers.get('content-type') || '';
+    const raw = await res.text();
+    let data: any;
+    try { data = contentType.includes('application/json') ? JSON.parse(raw) : null; } catch { data = null; }
+    if (!res.ok || !data) {
+      const message = data?.error || (raw.trim().startsWith('<')
+        ? 'The chat service returned a webpage instead of JSON. Please refresh and try again.'
+        : `Unable to connect to chat service (HTTP ${res.status}).`);
+      throw new Error(message);
     }
-    return res.json();
+    return data;
   },
 
   getIncomingChat: async (astrologerId: string): Promise<ChatSession | null> => {
