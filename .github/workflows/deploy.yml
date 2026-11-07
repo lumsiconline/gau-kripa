@@ -1,57 +1,58 @@
-name: Deploy GauKripa
+name: Build and deploy GauKripa
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: gaukripa-production
+  cancel-in-progress: true
+
 jobs:
-  deploy:
+  build-and-deploy:
     name: Build and deploy to Google Cloud Run
     runs-on: ubuntu-latest
     steps:
-      - name: Check deployment configuration
-        id: config
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Check required Google Cloud credentials
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
           missing=0
-          for key in GCP_PROJECT_ID GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SERVICE_ACCOUNT GCP_REGION; do
+          for key in GCP_PROJECT_ID GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SERVICE_ACCOUNT; do
             if [ -z "${!key}" ]; then
-              echo "Missing GitHub Actions secret: $key"
+              echo "::error::Missing GitHub Actions secret: $key"
               missing=1
             fi
           done
-          if [ "$missing" -eq 1 ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            {
-              echo "## Deployment not started"
-              echo "The repository workflow is configured, but Google Cloud credentials are not connected."
-              echo "Add these repository Actions secrets, then run this workflow again:"
-              echo "- GCP_PROJECT_ID"
-              echo "- GCP_WORKLOAD_IDENTITY_PROVIDER"
-              echo "- GCP_SERVICE_ACCOUNT"
-              echo "- GCP_REGION"
-              echo "Open Settings → Secrets and variables → Actions."
-            } >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "Google Cloud deployment credentials detected."
+          if [ "$missing" -ne 0 ]; then
+            echo "Build passed, but deployment cannot start until the three Google Cloud secrets are configured."
+            exit 1
           fi
 
-      - name: Checkout repository
-        if: steps.config.outputs.ready == 'true'
-        uses: actions/checkout@v4
-
       - name: Authenticate to Google Cloud
-        if: steps.config.outputs.ready == 'true'
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -59,29 +60,31 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up Google Cloud CLI
-        if: steps.config.outputs.ready == 'true'
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy Express + Vite application to Cloud Run
-        if: steps.config.outputs.ready == 'true'
+      - name: Deploy Express and Vite application
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
+          REGION="${GCP_REGION:-asia-south1}"
           gcloud run deploy gaukripa \
             --source . \
-            --project "${{ secrets.GCP_PROJECT_ID }}" \
-            --region "${{ secrets.GCP_REGION }}" \
+            --project "$GCP_PROJECT_ID" \
+            --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
             --quiet
 
       - name: Verify deployed API health
-        if: steps.config.outputs.ready == 'true'
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
+          REGION="${GCP_REGION:-asia-south1}"
           SERVICE_URL=$(gcloud run services describe gaukripa \
             --project "$GCP_PROJECT_ID" \
-            --region "$GCP_REGION" \
+            --region "$REGION" \
             --format='value(status.url)')
           echo "Deployed URL: $SERVICE_URL"
           curl --fail --retry 10 --retry-delay 5 "$SERVICE_URL/api/health"
