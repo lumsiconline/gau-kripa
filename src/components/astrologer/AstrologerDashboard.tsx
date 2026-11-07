@@ -423,6 +423,11 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                 <span className="text-[#887864] block">Sankalp / Concern:</span>
                 <span className="text-[#332b21] font-semibold">{incomingRequest.customerConcern}</span>
               </div>
+              <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-[#ebdcb9] pt-2">
+                <div><span className="text-[#887864] block">Date of Birth:</span><strong className="text-[#1b4b32]">{incomingRequest.birthDate || 'Not provided'}</strong></div>
+                <div><span className="text-[#887864] block">Birth Time:</span><strong className="text-[#1b4b32]">{incomingRequest.birthTime || 'Not provided'}</strong></div>
+                <div><span className="text-[#887864] block">Birth Place:</span><strong className="text-[#1b4b32]">{incomingRequest.birthPlace || 'Not provided'}</strong></div>
+              </div>
               <div>
                 <span className="text-[#887864] block">Billing Rate:</span>
                 <strong className="text-emerald-800 text-sm">₹{incomingRequest.ratePerMin} / min</strong>
