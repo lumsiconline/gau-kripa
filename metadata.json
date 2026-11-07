@@ -1,0 +1,6 @@
+{
+  "name": "GauKripa - Seva, Shanti & Samriddhi",
+  "description": "Feed Gaumata, Support Jeev-Jantu, Remove Grah Dosh and connect with expert astrologers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

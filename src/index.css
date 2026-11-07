@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #1b4b32;
+    --color-primary-dark: #123824;
+    --color-primary-light: #2c6947;
+    --color-gold: #e59f2c;
+    --color-gold-dark: #c4821a;
+    --color-cream: #fbf6ea;
+    --color-cream-light: #fefcf7;
+    --color-cream-card: #f8f1de;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f7f2e5;
+    color: #2c332d;
+    overflow-x: hidden;
+  }
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-script {
+  font-family: 'Caveat', cursive;
+}
+
+.font-hindi {
+  font-family: 'Rozha One', 'Yatra One', serif;
+}
+
+.golden-text-glow {
+  background: linear-gradient(135deg, #ffffff 0%, #fff2a3 20%, #ffd700 45%, #f59e0b 70%, #fff8c4 85%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 12px rgba(217, 119, 6, 0.85)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.6));
+}
+
+.golden-badge-glow {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.45), 0 0 50px rgba(255, 215, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f4edd8;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9b992;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a89467;
+}
+
+/* Hide scrollbar for smooth swipe carousel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

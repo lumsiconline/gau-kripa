@@ -1,0 +1,181 @@
+{
+  "entities": {
+    "Service": {
+      "title": "Service",
+      "description": "Sacred Gau Seva or animal feeding service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "planet": { "type": "string", "maxLength": 100 },
+        "planetTag": { "type": "string", "maxLength": 100 },
+        "tagColor": { "type": "string", "maxLength": 100 },
+        "priceDisplay": { "type": "string", "maxLength": 100 },
+        "basePrice": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 100 },
+        "minQty": { "type": "number" },
+        "benefit": { "type": "string", "maxLength": 500 },
+        "cropKey": { "type": "string", "maxLength": 100 },
+        "customImageUrl": { "type": "string", "maxLength": 500 },
+        "detailedDescription": { "type": "string", "maxLength": 2000 },
+        "vedicSignificance": { "type": "string", "maxLength": 2000 },
+        "isActive": { "type": "boolean" },
+        "category": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "title", "basePrice", "isActive"]
+    },
+    "Astrologer": {
+      "title": "Astrologer",
+      "description": "Vedic Astrologer Profile & Rates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "title": { "type": "string", "maxLength": 150 },
+        "experience": { "type": "string", "maxLength": 100 },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "string", "maxLength": 50 },
+        "ratePerMin": { "type": "number" },
+        "cropKey": { "type": "string", "maxLength": 100 },
+        "customImageUrl": { "type": "string", "maxLength": 500 },
+        "languages": { "type": "array" },
+        "bio": { "type": "string", "maxLength": 2000 },
+        "specializations": { "type": "array" },
+        "isOnline": { "type": "boolean" },
+        "totalConsultations": { "type": "number" },
+        "totalEarnings": { "type": "number" }
+      },
+      "required": ["id", "name", "ratePerMin", "isOnline"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Sacred Devotee Seva Booking & Sankalp",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "bookingId": { "type": "string", "maxLength": 128 },
+        "devoteeName": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "email": { "type": "string", "maxLength": 150 },
+        "gotra": { "type": "string", "maxLength": 100 },
+        "sevaId": { "type": "string", "maxLength": 128 },
+        "sevaTitle": { "type": "string", "maxLength": 200 },
+        "quantity": { "type": "string", "maxLength": 100 },
+        "duration": { "type": "string", "maxLength": 100 },
+        "occasion": { "type": "string", "maxLength": 150 },
+        "amount": { "type": "number" },
+        "baseAmount": { "type": "number" },
+        "extraFee": { "type": "number" },
+        "status": { "type": "string", "maxLength": 50 },
+        "date": { "type": "string", "maxLength": 50 },
+        "familyMembers": { "type": "array" },
+        "sankalpWish": { "type": "string", "maxLength": 1000 },
+        "goshala": { "type": "string", "maxLength": 150 },
+        "videoProofUrl": { "type": "string", "maxLength": 500 },
+        "photoProofUrls": { "type": "array" },
+        "priestName": { "type": "string", "maxLength": 150 },
+        "whatsappSent": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "bookingId", "devoteeName", "phone", "sevaTitle", "amount", "status"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "Customer to Astrologer Live Chat Session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "astrologerId": { "type": "string", "maxLength": 128 },
+        "astrologerName": { "type": "string", "maxLength": 150 },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 150 },
+        "customerPhone": { "type": "string", "maxLength": 20 },
+        "customerConcern": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "maxLength": 50 },
+        "ratePerMin": { "type": "number" },
+        "hasDiscount": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "startedAt": { "type": "string", "maxLength": 50 },
+        "endedAt": { "type": "string", "maxLength": 50 },
+        "durationSeconds": { "type": "number" },
+        "totalCharged": { "type": "number" },
+        "astrologerEarned": { "type": "number" },
+        "messages": { "type": "array" }
+      },
+      "required": ["id", "astrologerId", "customerPhone", "status", "ratePerMin"]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "Devotee Wallet and Balance",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 150 },
+        "balance": { "type": "number" },
+        "transactions": { "type": "array" }
+      },
+      "required": ["phone", "balance"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Devotee Reviews and Testimonials",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "city": { "type": "string", "maxLength": 100 },
+        "seva": { "type": "string", "maxLength": 150 },
+        "oneLiner": { "type": "string", "maxLength": 300 },
+        "stars": { "type": "number" },
+        "isApproved": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "oneLiner", "isApproved"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global Application Settings",
+      "type": "object",
+      "properties": {
+        "standardRatePerMin": { "type": "number" },
+        "discountedRatePerMin": { "type": "number" },
+        "discountEnabled": { "type": "boolean" },
+        "extraOccasionFee": { "type": "number" },
+        "promoBannerText": { "type": "string", "maxLength": 500 },
+        "bannerEnabled": { "type": "boolean" },
+        "trustName": { "type": "string", "maxLength": 200 }
+      },
+      "required": ["standardRatePerMin", "discountedRatePerMin"]
+    }
+  },
+  "firestore": {
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Gau Seva services and animal feeding offerings"
+    },
+    "/astrologers/{astrologerId}": {
+      "schema": "Astrologer",
+      "description": "Astrologer profiles, rates and availability"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Devotee Seva sankalps and bookings"
+    },
+    "/chatSessions/{sessionId}": {
+      "schema": "ChatSession",
+      "description": "Live consultation chat sessions"
+    },
+    "/wallets/{phone}": {
+      "schema": "Wallet",
+      "description": "Customer consultation wallets"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Hinglish devotee reviews"
+    },
+    "/settings/config": {
+      "schema": "Setting",
+      "description": "Global settings and 50% discount configuration"
+    }
+  }
+}

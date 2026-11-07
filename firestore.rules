@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all undefined paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return (isSignedIn() && (request.auth.token.email == 'bankush014@gmail.com' || request.auth.token.email == 'harshbhardwaj0745@gmail.com')) ||
+             (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    // Services: Gau Seva items catalog
+    match /services/{serviceId} {
+      allow read, write: if true;
+    }
+
+    // Astrologers: Profile, rates & availability
+    match /astrologers/{astrologerId} {
+      allow read, write: if true;
+    }
+
+    // Bookings: Devotee Seva bookings and video proofs
+    match /bookings/{bookingId} {
+      allow read, write: if true;
+    }
+
+    // Chat Sessions: Live consultation sessions and messages
+    match /chatSessions/{sessionId} {
+      allow read, write: if true;
+    }
+
+    // Customer Wallets: Balances and consultation transactions
+    match /wallets/{phone} {
+      allow read, write: if true;
+    }
+
+    // Reviews: Devotee Hinglish reviews
+    match /reviews/{reviewId} {
+      allow read, write: if true;
+    }
+
+    // Settings & 50% discount rules
+    match /settings/{docId} {
+      allow read, write: if true;
+    }
+
+    // Connection testing
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+
+    // Admin records
+    match /admins/{adminId} {
+      allow read, write: if true;
+    }
+  }
+}
