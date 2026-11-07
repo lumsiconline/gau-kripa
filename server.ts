@@ -20,7 +20,7 @@ import {
 async function startServer() {
   const app = express();
   // Dev server must always run on port 3000 according to environment constraints
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // Body parser with 50mb limit for media uploads
   app.use(express.json({ limit: '50mb' }));
