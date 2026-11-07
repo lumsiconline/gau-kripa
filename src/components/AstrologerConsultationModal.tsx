@@ -48,6 +48,8 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [concern, setConcern] = useState<string>('Career and Grah Shanti guidance');
+  const [formStep, setFormStep] = useState(0);
+  const [birthDetails, setBirthDetails] = useState({ name: customerName || '', birthDate: '', birthTime: '', birthPlace: '' });
 
   // Wallet & Discount state
   const [walletBalance, setWalletBalance] = useState<number>(250);
@@ -67,6 +69,8 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     if (!isOpen) return;
 
     setChatStatus('idle');
+    setFormStep(0);
+    setBirthDetails({ name: customerName || '', birthDate: '', birthTime: '', birthPlace: '' });
     setSession(null);
     setMessages([]);
     setErrorMessage(null);
@@ -142,9 +146,12 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       const res = await api.requestChat({
         astrologerId: astrologer.id,
         customerId: customerPhone,
-        customerName: customerName || 'Devotee',
+        customerName: birthDetails.name.trim(),
         customerPhone,
         customerConcern: concern,
+        birthDate: birthDetails.birthDate,
+        birthTime: birthDetails.birthTime,
+        birthPlace: birthDetails.birthPlace,
       });
 
       if (res.session) {
@@ -379,31 +386,42 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   </div>
                 )}
 
-                {/* Consultation Topic / Concern Input */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#453728]">
-                    What area of guidance would you like to discuss with {astrologer.name}?
-                  </label>
-                  <input
-                    type="text"
-                    value={concern}
-                    onChange={(e) => setConcern(e.target.value)}
-                    placeholder="e.g. Career promotion delays, Manglik Dosh in marriage, Financial debt remedies"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebdcb9] bg-white text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
-                  />
+                {/* Step-by-step birth details before opening the live chat */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#1b4b32]">Your birth details</span>
+                    <span className="text-[11px] font-semibold text-[#887864]">Step {formStep + 1} of 4</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-[#eadfc8] overflow-hidden">
+                    <div className="h-full bg-[#1b4b32] transition-all" style={{ width: `${((formStep + 1) / 4) * 100}%` }} />
+                  </div>
+                  {formStep === 0 && <label className="block text-xs font-bold text-[#453728]">What is your full name?
+                    <input autoFocus type="text" value={birthDetails.name} onChange={(e) => setBirthDetails({ ...birthDetails, name: e.target.value })} placeholder="Enter your full name" className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]" />
+                  </label>}
+                  {formStep === 1 && <label className="block text-xs font-bold text-[#453728]">What is your date of birth?
+                    <input autoFocus type="date" value={birthDetails.birthDate} onChange={(e) => setBirthDetails({ ...birthDetails, birthDate: e.target.value })} className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]" />
+                  </label>}
+                  {formStep === 2 && <label className="block text-xs font-bold text-[#453728]">What is your exact birth time?
+                    <input autoFocus type="time" value={birthDetails.birthTime} onChange={(e) => setBirthDetails({ ...birthDetails, birthTime: e.target.value })} className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]" />
+                  </label>}
+                  {formStep === 3 && <label className="block text-xs font-bold text-[#453728]">Where were you born?
+                    <input autoFocus type="text" value={birthDetails.birthPlace} onChange={(e) => setBirthDetails({ ...birthDetails, birthPlace: e.target.value })} placeholder="City, State, Country" className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]" />
+                  </label>}
+                  <div className="flex gap-2">
+                    {formStep > 0 && <button type="button" onClick={() => setFormStep((step) => step - 1)} className="px-5 py-3 rounded-full border border-[#1b4b32]/30 text-[#1b4b32] text-xs font-bold">Back</button>}
+                    {formStep < 3 ? (
+                      <button type="button" disabled={![birthDetails.name.trim(), birthDetails.birthDate, birthDetails.birthTime, birthDetails.birthPlace.trim()][formStep]} onClick={() => setFormStep((step) => step + 1)} className="flex-1 py-3 px-5 rounded-full bg-[#1b4b32] text-white font-bold text-sm disabled:opacity-40">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
+                    ) : (
+                      <button type="button" disabled={!birthDetails.birthPlace.trim() || !birthDetails.name.trim() || !birthDetails.birthDate || !birthDetails.birthTime} onClick={handleStartChatRequest} className="flex-1 py-3 px-5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-sm shadow-md disabled:opacity-40 flex items-center justify-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-amber-300" /> Connect with {astrologer.name} (₹{activeRatePerMin}/min)
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-
-                {/* Start Chat Button */}
-                <button
-                  type="button"
-                  onClick={handleStartChatRequest}
-                  className="w-full py-3 px-6 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
-                >
-                  <MessageSquare className="w-4 h-4 text-amber-300" />
-                  <span>Connect with {astrologer.name} (₹{activeRatePerMin}/min)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#453728]">What guidance do you need? (optional)</label>
+                  <input type="text" value={concern} onChange={(e) => setConcern(e.target.value)} placeholder="Career, relationship, marriage, finances..." className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebdcb9] bg-white text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]" />
+                </div>
               </div>
             )}
 
