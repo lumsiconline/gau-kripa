@@ -3,16 +3,17 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
-// Initialize Firebase App
+// Initialize the existing GauKripa Firebase project.
 const app = initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore with specified Database ID
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Use the project's default Firestore database.
+// The Web app config does not specify a custom database ID.
+export const db = getFirestore(app);
 
-// Initialize Firebase Authentication
+// Initialize Firebase Authentication.
 export const auth = getAuth(app);
 
-// Validate Connection to Firestore on startup
+// Validate the Firestore connection on startup.
 export async function testFirestoreConnection(): Promise<boolean> {
   try {
     await getDocFromServer(doc(db, 'settings', 'config'));
@@ -23,7 +24,7 @@ export async function testFirestoreConnection(): Promise<boolean> {
       console.error('Please check your Firebase configuration.');
       return false;
     }
-    // Document might not exist yet on fresh database, but connection is alive
+    // A missing document still confirms that Firestore is reachable.
     console.log('✅ Firestore Database reachable:', (error as Error)?.message);
     return true;
   }
