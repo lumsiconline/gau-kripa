@@ -417,7 +417,10 @@ async function startServer() {
   // 1. Customer initiates chat request to a specific astrologer
   app.post('/api/chat/request', (req, res) => {
     const db = readDb();
-    const { astrologerId, customerId, customerName, customerPhone, customerConcern } = req.body;
+    const { astrologerId, customerId, customerName, customerPhone, customerConcern, birthDate, birthTime, birthPlace } = req.body;
+    if (!customerName?.trim() || !customerPhone || !birthDate || !birthTime || !birthPlace?.trim()) {
+      return res.status(400).json({ error: 'Please complete your name, date of birth, birth time and birth place before connecting.' });
+    }
 
     const astro = db.astrologers.find((a) => a.id === astrologerId);
     if (!astro) {
@@ -458,6 +461,9 @@ async function startServer() {
       customerName: customerName || 'Devotee',
       customerPhone,
       customerConcern: customerConcern || 'Kundali & Grah Upay guidance',
+      birthDate: String(birthDate),
+      birthTime: String(birthTime),
+      birthPlace: String(birthPlace).trim(),
       status: 'waiting_approval',
       ratePerMin,
       hasDiscount,
@@ -470,7 +476,7 @@ async function startServer() {
           id: `msg-${Date.now()}`,
           sender: 'customer',
           senderName: customerName || 'Devotee',
-          text: `Pranam Guruji! I would like your guidance regarding: ${customerConcern || 'my birth chart & grah dosha remedies'}.`,
+          text: `Pranam Guruji! I am ${customerName}. My birth details are: Date of birth: ${birthDate}; Birth time: ${birthTime}; Birth place: ${birthPlace}. I would like guidance regarding: ${customerConcern || 'my birth chart & grah dosha remedies'}.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]
