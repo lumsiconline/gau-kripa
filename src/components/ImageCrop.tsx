@@ -1,9 +1,11 @@
 import React from 'react';
 
 // Master reference images
-export const MASTER_IMG_SRC = '/assets/aistudio/GauKripa__Seva__Shanti___Samriddhi_7b3a3fcf.png';
-export const BANNER_HERO_SRC = '/assets/aistudio/image_a875da24.png';
-export const DIWALI_HERO_SRC = '/assets/aistudio/image_a83a3632.png';
+// Resolve public images relative to Vite's configured base path so they work on GitHub Pages.
+const PUBLIC_ASSETS = `${import.meta.env.BASE_URL}assets/aistudio/`;
+export const MASTER_IMG_SRC = `${PUBLIC_ASSETS}GauKripa__Seva__Shanti___Samriddhi_7b3a3fcf.png`;
+export const BANNER_HERO_SRC = `${PUBLIC_ASSETS}image_a875da24.png`;
+export const DIWALI_HERO_SRC = `${PUBLIC_ASSETS}image_a83a3632.png`;
 
 // Normalized or exact pixel coordinates
 export interface CropBounds {
