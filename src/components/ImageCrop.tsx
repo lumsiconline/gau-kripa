@@ -97,9 +97,11 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
         className="w-full h-full block"
         preserveAspectRatio={preserveAspectRatio}
         xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
       >
         <image
           href={imageSource}
+          xlinkHref={imageSource}
           x="0"
           y="0"
           width={imageWidth}
