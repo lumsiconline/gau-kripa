@@ -569,16 +569,13 @@ async function startServer() {
     res.json({ success: true, session: newSession });
   });
 
-  // 2. Astrologer polls for incoming / active requests
+  // 2. Astrologer polls for incoming / active requests (supports 'all' for unified desk)
   app.get('/api/chat/incoming/:astrologerId', (req, res) => {
     const db = readDb();
     const astroId = req.params.astrologerId;
-    // Find any active or waiting session for this astrologer
-    const activeOrIncoming = db.chatSessions.find(
-      (s) => s.astrologerId === astroId && s.status === 'active'
-    ) || db.chatSessions.find(
-      (s) => s.astrologerId === astroId && s.status === 'waiting_approval'
-    );
+    const activeOrIncoming = (astroId === 'all' || !astroId)
+      ? (db.chatSessions.find((s) => s.status === 'active' || s.status === 'waiting_approval'))
+      : (db.chatSessions.find((s) => s.astrologerId === astroId && (s.status === 'active' || s.status === 'waiting_approval')));
     res.json({ incoming: activeOrIncoming || null });
   });
 
@@ -732,11 +729,13 @@ async function startServer() {
     res.json({ success: true, session });
   });
 
-  // 8. Astrologer chat history & earnings
+  // 8. Astrologer chat history & earnings (supports 'all' for unified desk)
   app.get('/api/chat/history/:astrologerId', (req, res) => {
     const db = readDb();
     const astroId = req.params.astrologerId;
-    const history = db.chatSessions.filter((s) => s.astrologerId === astroId && s.status === 'ended');
+    const history = (astroId === 'all' || !astroId)
+      ? db.chatSessions.filter((s) => s.status === 'ended')
+      : db.chatSessions.filter((s) => s.astrologerId === astroId && s.status === 'ended');
 
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];

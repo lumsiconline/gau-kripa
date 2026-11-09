@@ -266,9 +266,17 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     }
   };
 
-  // End chat
-  const handleEndChat = async () => {
-    if (!confirm('Are you sure you want to end this consultation?')) return;
+  // End chat confirmation state
+  const [showEndConfirm, setShowEndConfirm] = useState<boolean>(false);
+
+  // Trigger end chat confirmation popup
+  const handleEndChat = () => {
+    setShowEndConfirm(true);
+  };
+
+  // Instant confirmation execution
+  const confirmAndEndChat = async () => {
+    setShowEndConfirm(false);
     if (session) {
       try {
         const ended = await api.endChat(session.id);
@@ -308,7 +316,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
             CASE A: WHATSAPP CHAT INTERFACE (STAGE: ACTIVE OR ENDED)
             ============================================================ */}
         {chatStatus === 'active' || chatStatus === 'ended' ? (
-          <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#efeae2]">
+          <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#efeae2] relative">
             
             {/* WhatsApp Teal Header */}
             <div className="bg-[#075e54] text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0 border-b border-[#054c44]">
@@ -511,43 +519,94 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               <div ref={messagesEndRef} />
             </div>
 
-            {/* WhatsApp Message Input Bar */}
-            <div className="bg-[#f0f2f5] px-3 py-2.5 border-t border-[#d1d7db] flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                className="p-1.5 text-[#54656f] hover:text-[#111b21] transition-colors cursor-pointer"
-                title="Emoji"
-              >
-                <Smile className="w-5 h-5" />
-              </button>
+            {/* Confirmation Popup Modal for End Chat */}
+            {showEndConfirm && (
+              <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+                <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200 text-center space-y-4 animate-in zoom-in-95">
+                  <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+                    ⚠️
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-playfair text-lg font-bold text-[#1b4b32]">
+                      End Vedic Consultation?
+                    </h4>
+                    <p className="text-xs text-[#71614e] leading-relaxed">
+                      Are you sure you want to end this consultation? The session will conclude instantly.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowEndConfirm(false)}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmAndEndChat}
+                      className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition-colors shadow-md active:scale-95"
+                    >
+                      Yes, End Chat
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-              <button
-                type="button"
-                className="p-1.5 text-[#54656f] hover:text-[#111b21] transition-colors cursor-pointer"
-                title="Attach"
-              >
-                <Paperclip className="w-5 h-5" />
-              </button>
-
-              <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type a message to Guruji..."
-                  className="flex-1 px-4 py-2.5 rounded-full bg-white text-xs sm:text-sm text-[#111b21] placeholder-[#667781] border border-white focus:outline-hidden shadow-2xs"
-                />
+            {/* WhatsApp Message Input Bar or Concluded Notice */}
+            {chatStatus === 'ended' ? (
+              <div className="bg-[#f0f2f5] px-4 py-3.5 border-t border-[#d1d7db] flex items-center justify-between gap-3 text-xs shrink-0 animate-in fade-in">
+                <div className="flex items-center gap-2 text-[#3b4a54]">
+                  <span className="text-lg">🙏</span>
+                  <span className="font-semibold">This consultation has concluded. Har Har Mahadev!</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-full bg-[#075e54] hover:bg-[#054c44] text-white font-bold text-xs cursor-pointer shadow-xs transition-colors shrink-0"
+                >
+                  Close Window
+                </button>
+              </div>
+            ) : (
+              <div className="bg-[#f0f2f5] px-3 py-2.5 border-t border-[#d1d7db] flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  className="p-1.5 text-[#54656f] hover:text-[#111b21] transition-colors cursor-pointer"
+                  title="Emoji"
+                >
+                  <Smile className="w-5 h-5" />
+                </button>
 
                 <button
-                  type="submit"
-                  disabled={!inputText.trim()}
-                  className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white flex items-center justify-center transition-all cursor-pointer shadow-xs disabled:opacity-40 shrink-0 active:scale-95"
-                  title="Send Message"
+                  type="button"
+                  className="p-1.5 text-[#54656f] hover:text-[#111b21] transition-colors cursor-pointer"
+                  title="Attach"
                 >
-                  <Send className="w-4 h-4 ml-0.5" />
+                  <Paperclip className="w-5 h-5" />
                 </button>
-              </form>
-            </div>
+
+                <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Type a message to Guruji..."
+                    className="flex-1 px-4 py-2.5 rounded-full bg-white text-xs sm:text-sm text-[#111b21] placeholder-[#667781] border border-white focus:outline-hidden shadow-2xs"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={!inputText.trim()}
+                    className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white flex items-center justify-center transition-all cursor-pointer shadow-xs disabled:opacity-40 shrink-0 active:scale-95"
+                    title="Send Message"
+                  >
+                    <Send className="w-4 h-4 ml-0.5" />
+                  </button>
+                </form>
+              </div>
+            )}
 
           </div>
         ) : (

@@ -605,19 +605,41 @@ export const api = {
   },
 
   getIncomingChat: async (astrologerId: string): Promise<ChatSession | null> => {
+    const targetAstro = astrologerId || 'all';
     // Check server first
-    const res = await safeFetchJson<{ incoming: ChatSession | null }>(`${API_BASE}/chat/incoming/${encodeURIComponent(astrologerId)}`);
+    const res = await safeFetchJson<{ incoming: ChatSession | null }>(`${API_BASE}/chat/incoming/${encodeURIComponent(targetAstro)}`);
     if (res.ok && res.data?.incoming) {
       saveLocalSession(res.data.incoming);
       return res.data.incoming;
     }
 
     // Check local session store
-    const local = getAstrologerActiveSession(astrologerId);
-    if (local) return local;
+    if (targetAstro !== 'all') {
+      const local = getAstrologerActiveSession(targetAstro);
+      if (local) return local;
+    } else {
+      // Look across all stored sessions for any active or waiting consultation
+      try {
+        const latestId = localStorage.getItem('gaukripa_latest_chat_id');
+        if (latestId) {
+          const s = getLocalSession(latestId);
+          if (s && (s.status === 'active' || s.status === 'waiting_approval')) return s;
+        }
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('gaukripa_session_')) {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const sess: ChatSession = JSON.parse(raw);
+              if (sess.status === 'active' || sess.status === 'waiting_approval') return sess;
+            }
+          }
+        }
+      } catch {}
+    }
 
     try {
-      const raw = localStorage.getItem(`gaukripa_incoming_chat_${astrologerId}`);
+      const raw = localStorage.getItem(`gaukripa_incoming_chat_${targetAstro}`);
       if (raw) return JSON.parse(raw);
     } catch {}
     return null;
@@ -767,12 +789,19 @@ export const api = {
   },
 
   endChat: async (sessionId: string): Promise<ChatSession> => {
+    // Broadcast immediately so all listeners react instantly
+    broadcastChatEvent({ type: 'CHAT_ENDED', sessionId });
+
     const res = await safeFetchJson<{ session: ChatSession }>(`${API_BASE}/chat/session/${sessionId}/end`, { method: 'POST' });
-    if (res.ok && res.data?.session) return res.data.session;
+    if (res.ok && res.data?.session) {
+      saveLocalSession(res.data.session);
+      return res.data.session;
+    }
 
     const { session } = await api.getChatSession(sessionId);
     session.status = 'ended';
     session.endedAt = new Date().toISOString();
+    saveLocalSession(session);
     try {
       localStorage.setItem(`gaukripa_chat_session_${sessionId}`, JSON.stringify(session));
       window.dispatchEvent(new Event('storage'));
@@ -791,6 +820,7 @@ export const api = {
       monthlyEarnings: number;
     };
   }> => {
+    const isAll = !astrologerId || astrologerId === 'all';
     const res = await safeFetchJson<{
       sessions: ChatSession[];
       analytics: {
@@ -799,17 +829,19 @@ export const api = {
         weeklyEarnings: number;
         monthlyEarnings: number;
       };
-    }>(`${API_BASE}/chat/history/${encodeURIComponent(astrologerId)}`);
+    }>(`${API_BASE}/chat/history/${encodeURIComponent(isAll ? 'all' : astrologerId)}`);
     if (res.ok && res.data) return res.data;
 
     const matchedSessions: ChatSession[] = [];
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('gaukripa_chat_session_')) {
+        if (key && (key.startsWith('gaukripa_chat_session_') || key.startsWith('gaukripa_session_'))) {
           const s: ChatSession = JSON.parse(localStorage.getItem(key) || '{}');
-          if (s.astrologerId === astrologerId) {
-            matchedSessions.push(s);
+          if (s && s.id && (isAll || s.astrologerId === astrologerId)) {
+            if (!matchedSessions.some((existing) => existing.id === s.id)) {
+              matchedSessions.push(s);
+            }
           }
         }
       }
@@ -821,7 +853,7 @@ export const api = {
       analytics: {
         totalConsultations: matchedSessions.length,
         todayEarnings: totalEarned,
-        weeklyEarnings: totalEarned,
+        weeklyEarnings: Math.round(totalEarned * 0.4),
         monthlyEarnings: totalEarned
       }
     };

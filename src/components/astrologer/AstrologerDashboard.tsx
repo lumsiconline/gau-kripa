@@ -215,11 +215,10 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     loadAstrologers();
   }, [selectedAstroId]);
 
-  // Load history & analytics when currentAstro changes
+  // Load history & analytics across all astrologers for unified master view
   const loadHistory = async () => {
-    if (!currentAstro) return;
     try {
-      const data = await api.getAstrologerChatHistory(currentAstro.id);
+      const data = await api.getAstrologerChatHistory('all');
       setHistorySessions(data.sessions || []);
       setAnalytics(data.analytics || { totalConsultations: 0, todayEarnings: 0, weeklyEarnings: 0, monthlyEarnings: 0 });
     } catch (err) {
@@ -228,15 +227,12 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (currentAstro) {
-      loadHistory();
-    }
-  }, [currentAstro]);
+    loadHistory();
+  }, []);
 
-  // Real-time instant BroadcastChannel listener for incoming chats
+  // Real-time instant BroadcastChannel listener for ALL incoming chats across the platform
   useEffect(() => {
-    if (!currentAstro) return;
-    const unsubscribe = subscribeToAstrologerIncoming(currentAstro.id, {
+    const unsubscribe = subscribeToAstrologerIncoming('', {
       onIncoming: (session) => {
         setIncomingRequest(session);
         if (session.id !== lastNotifiedIdRef.current) {
@@ -255,15 +251,15 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
       }
     });
     return () => unsubscribe();
-  }, [currentAstro?.id, activeSession?.id]);
+  }, [activeSession?.id]);
 
-  // Polling for incoming requests every 2 seconds as backup
+  // Polling for incoming requests across all astrologers as backup
   useEffect(() => {
-    if (!currentAstro || activeSession) return;
+    if (activeSession) return;
 
     const interval = setInterval(async () => {
       try {
-        const incoming = await api.getIncomingChat(currentAstro.id);
+        const incoming = await api.getIncomingChat('all');
         if (incoming) {
           if (incoming.id !== lastNotifiedIdRef.current) {
             lastNotifiedIdRef.current = incoming.id;
@@ -280,7 +276,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [currentAstro, activeSession, isSoundMuted]);
+  }, [activeSession, isSoundMuted]);
 
   // Repeating alert & title flashing while an incoming request is waiting
   useEffect(() => {
@@ -408,26 +404,30 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     }
   };
 
+  // End consultation confirmation state
+  const [showEndConfirmModal, setShowEndConfirmModal] = useState<boolean>(false);
+
   // Accept incoming chat request
   const handleAcceptChat = async () => {
-    if (!incomingRequest || !currentAstro) return;
+    if (!incomingRequest) return;
+    const astroId = incomingRequest.astrologerId || currentAstro?.id || 'astrologer-1';
     try {
-      const session = await api.respondChat(incomingRequest.id, currentAstro.id, 'accept');
+      const session = await api.respondChat(incomingRequest.id, astroId, 'accept');
       setActiveSession(session);
       setChatMessages(session.messages || []);
       setIncomingRequest(null);
-      showToast(`Connected with Devotee ${session.customerName}! Live billing started.`);
+      showToast(`Connected with Devotee ${session.customerName}! Live consultation active.`);
     } catch (err) {
       console.error(err);
-      alert('Failed to accept chat');
     }
   };
 
   // Decline incoming chat request
   const handleRejectChat = async () => {
-    if (!incomingRequest || !currentAstro) return;
+    if (!incomingRequest) return;
+    const astroId = incomingRequest.astrologerId || currentAstro?.id || 'astrologer-1';
     try {
-      await api.respondChat(incomingRequest.id, currentAstro.id, 'reject');
+      await api.respondChat(incomingRequest.id, astroId, 'reject');
       setIncomingRequest(null);
       showToast('Chat request declined.');
     } catch (err) {
@@ -438,13 +438,13 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
   // Send message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeSession || !currentAstro) return;
+    if (!inputText.trim() || !activeSession) return;
     const text = inputText.trim();
     setInputText('');
     try {
       const newMsg = await api.sendChatMessage(activeSession.id, {
         sender: 'astrologer',
-        senderName: currentAstro.name,
+        senderName: activeSession.astrologerName || currentAstro?.name || 'Vedic Astrologer',
         text,
       });
       setChatMessages((prev) => {
@@ -458,11 +458,11 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
 
   // Fast Vedic Upay Shortcut Send
   const handleSendQuickUpay = async (sevaName: string, upayText: string) => {
-    if (!activeSession || !currentAstro) return;
+    if (!activeSession) return;
     try {
       const newMsg = await api.sendChatMessage(activeSession.id, {
         sender: 'astrologer',
-        senderName: currentAstro.name,
+        senderName: activeSession.astrologerName || currentAstro?.name || 'Vedic Astrologer',
         text: upayText,
         suggestedSeva: sevaName,
       });
@@ -472,10 +472,15 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     }
   };
 
-  // End consultation
-  const handleEndChat = async () => {
+  // Trigger End Consultation Confirmation Popup
+  const handleEndChat = () => {
+    setShowEndConfirmModal(true);
+  };
+
+  // Instant End Consultation Execution
+  const confirmAndEndChat = async () => {
+    setShowEndConfirmModal(false);
     if (!activeSession) return;
-    if (!confirm('Are you sure you want to conclude this Vedic consultation session?')) return;
     try {
       const ended = await api.endChat(activeSession.id);
       setActiveSession(ended);
@@ -534,24 +539,11 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
             </div>
           </div>
 
-          {/* Switch Astrologer Account Dropdown */}
+          {/* Master Consultation Desk Status Badge (Astrologer Select Dropdown Removed) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-1.5 bg-emerald-950/80 px-2.5 py-1 rounded-xl border border-emerald-800">
-              <User className="w-3.5 h-3.5 text-amber-300" />
-              <select
-                value={currentAstro.id}
-                onChange={(e) => {
-                  const found = astrologers.find((a) => a.id === e.target.value);
-                  if (found) setCurrentAstro(found);
-                }}
-                className="bg-transparent text-xs font-bold text-amber-200 focus:outline-hidden cursor-pointer"
-              >
-                {astrologers.map((a) => (
-                  <option key={a.id} value={a.id} className="bg-[#1b4b32] text-white">
-                    {a.name} ({a.isOnline ? 'Online' : 'Offline'})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 bg-emerald-950/90 px-3.5 py-1.5 rounded-full border border-emerald-700/80 text-xs font-bold text-amber-200 shadow-inner">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Master Astrologer Desk</span>
             </div>
 
             {/* Browser Notifications Alert Control */}
@@ -651,53 +643,47 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
           </div>
         )}
 
-        {/* Top Profile & Live Status Banner */}
+        {/* Top Master Consultation Desk & Live Status Banner */}
         <div className="bg-[#fffdf9] rounded-2xl border border-[#ebdcb9] p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#d9ba78] shadow-xs shrink-0 bg-amber-50 relative">
-              {currentAstro.customImageUrl ? (
-                <img src={currentAstro.customImageUrl} alt={currentAstro.name} className="w-full h-full object-cover" />
-              ) : (
-                <ImageCrop cropKey={currentAstro.cropKey} className="w-full h-full object-cover" alt={currentAstro.name} />
-              )}
-              <span
-                className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
-                  currentAstro.isOnline ? 'bg-emerald-500' : 'bg-red-500'
-                }`}
-              />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1b4b32] to-[#0f2d1e] text-amber-300 flex items-center justify-center text-3xl shadow-md border-2 border-amber-300/60 shrink-0">
+              🔮
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-playfair text-xl font-bold text-[#1b4b32]">{currentAstro.name}</h2>
-                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <h2 className="font-playfair text-xl font-bold text-[#1b4b32]">Master Astrologer Consultation Desk</h2>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>All Astrologers Active</span>
+                </span>
               </div>
-              <p className="text-xs text-[#71614e] font-medium">
-                {currentAstro.title} • {currentAstro.experience}
+              <p className="text-xs text-[#71614e] font-medium mt-0.5">
+                Centralized consultation panel for Dr. Sophia Sharma, Acharya Ved Prakash, &amp; Pandit Rajesh Shastri.
               </p>
-              <div className="flex items-center gap-2 text-xs text-[#8b5a0a] font-bold mt-0.5">
-                <span>Standard Rate: ₹{currentAstro.ratePerMin} / min</span>
+              <div className="flex items-center gap-2 text-xs text-[#8b5a0a] font-bold mt-1">
+                <span>⚡ Instant 2-Way Sync</span>
                 <span>•</span>
-                <span>⭐ {currentAstro.rating} Rating</span>
+                <span>🔔 Desktop Chime Alerts</span>
                 <span>•</span>
-                <span className="text-emerald-700">50% Seva Discount Enabled (₹10/min)</span>
+                <span className="text-emerald-700">All incoming devotee chats land directly here</span>
               </div>
             </div>
           </div>
 
-          {/* Quick Metrics */}
+          {/* Aggregated Platform Metrics */}
           <div className="grid grid-cols-3 gap-2 w-full md:w-auto text-center">
             <div className="bg-[#fcf8ee] p-2.5 rounded-xl border border-[#ebdcb9]">
-              <span className="text-[10px] text-[#786a55] block">Today's Earnings</span>
+              <span className="text-[10px] text-[#786a55] block">Today's Total</span>
               <span className="text-base font-black text-[#1b4b32]">₹{analytics.todayEarnings}</span>
             </div>
             <div className="bg-[#fcf8ee] p-2.5 rounded-xl border border-[#ebdcb9]">
-              <span className="text-[10px] text-[#786a55] block">Total Consultations</span>
-              <span className="text-base font-black text-[#1b4b32]">{currentAstro.totalConsultations}</span>
+              <span className="text-[10px] text-[#786a55] block">Total Consults</span>
+              <span className="text-base font-black text-[#1b4b32]">{analytics.totalConsultations || historySessions.length}</span>
             </div>
             <div className="bg-[#fcf8ee] p-2.5 rounded-xl border border-[#ebdcb9]">
-              <span className="text-[10px] text-[#786a55] block">Total Earned</span>
-              <span className="text-base font-black text-emerald-800">₹{currentAstro.totalEarnings}</span>
+              <span className="text-[10px] text-[#786a55] block">Platform Total</span>
+              <span className="text-base font-black text-emerald-800">₹{analytics.monthlyEarnings}</span>
             </div>
           </div>
         </div>
@@ -758,6 +744,12 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                 <div><span className="text-[#887864] block">Birth Place:</span><strong className="text-[#1b4b32]">{incomingRequest.birthPlace || 'Not provided'}</strong></div>
               </div>
               <div>
+                <span className="text-[#887864] block">Requested Astrologer:</span>
+                <span className="bg-amber-100 text-amber-950 font-bold px-2 py-0.5 rounded text-xs inline-block mt-0.5 border border-amber-300">
+                  {incomingRequest.astrologerName || 'Vedic Astrologer'}
+                </span>
+              </div>
+              <div>
                 <span className="text-[#887864] block">Billing Rate:</span>
                 <strong className="text-emerald-800 text-sm">₹{incomingRequest.ratePerMin} / min</strong>
                 {incomingRequest.hasDiscount && (
@@ -816,7 +808,42 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
 
         {/* CONTENT 1: LIVE CHAT DESK */}
         {activeTab === 'live' && (
-          <div className="bg-[#fffdf9] rounded-2xl border border-[#ebdcb9] shadow-xs overflow-hidden flex flex-col h-[600px]">
+          <div className="bg-[#fffdf9] rounded-2xl border border-[#ebdcb9] shadow-xs overflow-hidden flex flex-col h-[600px] relative">
+            {/* End Consultation Confirmation Modal */}
+            {showEndConfirmModal && (
+              <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+                <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200 text-center space-y-4 animate-in zoom-in-95">
+                  <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+                    ⚠️
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-playfair text-lg font-bold text-[#1b4b32]">
+                      End Vedic Consultation?
+                    </h4>
+                    <p className="text-xs text-[#71614e] leading-relaxed">
+                      Are you sure you want to end this consultation? The session will conclude immediately and final earnings will be settled.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowEndConfirmModal(false)}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmAndEndChat}
+                      className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition-colors shadow-md active:scale-95"
+                    >
+                      Yes, End Chat
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeSession ? (
               <>
                 {/* Active Session Top Bar */}
@@ -954,15 +981,15 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                 </div>
                 <div>
                   <h3 className="font-playfair text-xl font-bold text-[#1b4b32]">
-                    Astrologer Live Consultation Desk
+                    Master Astrologer Live Consultation Desk
                   </h3>
                   <p className="text-xs text-[#71614e] max-w-md mx-auto mt-1">
-                    Keep your status <strong className="text-emerald-700">ONLINE</strong>. When a customer clicks &ldquo;Chat Now&rdquo; with {currentAstro.name} on the website, their request will instantly appear here with an alert!
+                    Keep your status <strong className="text-emerald-700">ONLINE</strong>. When any devotee clicks &ldquo;Connect Now&rdquo; with any astrologer on the website, their request will appear directly on this screen!
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-[#8b5a0a] bg-[#fff9ea] px-4 py-2 rounded-xl border border-[#ebdcb9]">
                   <Radio className="w-4 h-4 text-emerald-600 animate-pulse" />
-                  <span>Listening for incoming devotee chat requests on {currentAstro.name}&apos;s channel...</span>
+                  <span>Listening for all incoming devotee chat requests across all astrologers...</span>
                 </div>
               </div>
             )}
@@ -974,7 +1001,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 rounded-2xl bg-[#fffdf9] border border-[#ebdcb9] space-y-1">
-                <span className="text-xs text-[#786a55]">Today&apos;s Earnings</span>
+                <span className="text-xs text-[#786a55]">Today&apos;s Total Earnings</span>
                 <div className="text-2xl font-black text-[#1b4b32]">₹{analytics.todayEarnings}</div>
                 <span className="text-[10px] text-emerald-700 font-bold">Settled to Astrologer Bank Account</span>
               </div>
@@ -984,7 +1011,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                 <span className="text-[10px] text-emerald-700 font-bold">Updated in real-time</span>
               </div>
               <div className="p-4 rounded-2xl bg-[#fffdf9] border border-[#ebdcb9] space-y-1">
-                <span className="text-xs text-[#786a55]">Monthly Total Earnings</span>
+                <span className="text-xs text-[#786a55]">Platform Total Earnings</span>
                 <div className="text-2xl font-black text-emerald-800">₹{analytics.monthlyEarnings}</div>
                 <span className="text-[10px] text-emerald-700 font-bold">All Consultations</span>
               </div>
@@ -1002,7 +1029,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
 
               {historySessions.length === 0 ? (
                 <div className="p-8 text-center text-xs text-[#71614e]">
-                  No previous consultation records for {currentAstro.name} yet. Completed chats will appear here automatically.
+                  No previous consultation records yet. Completed chats across all astrologers will appear here automatically.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1010,6 +1037,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                     <thead className="bg-[#fbf4e2] text-[#483c2e] font-bold border-b border-[#ebdcb9]">
                       <tr>
                         <th className="p-3">Session ID</th>
+                        <th className="p-3">Astrologer</th>
                         <th className="p-3">Devotee</th>
                         <th className="p-3">Concern</th>
                         <th className="p-3">Duration</th>
@@ -1022,6 +1050,9 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                       {historySessions.map((s) => (
                         <tr key={s.id} className="hover:bg-[#fcf9f2]">
                           <td className="p-3 font-mono font-bold text-[#8b6f38]">{s.id}</td>
+                          <td className="p-3 font-semibold text-[#1b4b32] whitespace-nowrap">
+                            {s.astrologerName || 'Vedic Astrologer'}
+                          </td>
                           <td className="p-3">
                             <div className="font-bold text-[#1b4b32]">{s.customerName}</div>
                             <div className="text-[10px] text-[#71614e]">+91 {s.customerPhone}</div>
