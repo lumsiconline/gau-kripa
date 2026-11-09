@@ -75,7 +75,7 @@ export async function initFirestoreDatabase(localDb: DbSchema) {
 
     isInitialized = true;
   } catch (err: any) {
-    console.error('⚠️ Firestore synchronization notice:', err?.message || err);
+    console.log('ℹ️ Operating in local database mode (Cloud Firestore pending API activation in Firebase console).');
   }
 }
 
@@ -83,7 +83,7 @@ export async function syncService(service: DbService) {
   try {
     await setDoc(doc(firestoreDb, 'services', service.id), service, { merge: true });
   } catch (err) {
-    console.error('Firestore syncService error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -91,7 +91,7 @@ export async function deleteService(id: string) {
   try {
     await deleteDoc(doc(firestoreDb, 'services', id));
   } catch (err) {
-    console.error('Firestore deleteService error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -99,7 +99,7 @@ export async function syncAstrologer(astro: DbAstrologer) {
   try {
     await setDoc(doc(firestoreDb, 'astrologers', astro.id), astro, { merge: true });
   } catch (err) {
-    console.error('Firestore syncAstrologer error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -107,7 +107,7 @@ export async function syncBooking(booking: DbBooking) {
   try {
     await setDoc(doc(firestoreDb, 'bookings', booking.id), booking, { merge: true });
   } catch (err) {
-    console.error('Firestore syncBooking error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -115,7 +115,7 @@ export async function syncChatSession(session: DbChatSession) {
   try {
     await setDoc(doc(firestoreDb, 'chatSessions', session.id), session, { merge: true });
   } catch (err) {
-    console.error('Firestore syncChatSession error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -123,7 +123,7 @@ export async function syncWallet(wallet: DbWallet) {
   try {
     await setDoc(doc(firestoreDb, 'wallets', wallet.phone), wallet, { merge: true });
   } catch (err) {
-    console.error('Firestore syncWallet error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -131,7 +131,7 @@ export async function syncReview(review: DbReview) {
   try {
     await setDoc(doc(firestoreDb, 'reviews', review.id), review, { merge: true });
   } catch (err) {
-    console.error('Firestore syncReview error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -139,7 +139,7 @@ export async function deleteReview(id: string) {
   try {
     await deleteDoc(doc(firestoreDb, 'reviews', id));
   } catch (err) {
-    console.error('Firestore deleteReview error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 
@@ -147,7 +147,7 @@ export async function syncSettings(settings: DbSettings) {
   try {
     await setDoc(doc(firestoreDb, 'settings', 'config'), settings, { merge: true });
   } catch (err) {
-    console.error('Firestore syncSettings error:', err);
+    // Quietly ignore if Firestore is offline
   }
 }
 

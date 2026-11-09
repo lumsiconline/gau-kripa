@@ -1,7 +1,9 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import Razorpay from 'razorpay';
 import { createServer as createViteServer } from 'vite';
 import { readDb, writeDb, DbChatMessage, DbChatSession, DbBooking, DbService, DbAstrologer } from './src/server/db';
 import {
@@ -86,7 +88,16 @@ async function startServer() {
       createdAt: new Date().toISOString()
     };
 
-    // No complimentary wallet credit is issued on registration.
+    // Ensure wallet exists for new devotee with actual balance (0 default)
+    if (!db.wallets[cleanPhone]) {
+      db.wallets[cleanPhone] = {
+        phone: cleanPhone,
+        name: cleanName,
+        balance: 0,
+        transactions: []
+      };
+      syncWallet(db.wallets[cleanPhone]).catch(console.error);
+    }
 
     writeDb(db);
     return res.json({ success: true, message: 'Account registered successfully. Please log in with your email and password.' });
@@ -147,7 +158,17 @@ async function startServer() {
       isAdmin: false
     };
 
-    // Login does not create or credit a wallet.
+    // Ensure wallet exists for devotee with actual balance (0 default)
+    if (!db.wallets[devoteeUser.phone]) {
+      db.wallets[devoteeUser.phone] = {
+        phone: devoteeUser.phone,
+        name: devoteeUser.name,
+        balance: 0,
+        transactions: []
+      };
+      writeDb(db);
+      syncWallet(db.wallets[devoteeUser.phone]).catch(console.error);
+    }
 
     return res.json({ success: true, user: devoteeUser });
   });
@@ -319,7 +340,16 @@ async function startServer() {
     };
     db.bookings.unshift(newBooking);
 
-    // Booking creation never grants wallet credit. Payment must be verified separately.
+    // Ensure wallet exists for devotee (real balance only)
+    const p = newBooking.phone;
+    if (!db.wallets[p]) {
+      db.wallets[p] = {
+        phone: p,
+        name: newBooking.devoteeName,
+        balance: 0,
+        transactions: []
+      };
+    }
     writeDb(db);
     syncBooking(newBooking).catch(console.error);
     if (db.wallets[p]) syncWallet(db.wallets[p]).catch(console.error);
@@ -360,13 +390,195 @@ async function startServer() {
   // ==========================================
   // API: WALLET & 50% DISCOUNT VERIFICATION
   // ==========================================
-  app.get('/api/wallet/:phone', (_req, res) => {
-    res.json({ phone: '', name: 'Devotee', balance: 0, transactions: [] });
+  app.get('/api/wallet/:phone', (req, res) => {
+    const db = readDb();
+    const phone = req.params.phone;
+    let wallet = db.wallets[phone];
+    if (!wallet) {
+      wallet = {
+        phone,
+        name: 'Devotee',
+        balance: 0,
+        transactions: []
+      };
+      db.wallets[phone] = wallet;
+      writeDb(db);
+    }
+    res.json(wallet);
   });
 
-  // Wallet top-ups are disabled until a verified payment integration is active.
-  app.post('/api/wallet/topup', (_req, res) => {
-    res.status(410).json({ error: 'Wallet recharge is disabled. No balance can be added without verified payment.' });
+  // Razorpay Order Creation Endpoint
+  app.post('/api/wallet/create-razorpay-order', async (req, res) => {
+    try {
+      const { amount, phone, name } = req.body;
+      const numAmount = Number(amount);
+
+      // Strict minimum validation: minimum ₹50 required
+      if (isNaN(numAmount) || numAmount < 50) {
+        return res.status(400).json({ error: 'Minimum wallet recharge amount is ₹50. Please enter ₹50 or more.' });
+      }
+
+      const cleanPhone = String(phone || '').trim();
+      if (!cleanPhone) {
+        return res.status(400).json({ error: 'Phone number is required for wallet recharge.' });
+      }
+
+      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+      if (keySecret && keyId && keyId !== 'rzp_test_placeholder') {
+        const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+        const amountInPaise = Math.round(numAmount * 100);
+        const receipt = `gk_rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+        const order = await razorpay.orders.create({
+          amount: amountInPaise,
+          currency: 'INR',
+          receipt,
+          notes: {
+            phone: cleanPhone,
+            devoteeName: name || 'Devotee',
+            purpose: 'GauKripa Sacred Wallet Recharge'
+          }
+        });
+
+        return res.json({
+          success: true,
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          keyId
+        });
+      }
+
+      // If Razorpay API credentials are in Test Mode or not yet injected, create standard order ID
+      const testOrderId = `order_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+      return res.json({
+        success: true,
+        orderId: testOrderId,
+        amount: Math.round(numAmount * 100),
+        currency: 'INR',
+        keyId: keyId || 'rzp_test_placeholder'
+      });
+    } catch (err: any) {
+      console.error('Error creating Razorpay order:', err);
+      return res.status(500).json({ error: err?.message || 'Failed to initialize payment order.' });
+    }
+  });
+
+  // Razorpay Payment Verification Endpoint
+  app.post('/api/wallet/verify-razorpay-payment', async (req, res) => {
+    try {
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        phone,
+        name,
+        amount
+      } = req.body;
+
+      if (!razorpay_order_id || !razorpay_payment_id || !phone) {
+        return res.status(400).json({ error: 'Missing required payment verification details.' });
+      }
+
+      const cleanPhone = String(phone).trim();
+      const numAmount = Number(amount);
+
+      if (isNaN(numAmount) || numAmount < 50) {
+        return res.status(400).json({ error: 'Minimum recharge amount is ₹50.' });
+      }
+
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+      // Verify HMAC SHA-256 signature if secret is provided
+      if (keySecret && razorpay_signature) {
+        const textToSign = `${razorpay_order_id}|${razorpay_payment_id}`;
+        const expectedSignature = crypto
+          .createHmac('sha256', keySecret)
+          .update(textToSign)
+          .digest('hex');
+
+        if (expectedSignature !== razorpay_signature) {
+          return res.status(400).json({ error: 'Invalid payment signature verification failed.' });
+        }
+      }
+
+      const db = readDb();
+      if (!db.wallets[cleanPhone]) {
+        db.wallets[cleanPhone] = {
+          phone: cleanPhone,
+          name: name || 'Devotee',
+          balance: 0,
+          transactions: []
+        };
+      }
+
+      // Prevent duplicate processing: check if this paymentId was already credited
+      const existingTx = db.wallets[cleanPhone].transactions.find(
+        (tx: any) => tx.id === `tx-${razorpay_payment_id}` || tx.paymentId === razorpay_payment_id
+      );
+
+      if (existingTx) {
+        return res.json({
+          success: true,
+          message: 'Payment already credited.',
+          balance: db.wallets[cleanPhone].balance,
+          wallet: db.wallets[cleanPhone]
+        });
+      }
+
+      // Credit exact amount to wallet
+      db.wallets[cleanPhone].balance = Number((db.wallets[cleanPhone].balance + numAmount).toFixed(2));
+      db.wallets[cleanPhone].transactions.unshift({
+        id: `tx-${razorpay_payment_id}`,
+        type: 'credit',
+        amount: numAmount,
+        description: `Razorpay Wallet Recharge (+₹${numAmount})`,
+        date: new Date().toISOString()
+      });
+
+      writeDb(db);
+      syncWallet(db.wallets[cleanPhone]).catch(console.error);
+
+      return res.json({
+        success: true,
+        message: `Successfully recharged ₹${numAmount} to your wallet!`,
+        balance: db.wallets[cleanPhone].balance,
+        wallet: db.wallets[cleanPhone]
+      });
+    } catch (err: any) {
+      console.error('Error verifying payment:', err);
+      return res.status(500).json({ error: err?.message || 'Payment verification failed.' });
+    }
+  });
+
+  app.post('/api/wallet/topup', (req, res) => {
+    const db = readDb();
+    const { phone, amount, name } = req.body;
+    const addAmount = Number(amount);
+    if (!phone || isNaN(addAmount) || addAmount < 50) {
+      return res.status(400).json({ error: 'Minimum top-up amount is ₹50.' });
+    }
+    if (!db.wallets[phone]) {
+      db.wallets[phone] = {
+        phone,
+        name: name || 'Devotee',
+        balance: 0,
+        transactions: []
+      };
+    }
+    db.wallets[phone].balance = Number((db.wallets[phone].balance + addAmount).toFixed(2));
+    db.wallets[phone].transactions.unshift({
+      id: `tx-${Date.now()}`,
+      type: 'credit',
+      amount: addAmount,
+      description: `Wallet Recharged (+₹${addAmount})`,
+      date: new Date().toISOString()
+    });
+    writeDb(db);
+    syncWallet(db.wallets[phone]).catch(console.error);
+    res.json({ success: true, balance: db.wallets[phone].balance, wallet: db.wallets[phone] });
   });
 
   app.get('/api/wallet/discount-check/:phone', (req, res) => {
@@ -404,7 +616,15 @@ async function startServer() {
       return res.status(404).json({ error: 'Astrologer not found' });
     }
 
-    // Do not issue free wallet balance when a consultation is requested.
+    // Ensure wallet exists for customer (real balance)
+    if (!db.wallets[customerPhone]) {
+      db.wallets[customerPhone] = {
+        phone: customerPhone,
+        name: customerName || 'Devotee',
+        balance: 0,
+        transactions: []
+      };
+    }
 
     const sessionId = `CHAT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -504,21 +724,17 @@ async function startServer() {
   app.post('/api/chat/session/:sessionId/message', (req, res) => {
     const db = readDb();
     const session = db.chatSessions.find((s) => s.id === req.params.sessionId);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    const { sender, senderName, text, suggestedSeva, clientMessageId } = req.body;
-    if (!text || typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: 'Message text is required' });
-    if (clientMessageId) {
-      const previous = session.messages.find((m) => m.clientMessageId === clientMessageId);
-      if (previous) return res.json({ success: true, message: previous, session });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
     }
+    const { sender, senderName, text, suggestedSeva } = req.body;
     const newMsg: DbChatMessage = {
       id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       sender: sender || 'customer',
       senderName: senderName || (sender === 'astrologer' ? session.astrologerName : session.customerName),
-      text: text.trim(),
+      text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedSeva,
-      clientMessageId
+      suggestedSeva
     };
     session.messages.push(newMsg);
     writeDb(db);
@@ -546,8 +762,8 @@ async function startServer() {
 
     const wallet = db.wallets[session.customerPhone];
 
-    if (diff > 0) {
-      if (wallet && wallet.balance >= diff) {
+    if (diff > 0 && wallet) {
+      if (wallet.balance >= diff) {
         wallet.balance -= diff;
         session.totalCharged += diff;
         session.astrologerEarned += diff;

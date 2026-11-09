@@ -146,6 +146,36 @@
         "trustName": { "type": "string", "maxLength": 200 }
       },
       "required": ["standardRatePerMin", "discountedRatePerMin"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Razorpay recharge order",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "amountInPaise": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 150 },
+        "status": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["orderId", "amount", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Verified Razorpay payment record",
+      "type": "object",
+      "properties": {
+        "paymentId": { "type": "string", "maxLength": 128 },
+        "orderId": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 150 },
+        "status": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["paymentId", "orderId", "amount", "status"]
     }
   },
   "firestore": {
@@ -168,6 +198,14 @@
     "/wallets/{phone}": {
       "schema": "Wallet",
       "description": "Customer consultation wallets"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Razorpay order records"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Verified payment transactions"
     },
     "/reviews/{reviewId}": {
       "schema": "Review",
