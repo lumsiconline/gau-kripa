@@ -1,13 +1,13 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const crypto = require("crypto");
 
 admin.initializeApp();
 
-const CASHFREE_APP_ID = defineSecret("CASHFREE_APP_ID");
-const CASHFREE_SECRET_KEY = defineSecret("CASHFREE_SECRET_KEY");
+const RAZORPAY_KEY_ID = defineSecret("RAZORPAY_KEY_ID");
+const RAZORPAY_KEY_SECRET = defineSecret("RAZORPAY_KEY_SECRET");
 const db = admin.firestore();
-const API_VERSION = "2023-08-01";
 
 function cors(req, res) {
   const origin = req.headers.origin || "";
@@ -24,33 +24,28 @@ function cleanPhone(value) {
   return String(value || "").replace(/[^0-9]/g, "").slice(-15);
 }
 
-function cashfreeConfig() {
-  const appId = CASHFREE_APP_ID.value();
-  const secretKey = CASHFREE_SECRET_KEY.value();
-  if (!appId || !secretKey) throw new Error("Cashfree credentials are not configured.");
-  const environment = String(process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
-  const baseUrl = environment === "production"
-    ? "https://api.cashfree.com/pg"
-    : "https://sandbox.cashfree.com/pg";
-  return { appId, secretKey, baseUrl };
+function razorpayCredentials() {
+  const keyId = RAZORPAY_KEY_ID.value();
+  const keySecret = RAZORPAY_KEY_SECRET.value();
+  if (!keyId || !keySecret) throw new Error("Razorpay credentials are not configured in Firebase Secret Manager.");
+  return { keyId, keySecret };
 }
 
-async function cashfreeRequest(path, options = {}) {
-  const { appId, secretKey, baseUrl } = cashfreeConfig();
-  const response = await fetch(baseUrl + path, {
+async function razorpayRequest(path, options = {}) {
+  const { keyId, keySecret } = razorpayCredentials();
+  const auth = Buffer.from(keyId + ":" + keySecret).toString("base64");
+  const response = await fetch("https://api.razorpay.com/v1" + path, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "x-api-version": API_VERSION,
-      "x-client-id": appId,
-      "x-client-secret": secretKey,
+      "Authorization": "Basic " + auth,
       ...(options.headers || {})
     }
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    console.error("Cashfree API error:", response.status, body?.message || body?.type || "Unknown error");
-    throw new Error(body?.message || "Cashfree payment request failed.");
+    console.error("Razorpay API error:", response.status, body?.error?.description || "Unknown error");
+    throw new Error(body?.error?.description || "Razorpay payment request failed.");
   }
   return body;
 }
@@ -78,8 +73,8 @@ exports.getWallet = onRequest(
   }
 );
 
-exports.createCashfreeOrder = onRequest(
-  { region: "asia-south1", secrets: [CASHFREE_APP_ID, CASHFREE_SECRET_KEY], maxInstances: 10, memory: "256MiB" },
+exports.createRazorpayOrder = onRequest(
+  { region: "asia-south1", secrets: [RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET], maxInstances: 10, memory: "256MiB" },
   async (req, res) => {
     if (cors(req, res)) return;
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -92,58 +87,59 @@ exports.createCashfreeOrder = onRequest(
         return res.status(400).json({ error: "Wallet recharge must be a whole-rupee amount of at least ₹50 (maximum ₹1,00,000)." });
       }
       if (phone.length < 10) return res.status(400).json({ error: "Please add a valid 10-digit mobile number to your profile before recharging." });
-      const orderId = "gk_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
-      const order = await cashfreeRequest("/orders", {
+
+      const order = await razorpayRequest("/orders", {
         method: "POST",
         body: JSON.stringify({
-          order_id: orderId,
-          order_amount: amountRupees,
-          order_currency: "INR",
-          customer_details: {
-            customer_id: ("gk_" + phone).slice(0, 50),
-            customer_name: customerName.replace(/[^a-zA-Z0-9 .'-]/g, "").slice(0, 100) || "Devotee",
-            customer_email: email || "support@gaukripa.site",
-            customer_phone: phone.slice(-10)
-          },
-          order_meta: {
-            return_url: "https://gaukripa.site/?cashfree_order_id={order_id}"
-          },
-          order_note: "GauKripa wallet recharge"
+          amount: amountRupees * 100,
+          currency: "INR",
+          receipt: ("gk_" + Date.now()).slice(0, 40),
+          notes: {
+            purpose: "GauKripa wallet recharge",
+            wallet_phone: phone,
+            customer_name: customerName,
+            customer_email: email
+          }
         })
       });
-      await db.collection("cashfree_wallet_orders").doc(orderId).set({
-        orderId,
+
+      await db.collection("razorpay_wallet_orders").doc(order.id).set({
+        orderId: order.id,
         phone,
         name: customerName,
+        email,
         amount: amountRupees,
+        amountPaise: amountRupees * 100,
         currency: "INR",
-        status: "CREATED",
+        status: "created",
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
-      return res.json({
-        order_id: order.order_id,
-        payment_session_id: order.payment_session_id,
-        environment: String(process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase() === "production" ? "production" : "sandbox"
-      });
+
+      const { keyId } = razorpayCredentials();
+      return res.json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: keyId });
     } catch (error) {
-      console.error("Cashfree order creation failed:", error);
-      return res.status(500).json({ error: error.message || "Unable to create Cashfree payment order." });
+      console.error("Razorpay order creation failed:", error);
+      return res.status(500).json({ error: error.message || "Unable to create Razorpay payment order." });
     }
   }
 );
 
-exports.verifyCashfreePayment = onRequest(
-  { region: "asia-south1", secrets: [CASHFREE_APP_ID, CASHFREE_SECRET_KEY], maxInstances: 10, memory: "256MiB" },
+exports.verifyRazorpayPayment = onRequest(
+  { region: "asia-south1", secrets: [RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET], maxInstances: 10, memory: "256MiB" },
   async (req, res) => {
     if (cors(req, res)) return;
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
     const orderId = String(req.body?.order_id || "").trim();
+    const paymentId = String(req.body?.payment_id || "").trim();
+    const signature = String(req.body?.signature || "").trim();
     const requestedPhone = cleanPhone(req.body?.phone);
-    if (!orderId || requestedPhone.length < 7) {
-      return res.status(400).json({ success: false, error: "Missing order or account details." });
+    if (!orderId || !paymentId || !signature || requestedPhone.length < 10) {
+      return res.status(400).json({ success: false, error: "Missing payment or wallet account details." });
     }
+
     try {
-      const orderRef = db.collection("cashfree_wallet_orders").doc(orderId);
+      const orderRef = db.collection("razorpay_wallet_orders").doc(orderId);
       const orderSnap = await orderRef.get();
       if (!orderSnap.exists) return res.status(404).json({ success: false, error: "Wallet payment order was not found." });
       const savedOrder = orderSnap.data();
@@ -151,21 +147,21 @@ exports.verifyCashfreePayment = onRequest(
         return res.status(403).json({ success: false, error: "This payment order does not belong to this wallet." });
       }
 
-      const [cashfreeOrder, payments] = await Promise.all([
-        cashfreeRequest("/orders/" + encodeURIComponent(orderId), { method: "GET" }),
-        cashfreeRequest("/orders/" + encodeURIComponent(orderId) + "/payments", { method: "GET" })
-      ]);
-      const successfulPayment = Array.isArray(payments)
-        ? payments.find((payment) => payment.payment_status === "SUCCESS")
-        : null;
-      if (cashfreeOrder.order_status !== "PAID" || !successfulPayment ||
-          Number(cashfreeOrder.order_amount) !== Number(savedOrder.amount) ||
-          Number(successfulPayment.payment_amount) !== Number(savedOrder.amount) ||
-          cashfreeOrder.order_currency !== "INR") {
-        return res.status(400).json({ success: false, error: "Cashfree has not confirmed a successful payment for this order yet." });
+      const { keySecret } = razorpayCredentials();
+      const expected = crypto.createHmac("sha256", keySecret).update(orderId + "|" + paymentId).digest("hex");
+      const expectedBuffer = Buffer.from(expected, "utf8");
+      const receivedBuffer = Buffer.from(signature, "utf8");
+      if (expectedBuffer.length !== receivedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {
+        return res.status(400).json({ success: false, error: "Razorpay payment signature is invalid." });
       }
 
-      const paymentRef = db.collection("cashfree_wallet_payments").doc(orderId);
+      const payment = await razorpayRequest("/payments/" + encodeURIComponent(paymentId), { method: "GET" });
+      if (payment.order_id !== orderId || Number(payment.amount) !== Number(savedOrder.amountPaise) ||
+          payment.currency !== "INR" || payment.status !== "captured" || payment.captured !== true) {
+        return res.status(400).json({ success: false, error: "Razorpay has not confirmed a captured payment for this exact order and amount. Ensure auto-capture is enabled in Razorpay." });
+      }
+
+      const paymentRef = db.collection("razorpay_wallet_payments").doc(paymentId);
       const walletRef = db.collection("wallets").doc(requestedPhone);
       const result = await db.runTransaction(async (tx) => {
         const paymentSnap = await tx.get(paymentRef);
@@ -178,12 +174,12 @@ exports.verifyCashfreePayment = onRequest(
         const amount = Number(savedOrder.amount);
         const nextBalance = Number((Number(wallet.balance || 0) + amount).toFixed(2));
         const transaction = {
-          id: String(successfulPayment.cf_payment_id || orderId),
+          id: paymentId,
           type: "credit",
           amount,
-          description: "Wallet recharge via Cashfree",
+          description: "Wallet recharge via Razorpay",
           date: new Date().toISOString(),
-          paymentId: String(successfulPayment.cf_payment_id || orderId)
+          paymentId
         };
         const transactions = Array.isArray(wallet.transactions) ? wallet.transactions : [];
         tx.set(walletRef, {
@@ -195,7 +191,7 @@ exports.verifyCashfreePayment = onRequest(
         }, { merge: true });
         tx.set(paymentRef, {
           orderId,
-          paymentId: String(successfulPayment.cf_payment_id || ""),
+          paymentId,
           phone: requestedPhone,
           amount,
           currency: "INR",
@@ -203,13 +199,13 @@ exports.verifyCashfreePayment = onRequest(
           walletCredited: true,
           verifiedAt: admin.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-        tx.update(orderRef, { status: "PAID", paidAt: admin.firestore.FieldValue.serverTimestamp() });
+        tx.update(orderRef, { status: "captured", paymentId, paidAt: admin.firestore.FieldValue.serverTimestamp() });
         return { credited: true, balance: nextBalance };
       });
       return res.json({ success: true, verified: true, credited: result.credited, balance: result.balance });
     } catch (error) {
-      console.error("Cashfree payment verification failed:", error);
-      return res.status(500).json({ success: false, error: "Unable to verify and credit this Cashfree payment. Please contact support." });
+      console.error("Razorpay payment verification failed:", error);
+      return res.status(500).json({ success: false, error: "Unable to verify and credit this Razorpay payment. Please contact support." });
     }
   }
 );
