@@ -18,8 +18,12 @@ import {
   Radio,
   Power,
   Volume2,
+  VolumeX,
   RefreshCw,
-  Award
+  Award,
+  Bell,
+  BellRing,
+  BellOff,
 } from 'lucide-react';
 import { api, AstrologerItem, ChatSession, ChatMessage } from '../../services/api';
 import { ImageCrop } from '../ImageCrop';
@@ -27,6 +31,41 @@ import { ImageCrop } from '../ImageCrop';
 interface AstrologerDashboardProps {
   onBackToWebsite: () => void;
   selectedAstroId?: string;
+}
+
+// Auspicious Web Audio temple bell chime (100% self-contained, no external mp3 dependency)
+function playTempleChime() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    const playTone = (freq: number, start: number, duration: number, vol = 0.25) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(vol, start + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+
+    const now = ctx.currentTime;
+    // Harmonic temple bell arpeggio (C5 -> E5 -> G5 -> C6)
+    playTone(523.25, now, 0.7, 0.22);
+    playTone(659.25, now + 0.16, 0.7, 0.22);
+    playTone(783.99, now + 0.32, 1.1, 0.28);
+    playTone(1046.50, now + 0.48, 1.5, 0.32);
+  } catch (err) {
+    console.warn('Audio chime playback not allowed or failed:', err);
+  }
 }
 
 export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
@@ -59,9 +98,102 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<'live' | 'history' | 'profile'>('live');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Browser Notification & Sound Alert State
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission;
+    }
+    return 'unsupported';
+  });
+  const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
+  const [bannerDismissed, setBannerDismissed] = useState<boolean>(false);
+  const lastNotifiedIdRef = useRef<string | null>(null);
+  const originalTitleRef = useRef<string>(typeof document !== 'undefined' ? document.title : 'GauKripa');
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Request browser notification permission
+  const requestNotificationPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      showToast('Browser notifications are not supported in this browser.');
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      setNotificationPermission(perm);
+      if (perm === 'granted') {
+        showToast('🔔 Browser notifications enabled! You will be alerted for all new devotee consults.');
+        playTempleChime();
+        try {
+          new Notification('✨ GauKripa Astrologer Alerts Active', {
+            body: 'You will receive instant alerts right here whenever a devotee requests a live consultation!',
+            icon: '/favicon.ico',
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      } else if (perm === 'denied') {
+        showToast('Notifications blocked in browser. Sound chimes will still play.');
+      }
+    } catch (err) {
+      console.error('Failed to request notification permission:', err);
+    }
+  };
+
+  // Test notification button
+  const handleTestAlert = () => {
+    playTempleChime();
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('🔔 Test Alert: Devotee Consult Ready', {
+          body: 'This is a test notification. When real devotees connect, you will be notified immediately!',
+          icon: '/favicon.ico',
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    showToast('🔔 Alert test sounded! Temple chime played.');
+  };
+
+  // Dispatch browser notification & sound for new incoming request
+  const triggerIncomingAlert = (session: ChatSession) => {
+    // 1. Play temple bell chime
+    if (!isSoundMuted) {
+      playTempleChime();
+    }
+
+    // 2. Mobile vibration
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([250, 120, 250, 120, 450]);
+      } catch {
+        // ignore
+      }
+    }
+
+    // 3. System browser notification
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        const birthLocation = session.birthPlace ? ` (${session.birthPlace})` : '';
+        const notification = new Notification(`🔮 New Consultation Request: ${session.customerName}`, {
+          body: `Devotee ${session.customerName}${birthLocation} is waiting for Vedic consultation!\nTopic: ${session.customerConcern || 'Kundali & Grah Upay'}\nRate: ₹${session.ratePerMin}/min • Click to respond now!`,
+          icon: '/favicon.ico',
+          tag: `gaukripa-req-${session.id}`,
+          requireInteraction: true,
+        });
+
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+      } catch (err) {
+        console.warn('Browser notification failed:', err);
+      }
+    }
   };
 
   // Load astrologers list
@@ -107,6 +239,15 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     const interval = setInterval(async () => {
       try {
         const incoming = await api.getIncomingChat(currentAstro.id);
+        if (incoming) {
+          if (incoming.id !== lastNotifiedIdRef.current) {
+            lastNotifiedIdRef.current = incoming.id;
+            triggerIncomingAlert(incoming);
+            showToast(`🔔 New consultation request from ${incoming.customerName}!`);
+          }
+        } else {
+          lastNotifiedIdRef.current = null;
+        }
         setIncomingRequest(incoming);
       } catch (err) {
         console.error('Error polling incoming:', err);
@@ -114,7 +255,42 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     }, 2500);
 
     return () => clearInterval(interval);
-  }, [currentAstro, activeSession]);
+  }, [currentAstro, activeSession, isSoundMuted]);
+
+  // Repeating alert & title flashing while an incoming request is waiting
+  useEffect(() => {
+    if (!incomingRequest || activeSession) {
+      if (typeof document !== 'undefined') {
+        document.title = originalTitleRef.current;
+      }
+      return;
+    }
+
+    let isFlashing = false;
+    const titleInterval = setInterval(() => {
+      if (typeof document !== 'undefined') {
+        isFlashing = !isFlashing;
+        document.title = isFlashing
+          ? `🔔 (1) NEW CHAT REQUEST! - ${incomingRequest.customerName}`
+          : `🔮 Devotee Waiting! - GauKripa`;
+      }
+    }, 1200);
+
+    // Periodic gentle chime every 8 seconds until accepted or rejected
+    const chimeInterval = setInterval(() => {
+      if (!isSoundMuted) {
+        playTempleChime();
+      }
+    }, 8000);
+
+    return () => {
+      clearInterval(titleInterval);
+      clearInterval(chimeInterval);
+      if (typeof document !== 'undefined') {
+        document.title = originalTitleRef.current;
+      }
+    };
+  }, [incomingRequest, activeSession, isSoundMuted]);
 
   // Active chat loop: poll messages every 2s, send heartbeat every 5s
   useEffect(() => {
@@ -308,7 +484,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
           </div>
 
           {/* Switch Astrologer Account Dropdown */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-1.5 bg-emerald-950/80 px-2.5 py-1 rounded-xl border border-emerald-800">
               <User className="w-3.5 h-3.5 text-amber-300" />
               <select
@@ -326,6 +502,39 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                 ))}
               </select>
             </div>
+
+            {/* Browser Notifications Alert Control */}
+            {notificationPermission === 'granted' ? (
+              <button
+                type="button"
+                onClick={handleTestAlert}
+                className="px-3 py-1.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/80 text-xs font-bold text-amber-200 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                title="Browser notifications & chime sound active. Click to test alert sound!"
+              >
+                <Bell className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden md:inline">Alerts Active</span>
+              </button>
+            ) : notificationPermission === 'denied' ? (
+              <button
+                type="button"
+                onClick={handleTestAlert}
+                className="px-3 py-1.5 rounded-full bg-red-950/80 hover:bg-red-900 border border-red-800 text-xs font-bold text-red-200 flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Notifications blocked in browser permissions. Chime sound will still ring! Click to test sound."
+              >
+                <BellOff className="w-3.5 h-3.5 text-red-400" />
+                <span className="hidden md:inline">Sound Only</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={requestNotificationPermission}
+                className="px-3.5 py-1.5 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95 animate-pulse"
+                title="Enable browser notifications for incoming devotee chat requests"
+              >
+                <BellRing className="w-3.5 h-3.5" />
+                <span>Enable Alerts</span>
+              </button>
+            )}
 
             {/* Prominent Online/Offline Toggle Button */}
             <button
@@ -345,7 +554,52 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
 
       {/* Main Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 space-y-6">
-        
+
+        {/* Browser Notification Permission Prompt Banner */}
+        {notificationPermission === 'default' && !bannerDismissed && (
+          <div className="bg-[#fff9ea] border-2 border-[#e5a024] rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 shrink-0">
+                <BellRing className="w-5 h-5 text-amber-700 animate-bounce" />
+              </div>
+              <div>
+                <h4 className="font-playfair text-sm font-bold text-[#1b4b32]">
+                  Enable Browser Notifications for Incoming Devotee Consultations
+                </h4>
+                <p className="text-xs text-[#695844] mt-0.5">
+                  Receive real-time desktop popups and temple bell chimes as soon as a devotee clicks &ldquo;Connect Now&rdquo;, even if you are browsing another tab.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <button
+                type="button"
+                onClick={requestNotificationPermission}
+                className="px-4 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+              >
+                <Bell className="w-3.5 h-3.5 text-amber-300" />
+                <span>Turn On Notifications</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleTestAlert}
+                className="px-3 py-2 rounded-full bg-white hover:bg-[#faf4e6] text-[#1b4b32] border border-[#ebdcb9] font-bold text-xs transition-colors cursor-pointer"
+                title="Test audio chime"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setBannerDismissed(true)}
+                className="p-1.5 text-[#887864] hover:text-[#1b4b32] rounded-full hover:bg-black/5 cursor-pointer"
+                title="Dismiss banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Top Profile & Live Status Banner */}
         <div className="bg-[#fffdf9] rounded-2xl border border-[#ebdcb9] p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -400,7 +654,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
         {/* INCOMING CHAT REQUEST ALERT (POPPED UP WHEN CUSTOMER CLICKS 'CHAT NOW') */}
         {incomingRequest && !activeSession && (
           <div className="bg-[#fff9ea] border-2 border-[#e5a024] rounded-2xl p-4 sm:p-5 shadow-lg animate-bounce-subtle space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
                 <h3 className="font-playfair text-base sm:text-lg font-bold text-[#1b4b32] flex items-center gap-1.5">
@@ -408,9 +662,33 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
                   <span>Incoming Live Vedic Chat Request!</span>
                 </h3>
               </div>
-              <span className="text-xs font-mono font-bold bg-amber-100 text-amber-950 px-2 py-0.5 rounded-md">
-                {incomingRequest.id}
-              </span>
+              <div className="flex items-center gap-2">
+                {notificationPermission === 'granted' && (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-300">
+                    <Bell className="w-3 h-3 text-emerald-700" />
+                    <span>Notification Sent</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSoundMuted(!isSoundMuted);
+                    showToast(!isSoundMuted ? 'Sound chime muted for this request' : 'Sound chime unmuted');
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
+                    isSoundMuted
+                      ? 'bg-red-50 text-red-700 border-red-300'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  }`}
+                  title={isSoundMuted ? 'Unmute alert sound' : 'Mute alert sound'}
+                >
+                  {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 text-red-600" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-700" />}
+                  <span>{isSoundMuted ? 'Muted' : 'Sound Ringing'}</span>
+                </button>
+                <span className="text-xs font-mono font-bold bg-amber-100 text-amber-950 px-2 py-0.5 rounded-md">
+                  {incomingRequest.id}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-white/90 rounded-xl border border-[#ebdcb9] text-xs">

@@ -22,7 +22,8 @@ import {
 
 // Initialize Firebase App for Server-Side synchronization
 const app = initializeApp(firebaseConfig, 'server-firestore');
-export const firestoreDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+const customDbId = (firebaseConfig as any).firestoreDatabaseId;
+export const firestoreDb = customDbId ? getFirestore(app, customDbId) : getFirestore(app);
 
 let isInitialized = false;
 
@@ -32,7 +33,7 @@ let isInitialized = false;
 export async function initFirestoreDatabase(localDb: DbSchema) {
   if (isInitialized) return;
   try {
-    console.log(`📡 Connecting to Cloud Firestore: ${firebaseConfig.projectId} (${firebaseConfig.firestoreDatabaseId})...`);
+    console.log(`📡 Connecting to Cloud Firestore: ${firebaseConfig.projectId} (${customDbId || '(default)'})...`);
     
     // Check if settings already exist in Firestore
     const settingsDoc = await getDoc(doc(firestoreDb, 'settings', 'config'));
@@ -163,7 +164,7 @@ export async function getFirestoreStats() {
     return {
       connected: true,
       projectId: firebaseConfig.projectId,
-      databaseId: firebaseConfig.firestoreDatabaseId,
+      databaseId: customDbId || '(default)',
       collections: {
         services: srvSnap.size,
         astrologers: astSnap.size,
