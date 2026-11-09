@@ -213,51 +213,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* LOGGED IN USER: Profile Pill with Wallet & Logout */}
-            {activeUser ? (
-              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={onOpenAuth}
-                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full bg-[#faf3e2] hover:bg-[#f3ebd3] border border-[#e5ca8a] text-[#1b4b32] font-bold text-xs sm:text-sm shadow-2xs transition-all cursor-pointer whitespace-nowrap active:scale-98"
-                  title="View Profile, Sacred Wallet, and Seva Bookings"
-                >
-                  <div className="w-6 h-6 rounded-full bg-[#1b4b32] text-amber-300 flex items-center justify-center text-xs font-black shrink-0">
-                    {activeUser.email?.toLowerCase() === 'bankush014@gmail.com'
-                      ? '👑'
-                      : activeUser.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="max-w-[70px] sm:max-w-[100px] truncate">{activeUser.name.split(' ')[0]}</span>
-                  <span className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0">
-                    <Coins className="w-3 h-3 text-amber-700" />
-                    <span>Wallet</span>
-                  </span>
-                </button>
-
-                {onLogout && (
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="p-2 sm:px-2.5 sm:py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1 shrink-0"
-                    title="Sign Out / Logout"
-                  >
-                    <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                    <span className="hidden sm:inline">Logout</span>
-                  </button>
-                )}
-              </div>
-            ) : (
-              /* NOT LOGGED IN USER: Sign In / Sign Up */
-              <button
-                type="button"
-                onClick={onOpenAuth}
-                className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#e5a024] hover:bg-[#d8941d] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <User className="w-3.5 h-3.5 fill-slate-950" />
-                <span>Login / Sign Up</span>
-              </button>
-            )}
-
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -275,58 +230,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       {mobileMenuOpen && (
         <div className="xl:hidden bg-[#fffdf8] border-b border-[#ebdcb9] px-4 pt-3 pb-6 space-y-3">
           
-          {/* Mobile User Profile or Auth */}
-          {activeUser ? (
-            <div className="p-3 rounded-2xl bg-[#faf3e2] border border-[#ebdcb9] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-[#1b4b32] text-amber-300 flex items-center justify-center font-bold text-sm">
-                  {activeUser.email?.toLowerCase() === 'bankush014@gmail.com' ? '👑' : activeUser.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="font-bold text-sm text-[#1b4b32]">{activeUser.name}</div>
-                  <div className="text-[11px] text-[#71614e]">{activeUser.email}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAuth();
-                  }}
-                  className="px-2.5 py-1.5 rounded-lg bg-[#1b4b32] text-amber-200 text-xs font-bold cursor-pointer"
-                >
-                  Wallet
-                </button>
-                {onLogout && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onLogout();
-                    }}
-                    className="p-1.5 rounded-lg bg-rose-100 text-rose-700 text-xs font-bold cursor-pointer"
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAuth();
-              }}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#e5a024] text-slate-950 font-bold text-sm text-center shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <User className="w-4 h-4 fill-slate-950" />
-              <span>Login / Create Account (Sign Up)</span>
-            </button>
-          )}
-
           <div className="grid grid-cols-2 gap-2 pb-2">
             <button
               onClick={() => {
