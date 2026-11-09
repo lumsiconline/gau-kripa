@@ -219,19 +219,13 @@ export default function App() {
       
       {/* Main Top Navigation - Portals ONLY passed if Super Admin */}
       <Navbar
-        onOpenAuth={() => {
-          setAuthPromptMessage(null);
-          setAuthModalOpen(true);
-        }}
         onSelectSeva={handleOpenSevaById}
         onSelectRemedy={handleOpenRemedy}
         onScrollToAstrologers={scrollToAstrologers}
         onOpenAbout={() => setAboutModalOpen(true)}
         onOpenReviews={() => setProofGalleryOpen(true)}
-        activeUser={currentUser}
         onOpenAdminDashboard={isSuperAdmin ? () => navigateTo('admin') : undefined}
         onOpenAstrologerDashboard={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
-        onLogout={handleUserLogout}
       />
 
       {/* Hero Section */}
