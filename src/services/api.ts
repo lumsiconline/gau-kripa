@@ -469,7 +469,7 @@ export const api = {
     return { id, ...proof, status: 'completed' } as any;
   },
 
-  // Wallet: balances are read from Firestore-backed Firebase Functions only.
+  // Wallet: balances and payment verification are handled by Firebase Functions.
   getWallet: async (phone: string): Promise<WalletInfo> => {
     const res = await fetch(`${WALLET_FUNCTIONS_BASE}/getWallet?phone=${encodeURIComponent(phone)}`);
     const data = await res.json().catch(() => ({}));
@@ -477,35 +477,30 @@ export const api = {
     return data as WalletInfo;
   },
 
-  createWalletOrder: async (phone: string, amount: number, name: string) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
+  createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createCashfreeOrder`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, amount, name })
+      body: JSON.stringify({ phone, amount, name, email })
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Unable to start wallet recharge.');
-    return data as { order_id: string; amount: number; currency: string; key_id: string; name: string; phone: string };
+    if (!res.ok) throw new Error(data.error || 'Unable to start Cashfree wallet recharge.');
+    return data as { order_id: string; payment_session_id: string; environment: 'sandbox' | 'production' };
   },
 
-  verifyWalletPayment: async (payload: {
-    razorpay_order_id: string;
-    razorpay_payment_id: string;
-    razorpay_signature: string;
-    phone: string;
-  }) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
+  verifyWalletPayment: async (payload: { order_id: string; phone: string }) => {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyCashfreePayment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) throw new Error(data.error || 'Payment could not be verified.');
+    if (!res.ok || !data.success) throw new Error(data.error || 'Cashfree payment could not be verified.');
     return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
-    throw new Error('Use secure Razorpay Checkout to recharge this wallet.');
+    throw new Error('Use secure Cashfree Checkout to recharge this wallet.');
   },
 
   checkDiscount: async (
