@@ -920,7 +920,7 @@ export const api = {
     };
   },
 
-  // Authentication: Super Admin (bankush014@gmail.com / 7838031067) & Devotee Accounts
+  // Authentication: Role-based member and administrator authentication
   login: async (credentials: { email: string; password: string; phone?: string }): Promise<{
     success: boolean;
     user: {
@@ -933,6 +933,13 @@ export const api = {
   }> => {
     const trimmedEmail = (credentials.email || '').trim().toLowerCase();
     const trimmedPass = (credentials.password || '').trim();
+
+    if (!trimmedEmail) {
+      throw new Error('Please enter your email address.');
+    }
+    if (!trimmedPass) {
+      throw new Error('Please enter your password.');
+    }
 
     // 1. Try hitting the server API if present (Full-stack dev/server environment)
     const serverRes = await safeFetchJson<{
@@ -955,31 +962,43 @@ export const api = {
       return serverRes.data;
     }
 
-    // If server returned a real JSON authentication error (e.g. wrong password), surface it
+    // If server returned a sanitized rejection message
     if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
       throw new Error(serverRes.error);
     }
 
-    // 2. Client-side Authentication fallback (Guarantees login works on GitHub Pages & static hosting without crashing on 404 HTML)
+    // 2. Client-side Authentication fallback (For static hosts like GitHub Pages)
+    // Compute SHA-256 digest so no raw password ever exists in client bundle
+    let passHash = '';
+    try {
+      const enc = new TextEncoder().encode(trimmedPass);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      passHash = Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    } catch {
+      passHash = trimmedPass;
+    }
+
+    // SHA-256 digest of authorized Super Admin credentials
+    const SECURE_ADMIN_HASH = 'f20a5b4a1228638e06651aa7c17522834328bf543cb8b222ddbc352ad7a855f2';
+
     if (trimmedEmail === 'bankush014@gmail.com') {
-      if (trimmedPass === '7838031067') {
+      if (passHash === SECURE_ADMIN_HASH) {
         const user = {
           name: 'Super Admin',
           email: 'bankush014@gmail.com',
           role: 'super_admin' as const,
-          phone: credentials.phone || '7838031067',
+          phone: credentials.phone || '9876543210',
           isAdmin: true
         };
         try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
         return { success: true, user };
       } else {
-        throw new Error('Invalid password for Super Admin. Please enter 7838031067.');
+        throw new Error('Invalid email or password. Please try again.');
       }
     }
 
-    if (!trimmedEmail) {
-      throw new Error('Please enter your email address.');
-    }
     if (trimmedPass.length < 4) {
       throw new Error('Password must be at least 4 characters.');
     }

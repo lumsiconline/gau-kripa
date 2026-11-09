@@ -77,7 +77,7 @@ async function startServer() {
           }
         });
       } else {
-        return res.status(401).json({ error: 'Invalid Super Admin password. Please check and try again.' });
+        return res.status(401).json({ error: 'Invalid email or password. Please try again.' });
       }
     }
 
