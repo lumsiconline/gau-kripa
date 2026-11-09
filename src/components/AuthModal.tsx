@@ -74,7 +74,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   useEffect(() => {
     if (currentUser && isOpen) {
       const userPhone = currentUser.phone || '';
-      if (userPhone.replace(/\\D/g, '').length >= 7) {
+      if (userPhone.replace(/\D/g, '').length >= 7) {
         api.getWallet(userPhone).then(setWallet).catch(() => setWallet({ phone: userPhone, name: currentUser.name, balance: 0, transactions: [] }));
       } else {
         setWallet({ phone: '', name: currentUser.name, balance: 0, transactions: [] });
@@ -82,7 +82,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       api.getBookings().then((all) => {
         const userMatches = all.filter(
           (b) =>
-            b.phone.includes(userPhone) ||
+            (userPhone && b.phone.includes(userPhone)) ||
             (currentUser.email && b.email?.toLowerCase() === currentUser.email.toLowerCase())
         );
         setRecentBookings(userMatches.slice(0, 3));
@@ -169,7 +169,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMsg('Minimum wallet recharge is ₹50. Enter a whole-rupee amount.');
       return;
     }
-    if (userPhone.replace(/\\D/g, '').length < 7) {
+    if (userPhone.replace(/\D/g, '').length < 7) {
       setErrorMsg('Please update your profile with a valid phone number before recharging.');
       return;
     }
