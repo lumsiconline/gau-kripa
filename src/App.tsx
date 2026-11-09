@@ -219,6 +219,9 @@ export default function App() {
       
       {/* Main Top Navigation - Portals ONLY passed if Super Admin */}
       <Navbar
+        onOpenAuth={() => { setAuthPromptMessage(null); setAuthModalOpen(true); }}
+        activeUser={currentUser}
+        onLogout={handleUserLogout}
         onSelectSeva={handleOpenSevaById}
         onSelectRemedy={handleOpenRemedy}
         onScrollToAstrologers={scrollToAstrologers}
