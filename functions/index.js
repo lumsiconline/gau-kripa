@@ -91,7 +91,7 @@ exports.createCashfreeOrder = onRequest(
       if (!Number.isInteger(amountRupees) || amountRupees < 50 || amountRupees > 100000) {
         return res.status(400).json({ error: "Wallet recharge must be a whole-rupee amount of at least ₹50 (maximum ₹1,00,000)." });
       }
-      if (phone.length < 7) return res.status(400).json({ error: "Please add a valid phone number to your profile before recharging." });
+      if (phone.length < 10) return res.status(400).json({ error: "Please add a valid 10-digit mobile number to your profile before recharging." });
       const orderId = "gk_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
       const order = await cashfreeRequest("/orders", {
         method: "POST",
