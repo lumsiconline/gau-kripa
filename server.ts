@@ -497,7 +497,7 @@ async function startServer() {
       return res.status(404).json({ error: 'Session not found' });
     }
     const customerWallet = db.wallets[session.customerPhone];
-    res.json({ session, customerWalletBalance: customerWallet?.balance ?? 150 });
+    res.json({ session, customerWalletBalance: customerWallet?.balance ?? 0 });
   });
 
   // 5. Send chat message (Both customer & astrologer)
@@ -546,8 +546,8 @@ async function startServer() {
 
     const wallet = db.wallets[session.customerPhone];
 
-    if (diff > 0 && wallet) {
-      if (wallet.balance >= diff) {
+    if (diff > 0) {
+      if (wallet && wallet.balance >= diff) {
         wallet.balance -= diff;
         session.totalCharged += diff;
         session.astrologerEarned += diff;
