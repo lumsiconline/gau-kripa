@@ -136,12 +136,7 @@ export default function App() {
 
   // Handlers with mandatory login gating
   const handleOpenSevaBooking = (item: SevaItem, discount = false) => {
-    if (!currentUser) {
-      setAuthPromptMessage('Please sign in with your email & password to book your sacred Gau Seva.');
-      setPendingAction({ type: 'seva', item, discount });
-      setAuthModalOpen(true);
-      return;
-    }
+    // Public seva bookings do not require a customer login.
     setActiveBookingSeva(item);
     setHasAstrologerDiscount(discount);
     setBookingModalOpen(true);
