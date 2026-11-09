@@ -29,6 +29,29 @@ import { ImageCrop } from './ImageCrop';
 import { api, ChatSession, ChatMessage } from '../services/api';
 import { subscribeToSession } from '../services/chatSync';
 
+// Merge optimistic, broadcast and polled messages without rendering the same send twice.
+const mergeChatMessages = (current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] => {
+  const merged = [...current];
+  for (const message of incoming) {
+    const duplicateIndex = merged.findIndex((existing) =>
+      existing.id === message.id ||
+      (existing.sender === message.sender &&
+        existing.text === message.text &&
+        existing.senderName === message.senderName &&
+        (existing.id.startsWith('msg-') || existing.timestamp === message.timestamp))
+    );
+    if (duplicateIndex >= 0) {
+      // Prefer the persisted server message ID over the temporary optimistic ID.
+      if (merged[duplicateIndex].id.startsWith('msg-') && !message.id.startsWith('msg-')) {
+        merged[duplicateIndex] = message;
+      }
+    } else {
+      merged.push(message);
+    }
+  }
+  return merged;
+};
+
 interface AstrologerConsultationModalProps {
   astrologer: Astrologer;
   initialMode?: 'chat' | 'call';
@@ -118,10 +141,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     // Zero-latency BroadcastChannel subscription
     const unsubscribe = subscribeToSession(session.id, {
       onMessage: (message) => {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === message.id)) return prev;
-          return [...prev, message];
-        });
+        setMessages((prev) => mergeChatMessages(prev, [message]));
       },
       onEnd: () => {
         setChatStatus('ended');
@@ -134,14 +154,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
         const res = await api.getChatSession(session.id);
         if (res.session && res.session.messages) {
           setSession(res.session);
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.id));
-            const newOnes = res.session.messages.filter((m) => !existingIds.has(m.id));
-            if (newOnes.length > 0) {
-              return [...prev, ...newOnes];
-            }
-            return prev;
-          });
+          setMessages((prev) => mergeChatMessages(prev, res.session.messages));
           if (res.session.status === 'ended') {
             setChatStatus('ended');
           }
@@ -257,10 +270,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
           text,
         });
 
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === sent.id)) return prev;
-          return [...prev, sent];
-        });
+        setMessages((prev) => mergeChatMessages(prev, [sent]));
       } catch (err) {
         console.error(err);
       }
