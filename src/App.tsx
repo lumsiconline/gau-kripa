@@ -236,6 +236,7 @@ export default function App() {
         activeUser={currentUser}
         onOpenAdminDashboard={isSuperAdmin ? () => navigateTo('admin') : undefined}
         onOpenAstrologerDashboard={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
+        onLogout={handleUserLogout}
       />
 
       {/* Hero Section */}

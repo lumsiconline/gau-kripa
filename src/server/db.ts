@@ -140,6 +140,7 @@ export interface DbSchema {
   wallets: Record<string, DbWallet>;
   settings: DbSettings;
   reviews: DbReview[];
+  users?: Record<string, { name: string; email: string; passwordHash: string; phone: string; createdAt: string }>;
 }
 
 const DB_PATH = path.resolve(process.cwd(), 'src/server/db.json');

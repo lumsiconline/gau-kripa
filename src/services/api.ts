@@ -194,6 +194,28 @@ function getStoredAstrologers(): AstrologerItem[] {
   return defaults;
 }
 
+export interface RegisteredUserRecord {
+  name: string;
+  email: string;
+  passwordHash: string;
+  phone: string;
+  createdAt: string;
+}
+
+function getRegisteredUsers(): Record<string, RegisteredUserRecord> {
+  try {
+    const raw = localStorage.getItem('gaukripa_registered_users');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {};
+}
+
+function saveRegisteredUsers(users: Record<string, RegisteredUserRecord>) {
+  try {
+    localStorage.setItem('gaukripa_registered_users', JSON.stringify(users));
+  } catch {}
+}
+
 export const api = {
   // Services
   getServices: async (all = false): Promise<ServiceItem[]> => {
@@ -920,6 +942,87 @@ export const api = {
     };
   },
 
+  // User Registration
+  registerUser: async (data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    const trimmedName = (data.name || '').trim();
+    const trimmedEmail = (data.email || '').trim().toLowerCase();
+    const trimmedPass = (data.password || '').trim();
+    const trimmedPhone = (data.phone || '').trim() || '9876543210';
+
+    if (!trimmedName) throw new Error('Please enter your full name.');
+    if (!trimmedEmail) throw new Error('Please enter your email address.');
+    if (trimmedPass.length < 4) throw new Error('Password must be at least 4 characters long.');
+
+    // 1. Try server registration if full-stack backend exists
+    const serverRes = await safeFetchJson<{ success: boolean; message: string }>(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmedName, email: trimmedEmail, password: trimmedPass, phone: trimmedPhone })
+    });
+
+    if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
+      throw new Error(serverRes.error);
+    }
+
+    // 2. Client-side registry fallback (for static hosts like GitHub Pages)
+    let passHash = '';
+    try {
+      const enc = new TextEncoder().encode(trimmedPass);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      passHash = Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    } catch {
+      passHash = trimmedPass;
+    }
+
+    const existingUsers = getRegisteredUsers();
+    if (existingUsers[trimmedEmail] || trimmedEmail === 'bankush014@gmail.com') {
+      throw new Error('This email is already registered. Please sign in.');
+    }
+
+    existingUsers[trimmedEmail] = {
+      name: trimmedName,
+      email: trimmedEmail,
+      passwordHash: passHash,
+      phone: trimmedPhone,
+      createdAt: new Date().toISOString()
+    };
+    saveRegisteredUsers(existingUsers);
+
+    // Initialize devotee wallet with ₹150 welcome bonus
+    try {
+      const walletKey = `gaukripa_wallet_${trimmedPhone}`;
+      if (!localStorage.getItem(walletKey)) {
+        const welcomeWallet: WalletInfo = {
+          phone: trimmedPhone,
+          name: trimmedName,
+          balance: 150,
+          transactions: [
+            {
+              id: `tx-welcome-${Date.now()}`,
+              type: 'credit',
+              amount: 150,
+              description: 'Vedic Devotee Welcome Balance (Sign-Up Bonus)',
+              date: new Date().toLocaleDateString()
+            }
+          ]
+        };
+        localStorage.setItem(walletKey, JSON.stringify(welcomeWallet));
+      }
+    } catch {}
+
+    return {
+      success: true,
+      message: 'Account created successfully! Please sign in with your email and password.'
+    };
+  },
+
   // Authentication: Role-based member and administrator authentication
   login: async (credentials: { email: string; password: string; phone?: string }): Promise<{
     success: boolean;
@@ -991,6 +1094,24 @@ export const api = {
           role: 'super_admin' as const,
           phone: credentials.phone || '9876543210',
           isAdmin: true
+        };
+        try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
+        return { success: true, user };
+      } else {
+        throw new Error('Invalid email or password. Please try again.');
+      }
+    }
+
+    // Check locally registered accounts
+    const registeredUsers = getRegisteredUsers();
+    if (registeredUsers[trimmedEmail]) {
+      if (passHash === registeredUsers[trimmedEmail].passwordHash) {
+        const user = {
+          name: registeredUsers[trimmedEmail].name,
+          email: trimmedEmail,
+          role: 'devotee' as const,
+          phone: registeredUsers[trimmedEmail].phone,
+          isAdmin: false
         };
         try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
         return { success: true, user };

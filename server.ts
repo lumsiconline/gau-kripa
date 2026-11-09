@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import { readDb, writeDb, DbChatMessage, DbChatSession, DbBooking, DbService, DbAstrologer } from './src/server/db';
 import {
@@ -54,6 +55,60 @@ async function startServer() {
   // ==========================================
   // API: AUTHENTICATION (SUPER ADMIN & DEVOTEE)
   // ==========================================
+  app.post('/api/auth/register', (req, res) => {
+    const { name, email, password, phone } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Please enter your name, email, and password.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPass = String(password).trim();
+    const cleanName = String(name).trim();
+    const cleanPhone = String(phone || '').trim() || '9876543210';
+
+    if (cleanPass.length < 4) {
+      return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
+    }
+
+    const db = readDb();
+    if (!db.users) db.users = {};
+
+    if (cleanEmail === 'bankush014@gmail.com' || db.users[cleanEmail]) {
+      return res.status(400).json({ error: 'This email is already registered. Please sign in.' });
+    }
+
+    const passwordHash = crypto.createHash('sha256').update(cleanPass).digest('hex');
+    db.users[cleanEmail] = {
+      name: cleanName,
+      email: cleanEmail,
+      passwordHash,
+      phone: cleanPhone,
+      createdAt: new Date().toISOString()
+    };
+
+    // Ensure wallet exists for new devotee with welcome bonus
+    if (!db.wallets[cleanPhone]) {
+      db.wallets[cleanPhone] = {
+        phone: cleanPhone,
+        name: cleanName,
+        balance: 150,
+        transactions: [
+          {
+            id: `tx-${Date.now()}`,
+            type: 'credit',
+            amount: 150,
+            description: 'Vedic Devotee Welcome Balance (Sign-Up Bonus)',
+            date: new Date().toISOString()
+          }
+        ]
+      };
+      syncWallet(db.wallets[cleanPhone]).catch(console.error);
+    }
+
+    writeDb(db);
+    return res.json({ success: true, message: 'Account registered successfully. Please log in with your email and password.' });
+  });
+
   app.post('/api/auth/login', (req, res) => {
     const { email, password, phone } = req.body;
     if (!email || !password) {
@@ -81,7 +136,26 @@ async function startServer() {
       }
     }
 
-    // Devotee Authentication
+    const db = readDb();
+    if (!db.users) db.users = {};
+
+    // Check registered devotee accounts
+    if (db.users[cleanEmail]) {
+      const inputHash = crypto.createHash('sha256').update(cleanPass).digest('hex');
+      if (inputHash !== db.users[cleanEmail].passwordHash) {
+        return res.status(401).json({ error: 'Invalid email or password. Please try again.' });
+      }
+      const devoteeUser = {
+        name: db.users[cleanEmail].name,
+        email: cleanEmail,
+        role: 'devotee',
+        phone: db.users[cleanEmail].phone,
+        isAdmin: false
+      };
+      return res.json({ success: true, user: devoteeUser });
+    }
+
+    // Fallback devotee authentication
     const devoteeUser = {
       name: cleanEmail.split('@')[0],
       email: cleanEmail,
@@ -91,7 +165,6 @@ async function startServer() {
     };
 
     // Ensure wallet exists for devotee
-    const db = readDb();
     if (!db.wallets[devoteeUser.phone]) {
       db.wallets[devoteeUser.phone] = {
         phone: devoteeUser.phone,

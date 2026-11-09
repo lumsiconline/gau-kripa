@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { User, ChevronDown, Menu, X, Heart } from 'lucide-react';
+import { User, ChevronDown, Menu, X, Heart, LogOut, Coins } from 'lucide-react';
 import { ImageCrop } from './ImageCrop';
 import { SEVA_ITEMS, REMEDY_CATEGORIES } from '../data/sevaData';
+import { AuthUser } from './AuthModal';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -10,11 +11,12 @@ interface NavbarProps {
   onScrollToAstrologers: () => void;
   onOpenAbout: () => void;
   onOpenReviews: () => void;
-  activeUser: { name: string; phone?: string } | null;
+  activeUser: AuthUser | null;
   onOpenCart?: () => void;
   cartCount?: number;
   onOpenAdminDashboard?: () => void;
   onOpenAstrologerDashboard?: () => void;
+  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   cartCount = 0,
   onOpenAdminDashboard,
   onOpenAstrologerDashboard,
+  onLogout,
 }) => {
   const [sevaDropdownOpen, setSevaDropdownOpen] = useState(false);
   const [remedyDropdownOpen, setRemedyDropdownOpen] = useState(false);
@@ -36,8 +39,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-50 bg-[#fffdf5] border-b border-[#ebdcb9] shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 gap-2">
           
           {/* Brand Logo Lockup */}
           <div className="flex items-center shrink-0">
@@ -49,8 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              {/* Exact Logo Crop */}
-              <div className="h-14 w-52 sm:w-60 overflow-hidden">
+              <div className="h-12 sm:h-14 w-44 sm:w-56 overflow-hidden">
                 <ImageCrop
                   cropKey="newNavLogo"
                   className="w-full h-full object-contain"
@@ -61,12 +63,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </div>
 
-          {/* Center Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-2 text-[14px] font-semibold text-[#253328]">
+          {/* Center Navigation Links (Responsive) */}
+          <nav className="hidden xl:flex items-center gap-1.5 text-[13px] font-semibold text-[#253328]">
             {/* Home Pill */}
             <a
               href="#"
-              className="px-4 py-1.5 rounded-full bg-[#1b4b32] text-white font-medium shadow-xs hover:bg-[#153e29] transition-all whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-full bg-[#1b4b32] text-white font-medium shadow-xs hover:bg-[#153e29] transition-all whitespace-nowrap"
             >
               Home
             </a>
@@ -79,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <button
                 type="button"
-                className="px-3.5 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
+                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setSevaDropdownOpen(!sevaDropdownOpen)}
               >
                 <span>Our Seva</span>
@@ -98,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setSevaDropdownOpen(false);
                         onSelectSeva(item.id);
                       }}
-                      className="w-full text-left px-3.5 py-2.5 hover:bg-[#f6efe0] flex items-center justify-between text-xs transition-colors"
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-[#f6efe0] flex items-center justify-between text-xs transition-colors cursor-pointer"
                     >
                       <div>
                         <div className="font-semibold text-[#1b4b32]">{item.title}</div>
@@ -119,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <button
                 type="button"
-                className="px-3.5 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
+                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setRemedyDropdownOpen(!remedyDropdownOpen)}
               >
                 <span>Grah Shanti Upay</span>
@@ -138,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setRemedyDropdownOpen(false);
                         onSelectRemedy(rem.id);
                       }}
-                      className="w-full text-left px-3.5 py-2 hover:bg-[#f6efe0] text-xs transition-colors flex items-center justify-between"
+                      className="w-full text-left px-3.5 py-2 hover:bg-[#f6efe0] text-xs transition-colors flex items-center justify-between cursor-pointer"
                     >
                       <span className="font-medium text-[#2d3a31]">{rem.title}</span>
                       <span className="text-[10px] text-[#8b7355] bg-[#eedec0] px-1.5 py-0.5 rounded">Vedic</span>
@@ -151,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Connect with Astrologer */}
             <button
               onClick={onScrollToAstrologers}
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
+              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
               Connect with Astrologer
             </button>
@@ -159,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* About Us */}
             <button
               onClick={onOpenAbout}
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
+              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
               About Us
             </button>
@@ -167,18 +169,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Reviews */}
             <button
               onClick={onOpenReviews}
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
+              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
               Reviews
             </button>
           </nav>
 
-          {/* Action Area: Cart (if any) & Login / Sign Up in Golden Amber */}
-          <div className="flex items-center gap-3">
+          {/* Action Area: Cart, Portals, User Profile & Wallet, Sign In / Logout */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {cartCount > 0 && onOpenCart && (
               <button
                 onClick={onOpenCart}
-                className="relative p-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] transition-colors cursor-pointer"
+                className="relative p-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] transition-colors cursor-pointer shrink-0"
                 title="View Seva Sankalp Cart"
               >
                 <Heart className="w-5 h-5 fill-[#1b4b32]" />
@@ -188,41 +190,78 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Portal buttons for Astrologer and Admin */}
+            {/* Portal buttons for Astrologer and Admin (Only passed when Super Admin) */}
             {onOpenAstrologerDashboard && (
               <button
                 onClick={onOpenAstrologerDashboard}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fdf5e2] hover:bg-[#faedd0] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#fdf5e2] hover:bg-[#faedd0] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
                 title="Open Astrologer Live Chat Dashboard"
               >
-                <span>🔮 Astro Desk</span>
+                <span>🔮</span>
+                <span className="hidden md:inline">Astro Desk</span>
               </button>
             )}
 
             {onOpenAdminDashboard && (
               <button
                 onClick={onOpenAdminDashboard}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 border border-amber-300/40 text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs hover:scale-102"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 border border-amber-300/40 text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs hover:scale-102 shrink-0"
                 title="Open Admin Dashboard"
               >
-                <span className="text-sm">🛡️</span>
-                <span className="hidden sm:inline">Admin Dashboard</span>
-                <span className="sm:hidden">Admin</span>
+                <span>🛡️</span>
+                <span className="hidden md:inline">Admin Desk</span>
               </button>
             )}
 
-            <button
-              onClick={onOpenAuth}
-              className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#e5a024] hover:bg-[#d8941d] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer whitespace-nowrap"
-            >
-              <User className="w-3.5 h-3.5 fill-slate-950" />
-              <span>{activeUser ? activeUser.name : 'Login / Sign Up'}</span>
-            </button>
+            {/* LOGGED IN USER: Profile Pill with Wallet & Logout */}
+            {activeUser ? (
+              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full bg-[#faf3e2] hover:bg-[#f3ebd3] border border-[#e5ca8a] text-[#1b4b32] font-bold text-xs sm:text-sm shadow-2xs transition-all cursor-pointer whitespace-nowrap active:scale-98"
+                  title="View Profile, Sacred Wallet, and Seva Bookings"
+                >
+                  <div className="w-6 h-6 rounded-full bg-[#1b4b32] text-amber-300 flex items-center justify-center text-xs font-black shrink-0">
+                    {activeUser.email?.toLowerCase() === 'bankush014@gmail.com'
+                      ? '👑'
+                      : activeUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="max-w-[70px] sm:max-w-[100px] truncate">{activeUser.name.split(' ')[0]}</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0">
+                    <Coins className="w-3 h-3 text-amber-700" />
+                    <span>Wallet</span>
+                  </span>
+                </button>
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="p-2 sm:px-2.5 sm:py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                    title="Sign Out / Logout"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                    <span className="hidden sm:inline">Logout</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* NOT LOGGED IN USER: Sign In / Sign Up */
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#e5a024] hover:bg-[#d8941d] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <User className="w-3.5 h-3.5 fill-slate-950" />
+                <span>Login / Sign Up</span>
+              </button>
+            )}
 
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-[#1b4b32] hover:bg-[#f3ebd3] rounded-lg cursor-pointer"
+              className="xl:hidden p-2 text-[#1b4b32] hover:bg-[#f3ebd3] rounded-lg cursor-pointer shrink-0"
               aria-label="Toggle navigation"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -234,7 +273,60 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#fffdf8] border-b border-[#ebdcb9] px-4 pt-3 pb-6 space-y-3">
+        <div className="xl:hidden bg-[#fffdf8] border-b border-[#ebdcb9] px-4 pt-3 pb-6 space-y-3">
+          
+          {/* Mobile User Profile or Auth */}
+          {activeUser ? (
+            <div className="p-3 rounded-2xl bg-[#faf3e2] border border-[#ebdcb9] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-full bg-[#1b4b32] text-amber-300 flex items-center justify-center font-bold text-sm">
+                  {activeUser.email?.toLowerCase() === 'bankush014@gmail.com' ? '👑' : activeUser.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-[#1b4b32]">{activeUser.name}</div>
+                  <div className="text-[11px] text-[#71614e]">{activeUser.email}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAuth();
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#1b4b32] text-amber-200 text-xs font-bold cursor-pointer"
+                >
+                  Wallet
+                </button>
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="p-1.5 rounded-lg bg-rose-100 text-rose-700 text-xs font-bold cursor-pointer"
+                    title="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenAuth();
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#e5a024] text-slate-950 font-bold text-sm text-center shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <User className="w-4 h-4 fill-slate-950" />
+              <span>Login / Create Account (Sign Up)</span>
+            </button>
+          )}
+
           <div className="grid grid-cols-2 gap-2 pb-2">
             <button
               onClick={() => {
