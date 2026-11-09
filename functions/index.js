@@ -1,12 +1,12 @@
 const { onRequest } = require("firebase-functions/v2/https");
-const { defineSecret } = require("firebase-functions/params");
+const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
 admin.initializeApp();
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
+const RAZORPAY_KEY_ID = defineString("RAZORPAY_KEY_ID");
 const RAZORPAY_KEY_SECRET = defineSecret("RAZORPAY_KEY_SECRET");
 
 function cors(req, res) {
@@ -21,12 +21,12 @@ function cors(req, res) {
 }
 
 function getRazorpay(secret) {
-  if (!RAZORPAY_KEY_ID || !secret) throw new Error("Razorpay is not configured.");
-  return new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: secret });
+  if (!RAZORPAY_KEY_ID.value() || !secret) throw new Error("Razorpay is not configured.");
+  return new Razorpay({ key_id: RAZORPAY_KEY_ID.value(), key_secret: secret });
 }
 
 exports.createRazorpayOrder = onRequest(
-  { region: "asia-south1", secrets: [RAZORPAY_KEY_SECRET], maxInstances: 10 },
+  { region: "asia-south1", secrets: [RAZORPAY_KEY_SECRET], maxInstances: 10, memory: "256MiB" },
   async (req, res) => {
     if (cors(req, res)) return;
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -41,7 +41,7 @@ exports.createRazorpayOrder = onRequest(
         currency: "INR",
         receipt: `gk_${Date.now()}`,
       });
-      return res.json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: RAZORPAY_KEY_ID });
+      return res.json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: RAZORPAY_KEY_ID.value() });
     } catch (error) {
       console.error("Razorpay order creation failed:", error);
       return res.status(500).json({ error: "Unable to create payment order. Please try again." });
