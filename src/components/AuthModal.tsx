@@ -192,8 +192,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMsg('Minimum wallet recharge is ₹50. Enter a whole-rupee amount.');
       return;
     }
-    if (userPhone.replace(/\D/g, '').length < 7) {
-      setErrorMsg('Please update your profile with a valid phone number before recharging.');
+    if (userPhone.replace(/\D/g, '').length < 10) {
+      setErrorMsg('Please update your profile with a valid 10-digit mobile number before recharging.');
       return;
     }
 
