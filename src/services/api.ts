@@ -70,6 +70,7 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   suggestedSeva?: string;
+  clientMessageId?: string;
 }
 
 export interface ChatSession {
@@ -701,44 +702,47 @@ export const api = {
       senderName?: string;
       text: string;
       suggestedSeva?: string;
+      clientMessageId?: string;
     }
   ): Promise<ChatMessage> => {
-    const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // Persist first; only broadcast the server-confirmed message once.
+    const res = await safeFetchJson<{ success: boolean; message: ChatMessage; session: ChatSession }>(
+      `${API_BASE}/chat/session/${sessionId}/message`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
 
-    // Construct new message object
-    const newMsg: ChatMessage = {
-      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    if (res.ok && res.data?.message && res.data?.session) {
+      saveLocalSession(res.data.session);
+      broadcastChatEvent({
+        type: 'NEW_MESSAGE',
+        sessionId,
+        message: res.data.message,
+        session: res.data.session
+      });
+      return res.data.message;
+    }
+
+    // Offline fallback: append exactly once to the local session.
+    const local = getLocalSession(sessionId);
+    if (!local) throw new Error('Chat session is unavailable. Please reconnect and try again.');
+    const message: ChatMessage = {
+      id: payload.clientMessageId || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       sender: payload.sender,
       senderName: payload.senderName || (payload.sender === 'customer' ? 'Devotee' : 'Vedic Astrologer'),
       text: payload.text,
-      timestamp: currentTimeStr,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedSeva: payload.suggestedSeva
     };
-
-    // 1. Immediately update local session
-    let session = getLocalSession(sessionId);
-    if (session) {
-      session.messages.push(newMsg);
-      saveLocalSession(session);
+    if (!local.messages.some((item) => item.id === message.id)) {
+      local.messages.push(message);
+      saveLocalSession(local);
+      broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message, session: local });
     }
-
-    // 2. Broadcast via BroadcastChannel & CustomEvent for instant dual-sided delivery
-    if (session) {
-      broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message: newMsg, session });
-    }
-
-    // 3. Sync to server in background
-    safeFetchJson<{ message: ChatMessage; session: ChatSession }>(`${API_BASE}/chat/session/${sessionId}/message`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then((res) => {
-      if (res.ok && res.data?.session) {
-        saveLocalSession(res.data.session);
-      }
-    }).catch(console.error);
-
-    return newMsg;
+    return message;
   },
 
   sendChatHeartbeat: async (
