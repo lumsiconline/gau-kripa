@@ -1,4 +1,5 @@
 name: Deploy GauKripa to GitHub Pages
+# Trigger a fresh Pages deployment for the latest main branch changes.
 
 on:
   push:
