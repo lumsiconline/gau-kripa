@@ -72,6 +72,7 @@ export interface DbChatMessage {
   text: string;
   timestamp: string;
   suggestedSeva?: string;
+  clientMessageId?: string;
 }
 
 export interface DbChatSession {
