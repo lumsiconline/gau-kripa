@@ -477,33 +477,11 @@ export const api = {
       const raw = localStorage.getItem(`gaukripa_wallet_${phone}`);
       if (raw) return JSON.parse(raw);
     } catch {}
-    return {
-      phone,
-      name: 'Devotee',
-      balance: 250,
-      transactions: [{ id: 'tx-init', type: 'credit', amount: 250, description: 'Welcome Devotee Blessing Balance', date: new Date().toLocaleDateString() }]
-    };
+    return { phone, name: 'Devotee', balance: 0, transactions: [] };
   },
 
-  topupWallet: async (phone: string, amount: number, name?: string): Promise<WalletInfo> => {
-    const res = await safeFetchJson<{ wallet: WalletInfo }>(`${API_BASE}/wallet/topup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, amount, name })
-    });
-    if (res.ok && res.data?.wallet) return res.data.wallet;
-
-    const current = await api.getWallet(phone);
-    current.balance += amount;
-    current.transactions.unshift({
-      id: `tx-${Date.now()}`,
-      type: 'credit',
-      amount,
-      description: `Devotee Wallet Recharge (+₹${amount})`,
-      date: new Date().toLocaleDateString()
-    });
-    try { localStorage.setItem(`gaukripa_wallet_${phone}`, JSON.stringify(current)); } catch {}
-    return current;
+  topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
+    throw new Error('Wallet recharge is disabled. Balance is added only after verified payment.');
   },
 
   checkDiscount: async (
@@ -689,7 +667,7 @@ export const api = {
     }
 
     if (local) {
-      return { session: local, customerWalletBalance: 150 };
+      return { session: local, customerWalletBalance: 0 };
     }
 
     throw new Error('Chat session not found');
@@ -1069,27 +1047,7 @@ export const api = {
     };
     saveRegisteredUsers(existingUsers);
 
-    // Initialize devotee wallet with ₹150 welcome bonus
-    try {
-      const walletKey = `gaukripa_wallet_${trimmedPhone}`;
-      if (!localStorage.getItem(walletKey)) {
-        const welcomeWallet: WalletInfo = {
-          phone: trimmedPhone,
-          name: trimmedName,
-          balance: 150,
-          transactions: [
-            {
-              id: `tx-welcome-${Date.now()}`,
-              type: 'credit',
-              amount: 150,
-              description: 'Vedic Devotee Welcome Balance (Sign-Up Bonus)',
-              date: new Date().toLocaleDateString()
-            }
-          ]
-        };
-        localStorage.setItem(walletKey, JSON.stringify(welcomeWallet));
-      }
-    } catch {}
+    // Registration does not create or credit a wallet.
 
     return {
       success: true,
