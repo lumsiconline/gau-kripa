@@ -616,17 +616,21 @@ async function startServer() {
   app.post('/api/chat/session/:sessionId/message', (req, res) => {
     const db = readDb();
     const session = db.chatSessions.find((s) => s.id === req.params.sessionId);
-    if (!session) {
-      return res.status(404).json({ error: 'Session not found' });
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const { sender, senderName, text, suggestedSeva, clientMessageId } = req.body;
+    if (!text || typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: 'Message text is required' });
+    if (clientMessageId) {
+      const previous = session.messages.find((m) => m.clientMessageId === clientMessageId);
+      if (previous) return res.json({ success: true, message: previous, session });
     }
-    const { sender, senderName, text, suggestedSeva } = req.body;
     const newMsg: DbChatMessage = {
       id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       sender: sender || 'customer',
       senderName: senderName || (sender === 'astrologer' ? session.astrologerName : session.customerName),
-      text,
+      text: text.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedSeva
+      suggestedSeva,
+      clientMessageId
     };
     session.messages.push(newMsg);
     writeDb(db);
