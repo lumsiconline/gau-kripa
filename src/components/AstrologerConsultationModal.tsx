@@ -106,6 +106,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [showEndConfirm, setShowEndConfirm] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sendingMessageRef = useRef(false);
 
   // Formatted birth time with AM/PM
   const formattedBirthTime = `${timeHour.padStart(2, '0')}:${timeMinute.padStart(2, '0')} ${timePeriod}`;
@@ -246,34 +247,38 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   // Send new message from devotee
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
-
     const text = inputText.trim();
+    if (!text || sendingMessageRef.current || !session) return;
+
+    // Lock synchronously: prevents Enter + click / rapid click from sending twice.
+    sendingMessageRef.current = true;
     setInputText('');
 
-    const newMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
+    const clientMessageId = `client-${session.id}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const optimisticMessage: ChatMessage = {
+      id: clientMessageId,
       sender: 'customer',
       senderName: birthDetails.name || customerName || 'Devotee',
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, newMsg]);
-
-    // Send to server/localStorage and broadcast in real-time
-    if (session) {
-      try {
-        const sent = await api.sendChatMessage(session.id, {
-          sender: 'customer',
-          senderName: birthDetails.name || customerName || 'Devotee',
-          text,
-        });
-
-        setMessages((prev) => mergeChatMessages(prev, [sent]));
-      } catch (err) {
-        console.error(err);
-      }
+    setMessages((prev) => [...prev, optimisticMessage]);
+    try {
+      const sent = await api.sendChatMessage(session.id, {
+        sender: 'customer',
+        senderName: birthDetails.name || customerName || 'Devotee',
+        text,
+        clientMessageId,
+      });
+      setMessages((prev) => mergeChatMessages(prev, [sent]));
+    } catch (err) {
+      console.error('Unable to send chat message:', err);
+      setMessages((prev) => prev.filter((message) => message.id !== clientMessageId));
+      setInputText(text);
+      setErrorMessage('Message could not be sent. Please try again.');
+    } finally {
+      sendingMessageRef.current = false;
     }
   };
 
@@ -606,7 +611,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                   <button
                     type="submit"
-                    disabled={!inputText.trim()}
+                    disabled={!inputText.trim() || !session}
                     className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white flex items-center justify-center transition-all cursor-pointer shadow-xs disabled:opacity-40 shrink-0 active:scale-95"
                     title="Send Message"
                   >
