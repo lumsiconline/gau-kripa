@@ -158,25 +158,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  // Handle Wallet Quick Top-Up
-  const handleRechargeWallet = async (amt: number) => {
-    if (!currentUser || amt <= 0) return;
-    setTopupLoading(true);
-    setTopupSuccess(null);
-    try {
-      const userPhone = currentUser.phone || '9876543210';
-      const updated = await api.topupWallet(userPhone, amt, currentUser.name);
-      setWallet(updated);
-      setTopupSuccess(`Successfully added ₹${amt} to your sacred wallet!`);
-      setTimeout(() => setTopupSuccess(null), 4000);
-      setCustomTopup('');
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setTopupLoading(false);
-    }
-  };
-
   const isSuperAdmin =
     currentUser?.email?.toLowerCase() === 'bankush014@gmail.com' || currentUser?.role === 'super_admin';
 
@@ -192,7 +173,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {currentUser
                 ? isSuperAdmin
                   ? 'Super Admin Console & Profile'
-                  : 'My Devotee Profile & Sacred Wallet'
+                  : 'My Devotee Profile'
                 : authMode === 'login'
                 ? 'Sign In to GauKripa'
                 : 'Create Devotee Account'}
@@ -292,77 +273,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              {/* Sacred Wallet Card */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1b4b32] via-[#22573b] to-[#16412b] text-white border border-[#2b6d49] shadow-md space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-amber-400/20 text-amber-300">
-                      <Coins className="w-5 h-5 text-amber-300" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-emerald-200">GauKripa Sacred Wallet</span>
-                      <h3 className="text-2xl font-black text-amber-300 font-cinzel tracking-wide">
-                        ₹{(wallet?.balance ?? 150).toFixed(2)}
-                      </h3>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold bg-amber-500/20 text-amber-200 px-2.5 py-1 rounded-full border border-amber-400/30">
-                    Instant Consultations
-                  </span>
-                </div>
-
-                {topupSuccess && (
-                  <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs flex items-center gap-1.5 animate-in fade-in">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
-                    <span>{topupSuccess}</span>
-                  </div>
-                )}
-
-                {/* Quick Recharge Amounts */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex items-center justify-between text-[11px] text-emerald-200 font-medium">
-                    <span>Quick Recharge Wallet:</span>
-                    <span className="text-amber-200">50% Seva Discount Eligible</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[100, 250, 500, 1000].map((amt) => (
-                      <button
-                        key={amt}
-                        type="button"
-                        disabled={topupLoading}
-                        onClick={() => handleRechargeWallet(amt)}
-                        className="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-amber-400 hover:text-slate-950 font-bold text-xs transition-all cursor-pointer border border-white/15 text-center active:scale-95 disabled:opacity-50"
-                      >
-                        +₹{amt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Custom Recharge Input */}
-                <div className="flex gap-2 pt-1">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-2 text-xs font-bold text-emerald-300">₹</span>
-                    <input
-                      type="number"
-                      min="50"
-                      value={customTopup}
-                      onChange={(e) => setCustomTopup(e.target.value)}
-                      placeholder="Other Amount"
-                      className="w-full pl-6 pr-2 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-emerald-300/60 focus:outline-hidden focus:border-amber-300"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    disabled={topupLoading || !customTopup || Number(customTopup) <= 0}
-                    onClick={() => handleRechargeWallet(Number(customTopup))}
-                    className="px-4 py-1.5 rounded-xl bg-[#e5a024] hover:bg-[#d8941d] text-slate-950 font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-40"
-                  >
-                    {topupLoading ? 'Adding...' : 'Recharge'}
-                  </button>
-                </div>
-              </div>
-
               {/* Super Admin Management Consoles */}
               {isSuperAdmin && (
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-[#2a1c0d] to-[#3a2813] text-white space-y-2 border border-amber-600/40 shadow-xs">
@@ -445,33 +355,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Wallet Transactions History */}
-              {wallet && wallet.transactions && wallet.transactions.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="text-xs font-bold text-[#5c4e3b] flex items-center gap-1">
-                    <Coins className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Recent Wallet Transactions</span>
-                  </div>
-                  <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
-                    {wallet.transactions.slice(0, 5).map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="px-3 py-1.5 rounded-lg bg-white border border-[#ebdcb9] text-[11px] flex items-center justify-between"
-                      >
-                        <span className="text-[#514332] truncate max-w-[200px]">{tx.description}</span>
-                        <span
-                          className={`font-bold shrink-0 ${
-                            tx.type === 'credit' ? 'text-emerald-700' : 'text-rose-700'
-                          }`}
-                        >
-                          {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* LOGOUT BUTTON AND DONE */}
               <div className="pt-3 border-t border-[#ebdcb9] flex items-center justify-between">
