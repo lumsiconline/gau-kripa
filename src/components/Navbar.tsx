@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { ChevronDown, Menu, X, Heart } from 'lucide-react';
+import { User, ChevronDown, Menu, X, Heart, LogOut } from 'lucide-react';
+import { AuthUser } from './AuthModal';
 import { ImageCrop } from './ImageCrop';
 import { SEVA_ITEMS, REMEDY_CATEGORIES } from '../data/sevaData';
 
 interface NavbarProps {
+  onOpenAuth: () => void;
+  activeUser: AuthUser | null;
+  onLogout?: () => void;
   onSelectSeva: (sevaId: string) => void;
   onSelectRemedy: (remedyId: string) => void;
   onScrollToAstrologers: () => void;
@@ -16,6 +20,9 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  onOpenAuth,
+  activeUser,
+  onLogout,
   onSelectSeva,
   onSelectRemedy,
   onScrollToAstrologers,
@@ -206,6 +213,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {/* Customer sign-in / profile (wallet intentionally removed) */}
+            <button
+              onClick={activeUser ? onOpenAuth : onOpenAuth}
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] border border-[#ebdcb9] text-xs font-bold transition-colors cursor-pointer shrink-0"
+              title={activeUser ? 'Open my profile' : 'Sign in or create an account'}
+            >
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">{activeUser ? activeUser.name.split(' ')[0] : 'Sign In'}</span>
+            </button>
+
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -242,6 +259,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Astrologers
             </button>
+          </div>
+
+          <div className="flex gap-2 pb-2 border-b border-[#ebdcb9]">
+            <button
+              onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
+              className="flex-1 py-2 px-3 rounded-lg bg-[#1b4b32] text-white text-sm font-semibold flex items-center justify-center gap-2"
+            >
+              <User className="w-4 h-4" /> {activeUser ? 'My Profile' : 'Sign In / Sign Up'}
+            </button>
+            {activeUser && onLogout && (
+              <button
+                onClick={() => { setMobileMenuOpen(false); onLogout(); }}
+                className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-sm font-semibold"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           <div className="space-y-1">
