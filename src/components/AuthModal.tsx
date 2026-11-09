@@ -229,9 +229,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }`}
             >
               <span>Create Account (Sign Up)</span>
-              <span className="text-[10px] bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full font-black">
-                +₹150
-              </span>
             </button>
           </div>
         )}
@@ -240,7 +237,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
           {currentUser ? (
             /* ============================================================
-               LOGGED IN STATE: USER PROFILE + WALLET + SANKALPS + LOGOUT
+               LOGGED IN STATE: USER PROFILE + SANKALPS + LOGOUT
                ============================================================ */
             <div className="space-y-4">
               
