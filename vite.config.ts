@@ -4,10 +4,8 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
-  // This repository is published at https://lumsiconline.github.io/gau-kripa/
-  // Without this base path, GitHub Pages requests /src/... from the domain root
-  // and serves a blank page for the project site.
-  base: '/gau-kripa/',
+  // The site uses the custom domain gaukripa.site, so assets must load from the domain root.
+  base: '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
