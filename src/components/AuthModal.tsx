@@ -64,7 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   // Logged-in profile states
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
-  const [topupAmount, setTopupAmount] = useState<number>(250);
+  const [topupAmount, setTopupAmount] = useState<number>(50);
   const [customTopup, setCustomTopup] = useState<string>('');
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState<string | null>(null);
@@ -73,8 +73,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Load wallet and bookings when user is logged in
   useEffect(() => {
     if (currentUser && isOpen) {
-      const userPhone = currentUser.phone || '9876543210';
-      api.getWallet(userPhone).then(setWallet).catch(console.error);
+      const userPhone = currentUser.phone || '';
+      if (userPhone.replace(/\\D/g, '').length >= 7) {
+        api.getWallet(userPhone).then(setWallet).catch(() => setWallet({ phone: userPhone, name: currentUser.name, balance: 0, transactions: [] }));
+      } else {
+        setWallet({ phone: '', name: currentUser.name, balance: 0, transactions: [] });
+      }
       api.getBookings().then((all) => {
         const userMatches = all.filter(
           (b) =>
@@ -155,6 +159,76 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMsg(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWalletRecharge = async () => {
+    const amount = customTopup.trim() ? Number(customTopup) : topupAmount;
+    const userPhone = currentUser?.phone || '';
+    if (!Number.isInteger(amount) || amount < 50 || amount > 100000) {
+      setErrorMsg('Minimum wallet recharge is ₹50. Enter a whole-rupee amount.');
+      return;
+    }
+    if (userPhone.replace(/\\D/g, '').length < 7) {
+      setErrorMsg('Please update your profile with a valid phone number before recharging.');
+      return;
+    }
+
+    setErrorMsg(null);
+    setTopupSuccess(null);
+    setTopupLoading(true);
+    try {
+      const order = await api.createWalletOrder(userPhone, amount, currentUser?.name || 'Devotee');
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Unable to load secure Razorpay Checkout.'));
+          document.body.appendChild(script);
+        });
+      }
+
+      const RazorpayCheckout = (window as any).Razorpay;
+      if (!RazorpayCheckout) throw new Error('Razorpay Checkout is unavailable. Please try again.');
+      const checkout = new RazorpayCheckout({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'GauKripa',
+        description: `Wallet recharge ₹${amount}`,
+        order_id: order.order_id,
+        prefill: { name: currentUser?.name || '', email: currentUser?.email || '', contact: userPhone },
+        notes: { purpose: 'gaukripa_wallet_topup' },
+        theme: { color: '#1b4b32' },
+        handler: async (response: any) => {
+          try {
+            const verified = await api.verifyWalletPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              phone: userPhone
+            });
+            const freshWallet = await api.getWallet(userPhone);
+            setWallet(freshWallet);
+            setTopupSuccess(verified.credited ? `₹${amount} added successfully to your wallet.` : 'This payment was already credited to your wallet.');
+            setCustomTopup('');
+          } catch (error: any) {
+            setErrorMsg(error.message || 'Payment verification failed. Your wallet was not credited.');
+          } finally {
+            setTopupLoading(false);
+          }
+        },
+        modal: { ondismiss: () => setTopupLoading(false) }
+      });
+      checkout.on('payment.failed', (event: any) => {
+        setErrorMsg(event?.error?.description || 'Payment failed. No wallet balance was added.');
+        setTopupLoading(false);
+      });
+      checkout.open();
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Unable to start wallet recharge.');
+      setTopupLoading(false);
     }
   };
 
@@ -269,6 +343,58 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* REAL WALLET — funds are credited only after Razorpay server verification */}
+              {!isSuperAdmin && (
+                <div className="p-4 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[#1b4b32] font-bold text-sm">
+                      <Coins className="w-4 h-4 text-amber-600" />
+                      <span>My GauKripa Wallet</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-1">Secure</span>
+                  </div>
+                  <div className="rounded-xl bg-[#1b4b32] text-white p-4">
+                    <p className="text-[11px] text-emerald-100">Available Balance</p>
+                    <p className="text-3xl font-black tracking-tight">₹{(wallet?.balance || 0).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#483d2e] mb-2">Quick Recharge</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[50, 100, 250].map((amount) => (
+                        <button key={amount} type="button" onClick={() => { setTopupAmount(amount); setCustomTopup(''); setErrorMsg(null); }}
+                          className={`py-2 rounded-lg border text-xs font-bold cursor-pointer ${!customTopup && topupAmount === amount ? 'bg-[#e5a024] border-[#d4901a] text-slate-950' : 'bg-[#fffcf5] border-[#ebdcb9] text-[#1b4b32]'}`}>
+                          ₹{amount}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#483d2e] mb-1">Custom Amount (₹)</label>
+                    <input type="number" min="50" max="100000" step="1" value={customTopup}
+                      onChange={(e) => { setCustomTopup(e.target.value); setErrorMsg(null); }}
+                      placeholder="Enter ₹50 or more"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-sm font-semibold focus:outline-hidden focus:border-[#1b4b32]" />
+                    <p className="text-[10px] text-[#8a7a67] mt-1">Minimum recharge ₹50. Custom amount up to ₹1,00,000.</p>
+                  </div>
+                  {topupSuccess && <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0" />{topupSuccess}</div>}
+                  {errorMsg && <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800">{errorMsg}</div>}
+                  <button type="button" onClick={handleWalletRecharge} disabled={topupLoading || (!customTopup.trim() && topupAmount < 50)}
+                    className="w-full py-3 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-sm shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                    <PlusCircle className="w-4 h-4" />
+                    {topupLoading ? 'Processing Secure Payment…' : `Recharge ₹${customTopup.trim() ? (Number(customTopup) || 0) : topupAmount}`}
+                  </button>
+                  <div className="border-t border-[#f0e4cc] pt-2">
+                    <p className="text-xs font-bold text-[#5c4e3b] mb-2">Recent Wallet Transactions</p>
+                    {wallet?.transactions?.length ? wallet.transactions.slice(0, 4).map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between py-1.5 text-xs border-b border-[#f7f0e4] last:border-0">
+                        <div><p className="font-semibold text-[#1b4b32]">{transaction.description}</p><p className="text-[10px] text-[#8a7a67]">{new Date(transaction.date).toLocaleString()}</p></div>
+                        <span className="font-bold text-emerald-700">+₹{Number(transaction.amount).toFixed(2)}</span>
+                      </div>
+                    )) : <p className="text-[11px] text-[#8a7a67]">No wallet transactions yet.</p>}
+                  </div>
+                </div>
+              )}
 
               {/* Super Admin Management Consoles */}
               {isSuperAdmin && (
@@ -472,7 +598,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-2.5">
                 <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-xs text-[#684b16] font-medium leading-relaxed">
-                  Join GauKripa Parivar today to receive a <strong>₹150 welcome wallet bonus</strong>, 50% discount on astrologer consultations, and verified video proofs.
+                  Join GauKripa Parivar for secure wallet payments, 50% discount eligibility on astrologer consultations, and verified seva video proofs.
                 </p>
               </div>
 
