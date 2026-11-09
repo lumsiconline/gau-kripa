@@ -86,24 +86,7 @@ async function startServer() {
       createdAt: new Date().toISOString()
     };
 
-    // Ensure wallet exists for new devotee with welcome bonus
-    if (!db.wallets[cleanPhone]) {
-      db.wallets[cleanPhone] = {
-        phone: cleanPhone,
-        name: cleanName,
-        balance: 150,
-        transactions: [
-          {
-            id: `tx-${Date.now()}`,
-            type: 'credit',
-            amount: 150,
-            description: 'Vedic Devotee Welcome Balance (Sign-Up Bonus)',
-            date: new Date().toISOString()
-          }
-        ]
-      };
-      syncWallet(db.wallets[cleanPhone]).catch(console.error);
-    }
+    // No complimentary wallet credit is issued on registration.
 
     writeDb(db);
     return res.json({ success: true, message: 'Account registered successfully. Please log in with your email and password.' });
@@ -164,25 +147,7 @@ async function startServer() {
       isAdmin: false
     };
 
-    // Ensure wallet exists for devotee
-    if (!db.wallets[devoteeUser.phone]) {
-      db.wallets[devoteeUser.phone] = {
-        phone: devoteeUser.phone,
-        name: devoteeUser.name,
-        balance: 150,
-        transactions: [
-          {
-            id: `tx-${Date.now()}`,
-            type: 'credit',
-            amount: 150,
-            description: 'Vedic Devotee Welcome Balance',
-            date: new Date().toISOString()
-          }
-        ]
-      };
-      writeDb(db);
-      syncWallet(db.wallets[devoteeUser.phone]).catch(console.error);
-    }
+    // Login does not create or credit a wallet.
 
     return res.json({ success: true, user: devoteeUser });
   });
@@ -354,24 +319,7 @@ async function startServer() {
     };
     db.bookings.unshift(newBooking);
 
-    // Initialize or reward devotee wallet
-    const p = newBooking.phone;
-    if (!db.wallets[p]) {
-      db.wallets[p] = {
-        phone: p,
-        name: newBooking.devoteeName,
-        balance: 150,
-        transactions: [
-          {
-            id: `tx-${Date.now()}`,
-            type: 'credit',
-            amount: 150,
-            description: 'Devotee Seva Sankalp Bonus',
-            date: new Date().toISOString()
-          }
-        ]
-      };
-    }
+    // Booking creation never grants wallet credit. Payment must be verified separately.
     writeDb(db);
     syncBooking(newBooking).catch(console.error);
     if (db.wallets[p]) syncWallet(db.wallets[p]).catch(console.error);
@@ -412,57 +360,13 @@ async function startServer() {
   // ==========================================
   // API: WALLET & 50% DISCOUNT VERIFICATION
   // ==========================================
-  app.get('/api/wallet/:phone', (req, res) => {
-    const db = readDb();
-    const phone = req.params.phone;
-    let wallet = db.wallets[phone];
-    if (!wallet) {
-      wallet = {
-        phone,
-        name: 'Devotee',
-        balance: 150,
-        transactions: [
-          {
-            id: `tx-${Date.now()}`,
-            type: 'credit',
-            amount: 150,
-            description: 'Vedic Devotee Welcome Balance',
-            date: new Date().toISOString()
-          }
-        ]
-      };
-      db.wallets[phone] = wallet;
-      writeDb(db);
-    }
-    res.json(wallet);
+  app.get('/api/wallet/:phone', (_req, res) => {
+    res.json({ phone: '', name: 'Devotee', balance: 0, transactions: [] });
   });
 
-  app.post('/api/wallet/topup', (req, res) => {
-    const db = readDb();
-    const { phone, amount, name } = req.body;
-    const addAmount = Number(amount);
-    if (!phone || isNaN(addAmount) || addAmount <= 0) {
-      return res.status(400).json({ error: 'Invalid top-up amount' });
-    }
-    if (!db.wallets[phone]) {
-      db.wallets[phone] = {
-        phone,
-        name: name || 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-    }
-    db.wallets[phone].balance += addAmount;
-    db.wallets[phone].transactions.unshift({
-      id: `tx-${Date.now()}`,
-      type: 'credit',
-      amount: addAmount,
-      description: `Wallet Recharged via UPI / NetBanking (₹${addAmount})`,
-      date: new Date().toISOString()
-    });
-    writeDb(db);
-    syncWallet(db.wallets[phone]).catch(console.error);
-    res.json({ success: true, balance: db.wallets[phone].balance, wallet: db.wallets[phone] });
+  // Wallet top-ups are disabled until a verified payment integration is active.
+  app.post('/api/wallet/topup', (_req, res) => {
+    res.status(410).json({ error: 'Wallet recharge is disabled. No balance can be added without verified payment.' });
   });
 
   app.get('/api/wallet/discount-check/:phone', (req, res) => {
@@ -500,23 +404,7 @@ async function startServer() {
       return res.status(404).json({ error: 'Astrologer not found' });
     }
 
-    // Ensure wallet exists for customer with consultation balance
-    if (!db.wallets[customerPhone]) {
-      db.wallets[customerPhone] = {
-        phone: customerPhone,
-        name: customerName || 'Devotee',
-        balance: 150,
-        transactions: [
-          {
-            id: `tx-${Date.now()}`,
-            type: 'credit',
-            amount: 150,
-            description: 'Vedic Devotee Welcome Balance',
-            date: new Date().toISOString()
-          }
-        ]
-      };
-    }
+    // Do not issue free wallet balance when a consultation is requested.
 
     const sessionId = `CHAT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
