@@ -1,8 +1,10 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
+node_modules
+dist
+.env
+.env.*
 !.env.example
+.firebase
+.firebase/
+functions/node_modules
+functions/.env
+functions/.secret.local
