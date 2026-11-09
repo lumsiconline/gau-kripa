@@ -70,29 +70,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [topupSuccess, setTopupSuccess] = useState<string | null>(null);
   const [recentBookings, setRecentBookings] = useState<BookingRecord[]>([]);
 
-  // Verify a Cashfree wallet payment after the hosted checkout redirects back.
-  useEffect(() => {
-    if (!currentUser || !isOpen) return;
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('cashfree_order_id');
-    const userPhone = currentUser.phone || '';
-    if (!orderId || userPhone.replace(/\\D/g, '').length < 7) return;
-    setTopupLoading(true);
-    api.verifyWalletPayment({ order_id: orderId, phone: userPhone })
-      .then(async (result) => {
-        const freshWallet = await api.getWallet(userPhone);
-        setWallet(freshWallet);
-        setTopupSuccess(result.credited ? 'Payment successful. Wallet recharged.' : 'This payment was already added to your wallet.');
-      })
-      .catch((error: any) => setErrorMsg(error.message || 'Cashfree payment verification is pending. Please refresh and check again.'))
-      .finally(() => {
-        setTopupLoading(false);
-        params.delete('cashfree_order_id');
-        const query = params.toString();
-        window.history.replaceState({}, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
-      });
-  }, [currentUser, isOpen]);
-
   // Load wallet and bookings when user is logged in
   useEffect(() => {
     if (currentUser && isOpen) {
@@ -192,7 +169,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMsg('Minimum wallet recharge is ₹50. Enter a whole-rupee amount.');
       return;
     }
-    if (userPhone.replace(/\D/g, '').length < 10) {
+    if (userPhone.replace(/\\D/g, '').length < 10) {
       setErrorMsg('Please update your profile with a valid 10-digit mobile number before recharging.');
       return;
     }
@@ -202,25 +179,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setTopupLoading(true);
     try {
       const order = await api.createWalletOrder(userPhone, amount, currentUser?.name || 'Devotee', currentUser?.email || '');
-      if (!(window as any).Cashfree) {
+      if (!(window as any).Razorpay) {
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Unable to load secure Cashfree Checkout.'));
+          script.onerror = () => reject(new Error('Unable to load secure Razorpay Checkout.'));
           document.body.appendChild(script);
         });
       }
-      const CashfreeSDK = (window as any).Cashfree;
-      if (!CashfreeSDK) throw new Error('Cashfree Checkout is unavailable. Please try again.');
-      const cashfree = CashfreeSDK({ mode: order.environment });
-      setTopupLoading(false);
-      await cashfree.checkout({
-        paymentSessionId: order.payment_session_id,
-        redirectTarget: '_self'
+      const RazorpayCheckout = (window as any).Razorpay;
+      if (!RazorpayCheckout) throw new Error('Razorpay Checkout is unavailable. Please try again.');
+      const checkout = new RazorpayCheckout({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'GauKripa',
+        description: 'Wallet recharge',
+        order_id: order.order_id,
+        prefill: { name: currentUser?.name || 'Devotee', email: currentUser?.email || '', contact: userPhone },
+        notes: { purpose: 'GauKripa wallet recharge' },
+        theme: { color: '#1b4b32' },
+        handler: async (response: any) => {
+          try {
+            const result = await api.verifyWalletPayment({
+              order_id: response.razorpay_order_id,
+              payment_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              phone: userPhone
+            });
+            const freshWallet = await api.getWallet(userPhone);
+            setWallet(freshWallet);
+            setTopupSuccess(result.credited ? 'Payment successful. Wallet recharged.' : 'This payment was already added to your wallet.');
+            setErrorMsg(null);
+          } catch (verificationError: any) {
+            setErrorMsg(verificationError.message || 'Razorpay payment verification is pending. Please contact support before retrying.');
+          } finally {
+            setTopupLoading(false);
+          }
+        },
+        modal: { ondismiss: () => setTopupLoading(false), escape: true, confirm_close: true }
       });
+      checkout.on('payment.failed', (response: any) => {
+        setErrorMsg(response?.error?.description || 'Razorpay payment failed. You can try again.');
+        setTopupLoading(false);
+      });
+      setTopupLoading(false);
+      checkout.open();
     } catch (error: any) {
-      setErrorMsg(error.message || 'Unable to start wallet recharge.');
+      setErrorMsg(error.message || 'Unable to start Razorpay wallet recharge.');
       setTopupLoading(false);
     }
   };
@@ -337,7 +344,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              {/* REAL WALLET — funds are credited only after Cashfree server verification */}
+              {/* REAL WALLET — funds are credited only after Razorpay server verification */}
               {!isSuperAdmin && (
                 <div className="p-4 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
