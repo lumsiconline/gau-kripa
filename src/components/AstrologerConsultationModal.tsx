@@ -80,6 +80,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   // Call simulation state
   const [callStatus, setCallStatus] = useState<'connecting' | 'connected' | 'ended'>('connecting');
   const [callSeconds, setCallSeconds] = useState<number>(0);
+  const [showEndConfirm, setShowEndConfirm] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -265,9 +266,6 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       }
     }
   };
-
-  // End chat confirmation state
-  const [showEndConfirm, setShowEndConfirm] = useState<boolean>(false);
 
   // Trigger end chat confirmation popup
   const handleEndChat = () => {
