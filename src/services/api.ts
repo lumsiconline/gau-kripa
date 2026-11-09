@@ -473,10 +473,7 @@ export const api = {
     const res = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(phone)}`);
     if (res.ok && res.data) return res.data;
 
-    try {
-      const raw = localStorage.getItem(`gaukripa_wallet_${phone}`);
-      if (raw) return JSON.parse(raw);
-    } catch {}
+    try { localStorage.removeItem(`gaukripa_wallet_${phone}`); } catch {}
     return { phone, name: 'Devotee', balance: 0, transactions: [] };
   },
 
