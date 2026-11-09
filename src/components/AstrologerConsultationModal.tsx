@@ -496,26 +496,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       )}
 
-                      {/* Prescribed Remedy Seva Action if sent by Astrologer */}
-                      {m.suggestedSeva && (
-                        <div className="mt-2.5 pt-2 border-t border-[#ebdcb9] space-y-1.5 bg-amber-50/70 p-2 rounded-xl">
-                          <span className="text-[11px] font-bold text-[#1b4b32] flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Prescribed Sacred Seva Remedy:</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onClose();
-                              if (onBookPrescribedSeva) onBookPrescribedSeva(m.suggestedSeva!);
-                            }}
-                            className="w-full py-1.5 px-3 rounded-xl bg-[#e5a024] hover:bg-[#d8941d] text-slate-950 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                          >
-                            <span>Book {m.suggestedSeva} Now</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
+                      {/* Seva booking has been removed; consultation stays astrology-only. */}
 
                       {/* WhatsApp Time & Checkmark footer */}
                       <div className="flex items-center justify-end gap-1 text-[10px] text-[#667781] mt-1 select-none">
