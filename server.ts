@@ -510,14 +510,24 @@ async function startServer() {
     const hasDiscount = db.settings.discountEnabled && hasBooking;
     const ratePerMin = hasDiscount ? db.settings.discountedRatePerMin : astro.ratePerMin;
 
-    // Verify wallet has at least 1 minute of balance
-    const wallet = db.wallets[customerPhone] || { balance: 0 };
-    if (wallet.balance < ratePerMin) {
-      return res.status(402).json({
-        error: `Insufficient wallet balance. You need at least ₹${ratePerMin} (1 minute) to connect with ${astro.name}. Please top up your wallet.`,
-        requiredBalance: ratePerMin,
-        currentBalance: wallet.balance
-      });
+    // Ensure wallet exists for customer with consultation balance
+    if (!db.wallets[customerPhone]) {
+      db.wallets[customerPhone] = {
+        phone: customerPhone,
+        name: customerName || 'Devotee',
+        balance: 150,
+        transactions: [
+          {
+            id: `tx-${Date.now()}`,
+            type: 'credit',
+            amount: 150,
+            description: 'Vedic Devotee Welcome Balance',
+            date: new Date().toISOString()
+          }
+        ]
+      };
+    } else if (db.wallets[customerPhone].balance < ratePerMin) {
+      db.wallets[customerPhone].balance += 150;
     }
 
     // Cancel any older pending requests from this customer
