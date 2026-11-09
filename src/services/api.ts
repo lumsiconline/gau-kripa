@@ -135,6 +135,7 @@ import { SEVA_ITEMS, ASTROLOGERS, SevaItem as DefaultSevaItem, Astrologer as Def
 import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcastChatEvent } from './chatSync';
 
 const API_BASE = '/api';
+const WALLET_FUNCTIONS_BASE = 'https://asia-south1-gau-kripa.cloudfunctions.net';
 
 // Safe fetch helper that intercepts HTML 404 responses from static hosts (e.g. GitHub Pages)
 async function safeFetchJson<T>(
@@ -468,17 +469,43 @@ export const api = {
     return { id, ...proof, status: 'completed' } as any;
   },
 
-  // Wallet & Discount
+  // Wallet: balances are read from Firestore-backed Firebase Functions only.
   getWallet: async (phone: string): Promise<WalletInfo> => {
-    const res = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(phone)}`);
-    if (res.ok && res.data) return res.data;
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/getWallet?phone=${encodeURIComponent(phone)}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Unable to load wallet.');
+    return data as WalletInfo;
+  },
 
-    try { localStorage.removeItem(`gaukripa_wallet_${phone}`); } catch {}
-    return { phone, name: 'Devotee', balance: 0, transactions: [] };
+  createWalletOrder: async (phone: string, amount: number, name: string) => {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, amount, name })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Unable to start wallet recharge.');
+    return data as { order_id: string; amount: number; currency: string; key_id: string; name: string; phone: string };
+  },
+
+  verifyWalletPayment: async (payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    phone: string;
+  }) => {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'Payment could not be verified.');
+    return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
-    throw new Error('Wallet recharge is disabled. Balance is added only after verified payment.');
+    throw new Error('Use secure Razorpay Checkout to recharge this wallet.');
   },
 
   checkDiscount: async (
