@@ -442,22 +442,7 @@ export function readDb(): DbSchema {
         astrologers: INITIAL_ASTROLOGERS,
         bookings: INITIAL_BOOKINGS,
         chatSessions: [],
-        wallets: {
-          '9876543210': {
-            phone: '9876543210',
-            name: 'Harsh Bhardwaj',
-            balance: 250,
-            transactions: [
-              {
-                id: 'tx-1',
-                type: 'credit',
-                amount: 250,
-                description: 'Devotee Welcome Credit (Vedic Grah Remedial Balance)',
-                date: new Date().toISOString()
-              }
-            ]
-          }
-        },
+        wallets: {},
         settings: {
           standardRatePerMin: 20,
           discountedRatePerMin: 10,
@@ -473,7 +458,10 @@ export function readDb(): DbSchema {
       return initial;
     }
     const data = fs.readFileSync(DB_PATH, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data) as DbSchema;
+    // This site no longer uses customer wallets; discard legacy promotional balances.
+    parsed.wallets = {};
+    return parsed;
   } catch (err) {
     console.error('Error reading db.json:', err);
     throw err;
