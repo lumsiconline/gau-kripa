@@ -1,37 +1,30 @@
 import React, { useState } from 'react';
-import { User, ChevronDown, Menu, X, Heart, LogOut, Coins } from 'lucide-react';
+import { ChevronDown, Menu, X, Heart } from 'lucide-react';
 import { ImageCrop } from './ImageCrop';
 import { SEVA_ITEMS, REMEDY_CATEGORIES } from '../data/sevaData';
-import { AuthUser } from './AuthModal';
 
 interface NavbarProps {
-  onOpenAuth: () => void;
   onSelectSeva: (sevaId: string) => void;
   onSelectRemedy: (remedyId: string) => void;
   onScrollToAstrologers: () => void;
   onOpenAbout: () => void;
   onOpenReviews: () => void;
-  activeUser: AuthUser | null;
   onOpenCart?: () => void;
   cartCount?: number;
   onOpenAdminDashboard?: () => void;
   onOpenAstrologerDashboard?: () => void;
-  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenAuth,
   onSelectSeva,
   onSelectRemedy,
   onScrollToAstrologers,
   onOpenAbout,
   onOpenReviews,
-  activeUser,
   onOpenCart,
   cartCount = 0,
   onOpenAdminDashboard,
   onOpenAstrologerDashboard,
-  onLogout,
 }) => {
   const [sevaDropdownOpen, setSevaDropdownOpen] = useState(false);
   const [remedyDropdownOpen, setRemedyDropdownOpen] = useState(false);
@@ -175,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Action Area: Cart, Portals, User Profile & Wallet, Sign In / Logout */}
+          {/* Action Area: Cart and Admin Portals */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {cartCount > 0 && onOpenCart && (
               <button
