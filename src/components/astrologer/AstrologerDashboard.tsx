@@ -26,6 +26,7 @@ import {
   BellOff,
 } from 'lucide-react';
 import { api, AstrologerItem, ChatSession, ChatMessage } from '../../services/api';
+import { subscribeToSession, subscribeToAstrologerIncoming } from '../../services/chatSync';
 import { ImageCrop } from '../ImageCrop';
 
 interface AstrologerDashboardProps {
@@ -232,7 +233,31 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
     }
   }, [currentAstro]);
 
-  // Polling for incoming requests every 2.5 seconds when not in an active session
+  // Real-time instant BroadcastChannel listener for incoming chats
+  useEffect(() => {
+    if (!currentAstro) return;
+    const unsubscribe = subscribeToAstrologerIncoming(currentAstro.id, {
+      onIncoming: (session) => {
+        setIncomingRequest(session);
+        if (session.id !== lastNotifiedIdRef.current) {
+          lastNotifiedIdRef.current = session.id;
+          triggerIncomingAlert(session);
+          showToast(`🔔 New consultation request from ${session.customerName}!`);
+        }
+      },
+      onMessage: (message, session) => {
+        if (activeSession && activeSession.id === session.id) {
+          setChatMessages((prev) => {
+            if (prev.some((m) => m.id === message.id)) return prev;
+            return [...prev, message];
+          });
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [currentAstro?.id, activeSession?.id]);
+
+  // Polling for incoming requests every 2 seconds as backup
   useEffect(() => {
     if (!currentAstro || activeSession) return;
 
@@ -245,14 +270,14 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
             triggerIncomingAlert(incoming);
             showToast(`🔔 New consultation request from ${incoming.customerName}!`);
           }
+          setIncomingRequest(incoming);
         } else {
           lastNotifiedIdRef.current = null;
         }
-        setIncomingRequest(incoming);
       } catch (err) {
         console.error('Error polling incoming:', err);
       }
-    }, 2500);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [currentAstro, activeSession, isSoundMuted]);
@@ -321,12 +346,34 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
       }
     }, 5000);
 
-    // Message poll every 1.5s
+    // Real-time broadcast listener for active session messages
+    const unsubscribeSession = subscribeToSession(activeSession.id, {
+      onMessage: (message) => {
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      },
+      onEnd: () => {
+        setActiveSession((prev) => (prev ? { ...prev, status: 'ended' } : null));
+        showToast('Consultation session ended.');
+      }
+    });
+
+    // Message poll every 1s as reliable backup
     const messagePoll = setInterval(async () => {
       try {
         const res = await api.getChatSession(activeSession.id);
-        if (res.session) {
-          setChatMessages(res.session.messages || []);
+        if (res.session && res.session.messages) {
+          setChatMessages((prev) => {
+            // Merge newly found messages
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newOnes = res.session.messages.filter((m) => !existingIds.has(m.id));
+            if (newOnes.length > 0) {
+              return [...prev, ...newOnes];
+            }
+            return prev;
+          });
           setCustomerWallet(res.customerWalletBalance);
           if (res.session.status === 'ended' && activeSession.status === 'active') {
             setActiveSession(res.session);
@@ -335,13 +382,14 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
       } catch (err) {
         console.error(err);
       }
-    }, 1500);
+    }, 1200);
 
     return () => {
+      unsubscribeSession();
       clearInterval(heartbeatTimer);
       clearInterval(messagePoll);
     };
-  }, [activeSession]);
+  }, [activeSession?.id]);
 
   // Auto scroll messages
   useEffect(() => {
@@ -391,7 +439,7 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !activeSession || !currentAstro) return;
-    const text = inputText;
+    const text = inputText.trim();
     setInputText('');
     try {
       const newMsg = await api.sendChatMessage(activeSession.id, {
@@ -399,7 +447,10 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
         senderName: currentAstro.name,
         text,
       });
-      setChatMessages((prev) => [...prev, newMsg]);
+      setChatMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev;
+        return [...prev, newMsg];
+      });
     } catch (err) {
       console.error(err);
     }

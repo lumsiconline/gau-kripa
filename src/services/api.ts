@@ -131,6 +131,7 @@ export interface ReviewItem {
 }
 
 import { SEVA_ITEMS, ASTROLOGERS, SevaItem as DefaultSevaItem, Astrologer as DefaultAstrologer } from '../data/sevaData';
+import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcastChatEvent } from './chatSync';
 
 const API_BASE = '/api';
 
@@ -526,7 +527,7 @@ export const api = {
     return { eligible: false, ratePerMin: 20, standardRate: 20, discountedRate: 10, rule: 'Standard Consultation Rate' };
   },
 
-  // Live Chat Workflow
+  // Live Chat Workflow (Unified Real-Time 2-Way Sync)
   requestChat: async (payload: {
     astrologerId: string;
     customerId?: string;
@@ -536,61 +537,84 @@ export const api = {
     birthDate: string;
     birthTime: string;
     birthPlace: string;
+    initialMessages?: ChatMessage[];
   }): Promise<{ success: boolean; session: ChatSession }> => {
+    // 1. Try hitting the server API
     const res = await safeFetchJson<{ success: boolean; session: ChatSession }>(`${API_BASE}/chat/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (res.ok && res.data?.session) return res.data;
 
-    // Fallback in static / GitHub Pages environment
-    const astros = getStoredAstrologers();
-    const astro = astros.find((a) => a.id === payload.astrologerId) || astros[0];
-    const discountInfo = await api.checkDiscount(payload.customerPhone);
+    let session: ChatSession;
+    if (res.ok && res.data?.session) {
+      session = res.data.session;
+    } else {
+      // 2. Client-side static fallback
+      const astros = getStoredAstrologers();
+      const astro = astros.find((a) => a.id === payload.astrologerId) || astros[0];
+      const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const session: ChatSession = {
-      id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      astrologerId: payload.astrologerId,
-      astrologerName: astro?.name || 'Vedic Astrologer',
-      customerId: payload.customerId || payload.customerPhone,
-      customerName: payload.customerName || 'Devotee',
-      customerPhone: payload.customerPhone,
-      customerConcern: payload.customerConcern || 'Vedic Guidance',
-      birthDate: payload.birthDate,
-      birthTime: payload.birthTime,
-      birthPlace: payload.birthPlace,
-      status: 'waiting_approval',
-      ratePerMin: discountInfo.ratePerMin,
-      hasDiscount: discountInfo.eligible,
-      createdAt: new Date().toISOString(),
-      durationSeconds: 0,
-      totalCharged: 0,
-      astrologerEarned: 0,
-      messages: [
-        {
-          id: `msg-${Date.now()}`,
-          sender: 'customer',
-          senderName: payload.customerName || 'Devotee',
-          text: `Pranam Guruji! I am ${payload.customerName}. DOB: ${payload.birthDate}, Time: ${payload.birthTime}, Place: ${payload.birthPlace}. Concern: ${payload.customerConcern || 'Kundali & Grah Upay guidance'}.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
-    };
+      const defaultMessages: ChatMessage[] = payload.initialMessages && payload.initialMessages.length > 0
+        ? payload.initialMessages
+        : [
+            {
+              id: `msg-intake-${Date.now()}`,
+              sender: 'customer',
+              senderName: payload.customerName || 'Devotee',
+              text: `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Name: ${payload.customerName}\n• Date of Birth: ${payload.birthDate}\n• Birth Time: ${payload.birthTime}\n• Birth Place: ${payload.birthPlace}\n• Guidance Needed: ${payload.customerConcern || 'Kundali & Grah Upay guidance'}\n\nPranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.`,
+              timestamp: currentTimeStr
+            },
+            {
+              id: `msg-welcome-${Date.now() + 1}`,
+              sender: 'astrologer',
+              senderName: astro?.name || 'Vedic Astrologer',
+              text: `Pranam ${payload.customerName} ji! 🙏 Har Har Mahadev. I have received your complete birth details (DOB: ${payload.birthDate}, Time: ${payload.birthTime}, Place: ${payload.birthPlace}). I am analyzing your Lagna Kundali now for ${payload.customerConcern || 'your spiritual guidance'}. Please feel free to ask your questions.`,
+              timestamp: currentTimeStr
+            }
+          ];
 
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${session.id}`, JSON.stringify(session));
-      localStorage.setItem(`gaukripa_incoming_chat_${payload.astrologerId}`, JSON.stringify(session));
-      // Dispatch storage event for other tabs to pick up instantly
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
+      session = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        astrologerId: payload.astrologerId,
+        astrologerName: astro?.name || 'Vedic Astrologer',
+        customerId: payload.customerId || payload.customerPhone,
+        customerName: payload.customerName || 'Devotee',
+        customerPhone: payload.customerPhone,
+        customerConcern: payload.customerConcern || 'Vedic Guidance',
+        birthDate: payload.birthDate,
+        birthTime: payload.birthTime,
+        birthPlace: payload.birthPlace,
+        status: 'active',
+        ratePerMin: 20,
+        hasDiscount: true,
+        createdAt: new Date().toISOString(),
+        startedAt: new Date().toISOString(),
+        durationSeconds: 0,
+        totalCharged: 0,
+        astrologerEarned: 0,
+        messages: defaultMessages
+      };
+    }
+
+    // Persist and broadcast live event to Astro Dashboard
+    saveLocalSession(session);
+    broadcastChatEvent({ type: 'NEW_CHAT_REQUEST', session });
 
     return { success: true, session };
   },
 
   getIncomingChat: async (astrologerId: string): Promise<ChatSession | null> => {
+    // Check server first
     const res = await safeFetchJson<{ incoming: ChatSession | null }>(`${API_BASE}/chat/incoming/${encodeURIComponent(astrologerId)}`);
-    if (res.ok && res.data) return res.data.incoming;
+    if (res.ok && res.data?.incoming) {
+      saveLocalSession(res.data.incoming);
+      return res.data.incoming;
+    }
+
+    // Check local session store
+    const local = getAstrologerActiveSession(astrologerId);
+    if (local) return local;
 
     try {
       const raw = localStorage.getItem(`gaukripa_incoming_chat_${astrologerId}`);
@@ -605,46 +629,46 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, astrologerId, action })
     });
-    if (res.ok && res.data?.session) return res.data.session;
 
-    const sessionRes = await api.getChatSession(sessionId);
-    const session = sessionRes.session;
-    if (action === 'accept') {
-      session.status = 'active';
-      session.startedAt = new Date().toISOString();
-      session.messages.push({
-        id: `msg-${Date.now()}`,
-        sender: 'astrologer',
-        senderName: session.astrologerName,
-        text: `Hari Om, ${session.customerName}! I am reviewing your birth chart details for ${session.birthPlace || 'your location'}. How may I guide you on your spiritual path?`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
+    let session: ChatSession;
+    if (res.ok && res.data?.session) {
+      session = res.data.session;
     } else {
-      session.status = 'rejected';
-      session.endedAt = new Date().toISOString();
+      const existing = getLocalSession(sessionId);
+      session = existing || (await api.getChatSession(sessionId)).session;
+      if (action === 'accept') {
+        session.status = 'active';
+        if (!session.startedAt) session.startedAt = new Date().toISOString();
+      } else {
+        session.status = 'rejected';
+        session.endedAt = new Date().toISOString();
+      }
     }
 
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${session.id}`, JSON.stringify(session));
-      localStorage.removeItem(`gaukripa_incoming_chat_${astrologerId}`);
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
-
+    saveLocalSession(session);
+    broadcastChatEvent({ type: 'CHAT_ACCEPTED', session });
     return session;
   },
 
   getChatSession: async (sessionId: string): Promise<{ session: ChatSession; customerWalletBalance: number }> => {
-    const res = await safeFetchJson<{ session: ChatSession; customerWalletBalance: number }>(`${API_BASE}/chat/session/${sessionId}`);
-    if (res.ok && res.data) return res.data;
+    // 1. Check local session first for instant retrieval
+    const local = getLocalSession(sessionId);
 
-    try {
-      const raw = localStorage.getItem(`gaukripa_chat_session_${sessionId}`);
-      if (raw) {
-        const session: ChatSession = JSON.parse(raw);
-        const wallet = await api.getWallet(session.customerPhone);
-        return { session, customerWalletBalance: wallet.balance };
+    // 2. Check server
+    const res = await safeFetchJson<{ session: ChatSession; customerWalletBalance: number }>(`${API_BASE}/chat/session/${sessionId}`);
+    if (res.ok && res.data?.session) {
+      // Merge messages if server has more
+      if (local && local.messages.length > (res.data.session.messages?.length || 0)) {
+        res.data.session.messages = local.messages;
       }
-    } catch {}
+      saveLocalSession(res.data.session);
+      return res.data;
+    }
+
+    if (local) {
+      return { session: local, customerWalletBalance: 150 };
+    }
+
     throw new Error('Chat session not found');
   },
 
@@ -657,28 +681,42 @@ export const api = {
       suggestedSeva?: string;
     }
   ): Promise<ChatMessage> => {
-    const res = await safeFetchJson<{ message: ChatMessage }>(`${API_BASE}/chat/session/${sessionId}/message`, {
+    const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Construct new message object
+    const newMsg: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      sender: payload.sender,
+      senderName: payload.senderName || (payload.sender === 'customer' ? 'Devotee' : 'Vedic Astrologer'),
+      text: payload.text,
+      timestamp: currentTimeStr,
+      suggestedSeva: payload.suggestedSeva
+    };
+
+    // 1. Immediately update local session
+    let session = getLocalSession(sessionId);
+    if (session) {
+      session.messages.push(newMsg);
+      saveLocalSession(session);
+    }
+
+    // 2. Broadcast via BroadcastChannel & CustomEvent for instant dual-sided delivery
+    if (session) {
+      broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message: newMsg, session });
+    }
+
+    // 3. Sync to server in background
+    safeFetchJson<{ message: ChatMessage; session: ChatSession }>(`${API_BASE}/chat/session/${sessionId}/message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
-    if (res.ok && res.data?.message) return res.data.message;
+    }).then((res) => {
+      if (res.ok && res.data?.session) {
+        saveLocalSession(res.data.session);
+      }
+    }).catch(console.error);
 
-    const { session } = await api.getChatSession(sessionId);
-    const msg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      sender: payload.sender,
-      senderName: payload.senderName || (payload.sender === 'customer' ? session.customerName : session.astrologerName),
-      text: payload.text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedSeva: payload.suggestedSeva
-    };
-    session.messages.push(msg);
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${sessionId}`, JSON.stringify(session));
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
-    return msg;
+    return newMsg;
   },
 
   sendChatHeartbeat: async (

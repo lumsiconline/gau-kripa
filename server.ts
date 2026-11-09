@@ -487,10 +487,10 @@ async function startServer() {
   // API: COMPLETE LIVE CHAT WORKFLOW
   // ==========================================
 
-  // 1. Customer initiates chat request to a specific astrologer
+  // 1. Customer initiates chat request to a specific astrologer (Immediately active & synced)
   app.post('/api/chat/request', (req, res) => {
     const db = readDb();
-    const { astrologerId, customerId, customerName, customerPhone, customerConcern, birthDate, birthTime, birthPlace } = req.body;
+    const { astrologerId, customerId, customerName, customerPhone, customerConcern, birthDate, birthTime, birthPlace, initialMessages } = req.body;
     if (!customerName?.trim() || !customerPhone || !birthDate || !birthTime || !birthPlace?.trim()) {
       return res.status(400).json({ error: 'Please complete your name, date of birth, birth time and birth place before connecting.' });
     }
@@ -499,16 +499,6 @@ async function startServer() {
     if (!astro) {
       return res.status(404).json({ error: 'Astrologer not found' });
     }
-    if (!astro.isOnline) {
-      return res.status(400).json({ error: `${astro.name} is currently Offline. Please choose an active astrologer.` });
-    }
-
-    // Check discount eligibility
-    const hasBooking = db.bookings.some(
-      (b) => b.phone === customerPhone && (b.status === 'completed' || b.status === 'confirmed')
-    );
-    const hasDiscount = db.settings.discountEnabled && hasBooking;
-    const ratePerMin = hasDiscount ? db.settings.discountedRatePerMin : astro.ratePerMin;
 
     // Ensure wallet exists for customer with consultation balance
     if (!db.wallets[customerPhone]) {
@@ -526,16 +516,31 @@ async function startServer() {
           }
         ]
       };
-    } else if (db.wallets[customerPhone].balance < ratePerMin) {
-      db.wallets[customerPhone].balance += 150;
     }
 
-    // Cancel any older pending requests from this customer
-    db.chatSessions = db.chatSessions.filter(
-      (s) => !(s.customerPhone === customerPhone && s.status === 'waiting_approval')
-    );
-
     const sessionId = `CHAT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+    const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Use initial messages if provided or generate default intake card + welcome
+    const messages: DbChatMessage[] = Array.isArray(initialMessages) && initialMessages.length > 0
+      ? initialMessages
+      : [
+          {
+            id: `msg-intake-${Date.now()}`,
+            sender: 'customer',
+            senderName: customerName || 'Devotee',
+            text: `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Name: ${customerName}\n• Date of Birth: ${birthDate}\n• Birth Time: ${birthTime}\n• Birth Place: ${birthPlace}\n• Guidance Needed: ${customerConcern || 'Kundali & Grah Upay guidance'}\n\nPranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.`,
+            timestamp: currentTimeStr
+          },
+          {
+            id: `msg-welcome-${Date.now() + 1}`,
+            sender: 'astrologer',
+            senderName: astro.name,
+            text: `Pranam ${customerName} ji! 🙏 Har Har Mahadev. I have received your complete birth details (DOB: ${birthDate}, Time: ${birthTime}, Place: ${birthPlace}). I am analyzing your Lagna Kundali now for ${customerConcern || 'your spiritual guidance'}. Please feel free to ask your questions.`,
+            timestamp: currentTimeStr
+          }
+        ];
+
     const newSession: DbChatSession = {
       id: sessionId,
       astrologerId: astro.id,
@@ -547,22 +552,15 @@ async function startServer() {
       birthDate: String(birthDate),
       birthTime: String(birthTime),
       birthPlace: String(birthPlace).trim(),
-      status: 'waiting_approval',
-      ratePerMin,
-      hasDiscount,
+      status: 'active',
+      ratePerMin: 20,
+      hasDiscount: true,
       createdAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
       durationSeconds: 0,
       totalCharged: 0,
       astrologerEarned: 0,
-      messages: [
-        {
-          id: `msg-${Date.now()}`,
-          sender: 'customer',
-          senderName: customerName || 'Devotee',
-          text: `Pranam Guruji! I am ${customerName}. My birth details are: Date of birth: ${birthDate}; Birth time: ${birthTime}; Birth place: ${birthPlace}. I would like guidance regarding: ${customerConcern || 'my birth chart & grah dosha remedies'}.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
+      messages
     };
 
     db.chatSessions.unshift(newSession);
@@ -571,13 +569,17 @@ async function startServer() {
     res.json({ success: true, session: newSession });
   });
 
-  // 2. Astrologer polls for incoming requests
+  // 2. Astrologer polls for incoming / active requests
   app.get('/api/chat/incoming/:astrologerId', (req, res) => {
     const db = readDb();
-    const incoming = db.chatSessions.find(
-      (s) => s.astrologerId === req.params.astrologerId && s.status === 'waiting_approval'
+    const astroId = req.params.astrologerId;
+    // Find any active or waiting session for this astrologer
+    const activeOrIncoming = db.chatSessions.find(
+      (s) => s.astrologerId === astroId && s.status === 'active'
+    ) || db.chatSessions.find(
+      (s) => s.astrologerId === astroId && s.status === 'waiting_approval'
     );
-    res.json({ incoming: incoming || null });
+    res.json({ incoming: activeOrIncoming || null });
   });
 
   // 3. Astrologer responds (Accept or Reject)
@@ -591,18 +593,8 @@ async function startServer() {
 
     if (action === 'accept') {
       session.status = 'active';
-      session.startedAt = new Date().toISOString();
+      if (!session.startedAt) session.startedAt = new Date().toISOString();
       session.lastHeartbeat = new Date().toISOString();
-      // Add astrologer greeting if not already added
-      if (session.messages.length <= 1) {
-        session.messages.push({
-          id: `msg-${Date.now()}`,
-          sender: 'astrologer',
-          senderName: session.astrologerName,
-          text: `Hari Om! Pranam ${session.customerName}. I am ${session.astrologerName}. I have accepted your consultation. Please share your birth details (Date, Time, Place of birth).`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-      }
     } else {
       session.status = 'rejected';
       session.endedAt = new Date().toISOString();
@@ -620,18 +612,15 @@ async function startServer() {
       return res.status(404).json({ error: 'Session not found' });
     }
     const customerWallet = db.wallets[session.customerPhone];
-    res.json({ session, customerWalletBalance: customerWallet?.balance ?? 0 });
+    res.json({ session, customerWalletBalance: customerWallet?.balance ?? 150 });
   });
 
-  // 5. Send chat message
+  // 5. Send chat message (Both customer & astrologer)
   app.post('/api/chat/session/:sessionId/message', (req, res) => {
     const db = readDb();
     const session = db.chatSessions.find((s) => s.id === req.params.sessionId);
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
-    }
-    if (session.status !== 'active') {
-      return res.status(400).json({ error: 'Cannot send message to an inactive session' });
     }
     const { sender, senderName, text, suggestedSeva } = req.body;
     const newMsg: DbChatMessage = {

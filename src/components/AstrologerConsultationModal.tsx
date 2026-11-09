@@ -27,6 +27,7 @@ import {
 import { Astrologer } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
 import { api, ChatSession, ChatMessage } from '../services/api';
+import { subscribeToSession } from '../services/chatSync';
 
 interface AstrologerConsultationModalProps {
   astrologer: Astrologer;
@@ -109,18 +110,37 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       .catch(console.error);
   }, [isOpen, customerPhone, customerName]);
 
-  // Polling loop when chat session is active so replies from Astro Desk land in real-time
+  // Real-time listener for incoming messages from the astrologer + polling fallback
   useEffect(() => {
     if (!session || chatStatus !== 'active') return;
 
+    // Zero-latency BroadcastChannel subscription
+    const unsubscribe = subscribeToSession(session.id, {
+      onMessage: (message) => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      },
+      onEnd: () => {
+        setChatStatus('ended');
+      }
+    });
+
+    // 1-second polling fallback
     const pollInterval = setInterval(async () => {
       try {
         const res = await api.getChatSession(session.id);
-        if (res.session) {
+        if (res.session && res.session.messages) {
           setSession(res.session);
-          if (res.session.messages && res.session.messages.length > messages.length) {
-            setMessages(res.session.messages);
-          }
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newOnes = res.session.messages.filter((m) => !existingIds.has(m.id));
+            if (newOnes.length > 0) {
+              return [...prev, ...newOnes];
+            }
+            return prev;
+          });
           if (res.session.status === 'ended') {
             setChatStatus('ended');
           }
@@ -128,10 +148,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       } catch (err) {
         console.error('Error polling chat session:', err);
       }
-    }, 1500);
+    }, 1200);
 
-    return () => clearInterval(pollInterval);
-  }, [session, chatStatus, messages.length]);
+    return () => {
+      unsubscribe();
+      clearInterval(pollInterval);
+    };
+  }, [session?.id, chatStatus]);
 
   // Auto scroll to latest message
   useEffect(() => {
@@ -192,23 +215,14 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
         birthDate: birthDetails.birthDate,
         birthTime: formattedBirthTime,
         birthPlace: birthDetails.birthPlace.trim(),
+        initialMessages: combinedMessages,
       });
 
       if (res.session) {
-        // Ensure the initial messages are appended to the session
-        const sessionWithMessages: ChatSession = {
-          ...res.session,
-          status: 'active',
-          messages: combinedMessages,
-        };
-        setSession(sessionWithMessages);
-
-        // Store active session and incoming alert for Astrologer Desk
-        try {
-          localStorage.setItem(`gaukripa_chat_session_${res.session.id}`, JSON.stringify(sessionWithMessages));
-          localStorage.setItem(`gaukripa_incoming_chat_${astrologer.id}`, JSON.stringify(sessionWithMessages));
-          window.dispatchEvent(new Event('storage'));
-        } catch {}
+        setSession(res.session);
+        if (res.session.messages && res.session.messages.length > 0) {
+          setMessages(res.session.messages);
+        }
       }
     } catch (err: any) {
       console.warn('Backend chat sync notice:', err);
@@ -233,26 +247,19 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
     setMessages((prev) => [...prev, newMsg]);
 
-    // Send to server/localStorage if session is active
+    // Send to server/localStorage and broadcast in real-time
     if (session) {
       try {
-        await api.sendChatMessage(session.id, {
+        const sent = await api.sendChatMessage(session.id, {
           sender: 'customer',
           senderName: birthDetails.name || customerName || 'Devotee',
           text,
         });
 
-        // Update local session
-        const updatedSession = {
-          ...session,
-          messages: [...(session.messages || []), newMsg],
-        };
-        setSession(updatedSession);
-        try {
-          localStorage.setItem(`gaukripa_chat_session_${session.id}`, JSON.stringify(updatedSession));
-          localStorage.setItem(`gaukripa_incoming_chat_${astrologer.id}`, JSON.stringify(updatedSession));
-          window.dispatchEvent(new Event('storage'));
-        } catch {}
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === sent.id)) return prev;
+          return [...prev, sent];
+        });
       } catch (err) {
         console.error(err);
       }
