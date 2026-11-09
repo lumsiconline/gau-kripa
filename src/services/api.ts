@@ -478,29 +478,29 @@ export const api = {
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createCashfreeOrder`, {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, amount, name, email })
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Unable to start Cashfree wallet recharge.');
-    return data as { order_id: string; payment_session_id: string; environment: 'sandbox' | 'production' };
+    if (!res.ok) throw new Error(data.error || 'Unable to start Razorpay wallet recharge.');
+    return data as { order_id: string; amount: number; currency: 'INR'; key_id: string };
   },
 
-  verifyWalletPayment: async (payload: { order_id: string; phone: string }) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyCashfreePayment`, {
+  verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string }) => {
+    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) throw new Error(data.error || 'Cashfree payment could not be verified.');
+    if (!res.ok || !data.success) throw new Error(data.error || 'Razorpay payment could not be verified.');
     return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
-    throw new Error('Use secure Cashfree Checkout to recharge this wallet.');
+    throw new Error('Use secure Razorpay Checkout to recharge this wallet.');
   },
 
   checkDiscount: async (
