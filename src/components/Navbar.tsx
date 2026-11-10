@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, ChevronDown, Menu, X, Heart, LogOut } from 'lucide-react';
+import { User, ChevronDown, Menu, X, Heart, LogOut, Wallet } from 'lucide-react';
 import { AuthUser } from './AuthModal';
 import { ImageCrop } from './ImageCrop';
 import { SEVA_ITEMS, REMEDY_CATEGORIES } from '../data/sevaData';
@@ -213,11 +213,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Customer sign-in / profile (wallet intentionally removed) */}
+            {/* Customer Wallet button */}
             <button
-              onClick={activeUser ? onOpenAuth : onOpenAuth}
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#fdf5e2] hover:bg-[#f6ebd1] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
+              title="Open GauKripa Wallet"
+            >
+              <Wallet className="w-3.5 h-3.5 text-amber-700" />
+              <span>Wallet</span>
+            </button>
+
+            {/* Customer sign-in / profile */}
+            <button
+              onClick={onOpenAuth}
               className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] border border-[#ebdcb9] text-xs font-bold transition-colors cursor-pointer shrink-0"
-              title={activeUser ? 'Open my profile' : 'Sign in or create an account'}
+              title={activeUser ? 'Open my profile & wallet' : 'Sign in or create an account'}
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">{activeUser ? activeUser.name.split(' ')[0] : 'Sign In'}</span>

@@ -109,6 +109,8 @@ export interface DbWallet {
     amount: number;
     description: string;
     date: string;
+    paymentId?: string;
+    orderId?: string;
   }[];
 }
 
@@ -459,8 +461,9 @@ export function readDb(): DbSchema {
     }
     const data = fs.readFileSync(DB_PATH, 'utf-8');
     const parsed = JSON.parse(data) as DbSchema;
-    // This site no longer uses customer wallets; discard legacy promotional balances.
-    parsed.wallets = {};
+    if (!parsed.wallets) {
+      parsed.wallets = {};
+    }
     return parsed;
   } catch (err) {
     console.error('Error reading db.json:', err);

@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ override: true });
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -407,151 +408,211 @@ async function startServer() {
     res.json(wallet);
   });
 
-  // Razorpay Order Creation Endpoint
-  app.post('/api/wallet/create-razorpay-order', async (req, res) => {
+  // ==========================================
+  // API: RAZORPAY STANDARD WEB CHECKOUT
+  // ==========================================
+
+  // STEP 1: BACKEND - Create Order
+  // Endpoint: POST /api/create-order (and /api/wallet/create-razorpay-order)
+  const handleCreateOrder = async (req: express.Request, res: express.Response) => {
     try {
-      const { amount, phone, name } = req.body;
-      const numAmount = Number(amount);
+      const { currency = 'INR', receipt, notes, phone, name } = req.body;
+      let rawAmount = req.body.amount;
 
-      // Strict minimum validation: minimum ₹50 required
-      if (isNaN(numAmount) || numAmount < 50) {
-        return res.status(400).json({ error: 'Minimum wallet recharge amount is ₹50. Please enter ₹50 or more.' });
+      if (rawAmount === undefined || rawAmount === null || rawAmount === '') {
+        return res.status(400).json({ error: 'Amount is required.' });
       }
 
-      const cleanPhone = String(phone || '').trim();
-      if (!cleanPhone) {
-        return res.status(400).json({ error: 'Phone number is required for wallet recharge.' });
+      let numAmount = Number(rawAmount);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        return res.status(400).json({ error: 'Invalid amount provided.' });
       }
 
-      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
+      // If calling from standard /api/create-order, amount is in paise (minimum 100 paise = ₹1)
+      // If calling from wallet recharge (/api/wallet/...), amount is in rupees (minimum ₹50 = 5000 paise)
+      const isWalletRoute = req.path.includes('/wallet');
+      let amountInPaise: number;
+
+      if (isWalletRoute) {
+        if (numAmount < 50) {
+          return res.status(400).json({ error: 'Minimum wallet recharge amount is ₹50.' });
+        }
+        amountInPaise = Math.round(numAmount * 100);
+      } else {
+        // Standard create-order: validate amount >= 100 paise
+        if (numAmount < 100) {
+          return res.status(400).json({ error: 'Minimum amount must be at least 100 paise.' });
+        }
+        amountInPaise = Math.round(numAmount);
+      }
+
+      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TyRZQfpqrZVax7';
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-      if (keySecret && keyId && keyId !== 'rzp_test_placeholder') {
-        const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-        const amountInPaise = Math.round(numAmount * 100);
-        const receipt = `gk_rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      if (!keyId || !keySecret) {
+        return res.status(401).json({ error: 'Razorpay API credentials not configured.' });
+      }
 
+      const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+      const orderReceipt = receipt || `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+      try {
         const order = await razorpay.orders.create({
           amount: amountInPaise,
-          currency: 'INR',
-          receipt,
-          notes: {
-            phone: cleanPhone,
-            devoteeName: name || 'Devotee',
-            purpose: 'GauKripa Sacred Wallet Recharge'
+          currency: currency || 'INR',
+          receipt: orderReceipt,
+          notes: notes || {
+            purpose: isWalletRoute ? 'GauKripa Sacred Wallet Recharge' : 'GauKripa Payment',
+            phone: phone || '',
+            devoteeName: name || 'Devotee'
           }
         });
 
         return res.json({
-          success: true,
+          order_id: order.id,
           orderId: order.id,
           amount: order.amount,
           currency: order.currency,
-          keyId
+          key_id: keyId,
+          keyId,
+          success: true
+        });
+      } catch (rzpErr: any) {
+        console.error('Razorpay API error in orders.create:', rzpErr);
+        if (rzpErr?.statusCode === 401 || rzpErr?.error?.code === 'BAD_REQUEST_ERROR') {
+          return res.status(rzpErr.statusCode || 500).json({
+            error: rzpErr?.error?.description || rzpErr?.message || 'Razorpay order creation failed.'
+          });
+        }
+        return res.status(500).json({
+          error: rzpErr?.error?.description || rzpErr?.message || 'Failed to create Razorpay order.'
+        });
+      }
+    } catch (err: any) {
+      console.error('Error creating Razorpay order:', err);
+      return res.status(500).json({ error: err?.message || 'Internal server error creating order.' });
+    }
+  };
+
+  app.post('/api/create-order', handleCreateOrder);
+  app.post('/api/wallet/create-razorpay-order', handleCreateOrder);
+
+  // STEP 3: BACKEND - Verify Signature
+  // Endpoint: POST /api/verify-payment (and /api/wallet/verify-razorpay-payment)
+  // Algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+  // Compare generated signature with razorpay_signature
+  const handleVerifyPayment = async (req: express.Request, res: express.Response) => {
+    try {
+      const order_id = req.body.order_id || req.body.razorpay_order_id;
+      const payment_id = req.body.payment_id || req.body.razorpay_payment_id;
+      const signature = req.body.signature || req.body.razorpay_signature;
+      const { phone, name, amount } = req.body;
+
+      // Missing fields: return 400
+      if (!order_id || !payment_id || !signature) {
+        return res.status(400).json({
+          error: 'Missing required payment verification fields (order_id, payment_id, signature).',
+          verified: false
         });
       }
 
-      // If Razorpay API credentials are in Test Mode or not yet injected, create standard order ID
-      const testOrderId = `order_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
-      return res.json({
-        success: true,
-        orderId: testOrderId,
-        amount: Math.round(numAmount * 100),
-        currency: 'INR',
-        keyId: keyId || 'rzp_test_placeholder'
-      });
-    } catch (err: any) {
-      console.error('Error creating Razorpay order:', err);
-      return res.status(500).json({ error: err?.message || 'Failed to initialize payment order.' });
-    }
-  });
-
-  // Razorpay Payment Verification Endpoint
-  app.post('/api/wallet/verify-razorpay-payment', async (req, res) => {
-    try {
-      const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        phone,
-        name,
-        amount
-      } = req.body;
-
-      if (!razorpay_order_id || !razorpay_payment_id || !phone) {
-        return res.status(400).json({ error: 'Missing required payment verification details.' });
-      }
-
-      const cleanPhone = String(phone).trim();
-      const numAmount = Number(amount);
-
-      if (isNaN(numAmount) || numAmount < 50) {
-        return res.status(400).json({ error: 'Minimum recharge amount is ₹50.' });
-      }
-
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      if (!keySecret) {
+        return res.status(500).json({
+          error: 'Razorpay secret key not configured on server.',
+          verified: false
+        });
+      }
 
-      // Verify HMAC SHA-256 signature if secret is provided
-      if (keySecret && razorpay_signature) {
-        const textToSign = `${razorpay_order_id}|${razorpay_payment_id}`;
-        const expectedSignature = crypto
-          .createHmac('sha256', keySecret)
-          .update(textToSign)
-          .digest('hex');
+      // Algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+      const textToSign = `${order_id}|${payment_id}`;
+      const expectedSignature = crypto
+        .createHmac('sha256', keySecret)
+        .update(textToSign)
+        .digest('hex');
 
-        if (expectedSignature !== razorpay_signature) {
-          return res.status(400).json({ error: 'Invalid payment signature verification failed.' });
+      // Compare generated signature with razorpay_signature
+      if (expectedSignature !== signature) {
+        // Signature mismatch: return 400, do NOT mark as paid
+        return res.status(400).json({
+          error: 'Invalid payment signature. Verification failed.',
+          verified: false
+        });
+      }
+
+      // Signature is valid! If phone is provided, credit wallet
+      if (phone) {
+        const cleanPhone = String(phone).trim();
+        const numAmount = Number(amount) || 50;
+        const db = readDb();
+
+        if (!db.wallets[cleanPhone]) {
+          db.wallets[cleanPhone] = {
+            phone: cleanPhone,
+            name: name || 'Devotee',
+            balance: 0,
+            transactions: []
+          };
         }
-      }
 
-      const db = readDb();
-      if (!db.wallets[cleanPhone]) {
-        db.wallets[cleanPhone] = {
-          phone: cleanPhone,
-          name: name || 'Devotee',
-          balance: 0,
-          transactions: []
-        };
-      }
+        // Prevent duplicate credits: check if this paymentId was already credited
+        const existingTx = db.wallets[cleanPhone].transactions.find(
+          (tx: any) => tx.id === `tx-${payment_id}` || tx.paymentId === payment_id
+        );
 
-      // Prevent duplicate processing: check if this paymentId was already credited
-      const existingTx = db.wallets[cleanPhone].transactions.find(
-        (tx: any) => tx.id === `tx-${razorpay_payment_id}` || tx.paymentId === razorpay_payment_id
-      );
+        if (existingTx) {
+          return res.json({
+            success: true,
+            verified: true,
+            credited: false,
+            message: 'Payment verified. Wallet was already credited.',
+            balance: db.wallets[cleanPhone].balance,
+            wallet: db.wallets[cleanPhone]
+          });
+        }
 
-      if (existingTx) {
+        // Credit wallet
+        db.wallets[cleanPhone].balance = Number((db.wallets[cleanPhone].balance + numAmount).toFixed(2));
+        db.wallets[cleanPhone].transactions.unshift({
+          id: `tx-${payment_id}`,
+          paymentId: payment_id,
+          orderId: order_id,
+          type: 'credit',
+          amount: numAmount,
+          description: `Razorpay Wallet Recharge (+₹${numAmount})`,
+          date: new Date().toISOString()
+        });
+
+        writeDb(db);
+        syncWallet(db.wallets[cleanPhone]).catch(console.error);
+
         return res.json({
           success: true,
-          message: 'Payment already credited.',
+          verified: true,
+          credited: true,
+          message: `Payment verified! Successfully recharged ₹${numAmount} to your wallet.`,
           balance: db.wallets[cleanPhone].balance,
           wallet: db.wallets[cleanPhone]
         });
       }
 
-      // Credit exact amount to wallet
-      db.wallets[cleanPhone].balance = Number((db.wallets[cleanPhone].balance + numAmount).toFixed(2));
-      db.wallets[cleanPhone].transactions.unshift({
-        id: `tx-${razorpay_payment_id}`,
-        type: 'credit',
-        amount: numAmount,
-        description: `Razorpay Wallet Recharge (+₹${numAmount})`,
-        date: new Date().toISOString()
-      });
-
-      writeDb(db);
-      syncWallet(db.wallets[cleanPhone]).catch(console.error);
-
+      // Standard verification response without wallet
       return res.json({
         success: true,
-        message: `Successfully recharged ₹${numAmount} to your wallet!`,
-        balance: db.wallets[cleanPhone].balance,
-        wallet: db.wallets[cleanPhone]
+        verified: true,
+        message: 'Payment verified successfully.'
       });
     } catch (err: any) {
       console.error('Error verifying payment:', err);
-      return res.status(500).json({ error: err?.message || 'Payment verification failed.' });
+      return res.status(500).json({
+        error: err?.message || 'Payment verification failed.',
+        verified: false
+      });
     }
-  });
+  };
+
+  app.post('/api/verify-payment', handleVerifyPayment);
+  app.post('/api/wallet/verify-razorpay-payment', handleVerifyPayment);
 
   app.post('/api/wallet/topup', (req, res) => {
     const db = readDb();

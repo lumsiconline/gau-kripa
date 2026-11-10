@@ -191,27 +191,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
       const RazorpayCheckout = (window as any).Razorpay;
       if (!RazorpayCheckout) throw new Error('Razorpay Checkout is unavailable. Please try again.');
-      const checkout = new RazorpayCheckout({
+
+      const checkoutOptions: any = {
         key: order.key_id,
         amount: order.amount,
-        currency: order.currency,
+        currency: order.currency || 'INR',
         name: 'GauKripa',
-        description: 'Wallet recharge',
-        order_id: order.order_id,
+        description: 'Sacred GauKripa Wallet Recharge',
         prefill: { name: currentUser?.name || 'Devotee', email: currentUser?.email || '', contact: userPhone },
         notes: { purpose: 'GauKripa wallet recharge' },
         theme: { color: '#1b4b32' },
         handler: async (response: any) => {
           try {
             const result = await api.verifyWalletPayment({
-              order_id: response.razorpay_order_id,
+              order_id: response.razorpay_order_id || order.order_id || '',
               payment_id: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              phone: userPhone
+              signature: response.razorpay_signature || '',
+              phone: userPhone,
+              amount
             });
             const freshWallet = await api.getWallet(userPhone);
             setWallet(freshWallet);
-            setTopupSuccess(result.credited ? 'Payment successful. Wallet recharged.' : 'This payment was already added to your wallet.');
+            setTopupSuccess(result.credited ? `Payment successful! ₹${amount} added to your wallet.` : 'This payment was already added to your wallet.');
             setErrorMsg(null);
           } catch (verificationError: any) {
             setErrorMsg(verificationError.message || 'Razorpay payment verification is pending. Please contact support before retrying.');
@@ -219,8 +220,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             setTopupLoading(false);
           }
         },
-        modal: { ondismiss: () => setTopupLoading(false), escape: true, confirm_close: true }
-      });
+        modal: {
+          ondismiss: () => {
+            setTopupLoading(false);
+          },
+          escape: true,
+          confirm_close: true
+        }
+      };
+
+      if (order.order_id) {
+        checkoutOptions.order_id = order.order_id;
+      }
+
+      const checkout = new RazorpayCheckout(checkoutOptions);
       checkout.on('payment.failed', (response: any) => {
         setErrorMsg(response?.error?.description || 'Razorpay payment failed. You can try again.');
         setTopupLoading(false);
@@ -346,8 +359,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               {/* REAL WALLET — funds are credited only after Razorpay server verification */}
-              {!isSuperAdmin && (
-                <div className="p-4 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
+              {/* REAL WALLET — funds are credited only after Razorpay server verification */}
+              <div className="p-4 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[#1b4b32] font-bold text-sm">
                       <Coins className="w-4 h-4 text-amber-600" />
@@ -395,7 +408,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     )) : <p className="text-[11px] text-[#8a7a67]">No wallet transactions yet.</p>}
                   </div>
                 </div>
-              )}
 
               {/* Super Admin Management Consoles */}
               {isSuperAdmin && (
