@@ -268,10 +268,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <User className="w-4 h-4" /> {activeUser ? 'My Profile' : 'Sign In / Sign Up'}
             </button>
+            <button
+              onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
+              className="py-2 px-3 rounded-lg bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 text-sm font-bold flex items-center justify-center gap-1 cursor-pointer"
+            >
+              <span>Wallet</span>
+            </button>
             {activeUser && onLogout && (
               <button
                 onClick={() => { setMobileMenuOpen(false); onLogout(); }}
                 className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-sm font-semibold"
+                title="Logout"
               >
                 <LogOut className="w-4 h-4" />
               </button>

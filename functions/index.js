@@ -11,8 +11,15 @@ const db = admin.firestore();
 
 function cors(req, res) {
   const origin = req.headers.origin || "";
-  const allowed = ["https://gaukripa.site", "https://www.gaukripa.site"];
-  if (allowed.includes(origin)) res.set("Access-Control-Allow-Origin", origin);
+  const allowed = [
+    "https://gaukripa.site",
+    "https://www.gaukripa.site",
+    "https://lumsiconline.github.io"
+  ];
+  const isAllowed = !origin || allowed.includes(origin) || origin.startsWith("http://localhost:") || origin.includes(".run.app");
+  if (isAllowed) {
+    res.set("Access-Control-Allow-Origin", origin || "*");
+  }
   res.set("Vary", "Origin");
   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");

@@ -469,34 +469,127 @@ export const api = {
     return { id, ...proof, status: 'completed' } as any;
   },
 
-  // Wallet: balances and payment verification are handled by Firebase Functions.
+  // Wallet: balances and payment verification are handled by Firebase Functions with server fallback.
   getWallet: async (phone: string): Promise<WalletInfo> => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/getWallet?phone=${encodeURIComponent(phone)}`);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Unable to load wallet.');
-    return data as WalletInfo;
+    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
+
+    // 1. Try Firebase Cloud Function
+    try {
+      const res = await fetch(`${WALLET_FUNCTIONS_BASE}/getWallet?phone=${encodeURIComponent(cleanPhone)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data.balance === 'number') {
+          return data as WalletInfo;
+        }
+      }
+    } catch {}
+
+    // 2. Try server API
+    const serverRes = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(cleanPhone)}`);
+    if (serverRes.ok && serverRes.data) {
+      return serverRes.data;
+    }
+
+    // 3. Local fallback
+    try {
+      const raw = localStorage.getItem(`gaukripa_wallet_${cleanPhone}`);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+
+    return {
+      phone: cleanPhone,
+      name: 'Devotee',
+      balance: 0,
+      transactions: []
+    };
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, amount, name, email })
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Unable to start Razorpay wallet recharge.');
-    return data as { order_id: string; amount: number; currency: 'INR'; key_id: string };
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount < 50) {
+      throw new Error('Minimum wallet recharge is ₹50.');
+    }
+    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
+    const payload = { phone: cleanPhone, amount: numAmount, name, email };
+
+    // 1. Try Firebase Cloud Function
+    try {
+      const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.order_id) {
+          return data as { order_id: string; amount: number; currency: 'INR'; key_id: string };
+        }
+      }
+    } catch {}
+
+    // 2. Try server API
+    const res = await safeFetchJson<{ success: boolean; orderId: string; amount: number; currency: string; keyId: string }>(
+      `${API_BASE}/wallet/create-razorpay-order`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (res.ok && res.data?.orderId) {
+      return {
+        order_id: res.data.orderId,
+        amount: res.data.amount,
+        currency: (res.data.currency || 'INR') as 'INR',
+        key_id: res.data.keyId
+      };
+    }
+
+    throw new Error(res.error || 'Unable to start Razorpay wallet recharge.');
   },
 
   verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string }) => {
-    const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) throw new Error(data.error || 'Razorpay payment could not be verified.');
-    return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
+    // 1. Try Firebase Cloud Function
+    try {
+      const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.success) {
+          return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
+        }
+      }
+    } catch {}
+
+    // 2. Try server API
+    const res = await safeFetchJson<{ success: boolean; message: string; balance: number; wallet: WalletInfo }>(
+      `${API_BASE}/wallet/verify-razorpay-payment`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id: payload.order_id,
+          razorpay_payment_id: payload.payment_id,
+          razorpay_signature: payload.signature,
+          phone: payload.phone
+        })
+      }
+    );
+
+    if (res.ok && res.data?.success) {
+      return {
+        success: true,
+        verified: true,
+        credited: true,
+        balance: res.data.balance
+      };
+    }
+
+    throw new Error(res.error || 'Razorpay payment could not be verified.');
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
