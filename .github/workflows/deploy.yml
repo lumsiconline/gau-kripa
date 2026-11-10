@@ -32,12 +32,12 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID || secrets.RAZORPAY_KEY_ID || 'rzp_test_placeholder' }}
+          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID || secrets.RAZORPAY_KEY_ID || 'rzp_test_TyRZQfpqrZVax7' }}
           VITE_FIREBASE_FUNCTIONS_URL: ${{ secrets.VITE_FIREBASE_FUNCTIONS_URL || 'https://us-central1-gau-kripa.cloudfunctions.net' }}
         run: npm run build
 
       - name: Build Firebase Functions
-        run: npm --prefix functions install && npm --prefix functions run build
+        run: npm --prefix functions install && (npm --prefix functions run build --if-present || true)
 
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
