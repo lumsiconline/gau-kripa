@@ -14,7 +14,8 @@ function cors(req, res) {
   const allowed = [
     "https://gaukripa.site",
     "https://www.gaukripa.site",
-    "https://lumsiconline.github.io"
+    "https://lumsiconline.github.io",
+    "https://gau-kripa.lumsic-online.workers.dev"
   ];
   const isAllowed = !origin || allowed.includes(origin) || origin.startsWith("http://localhost:") || origin.includes(".run.app");
   if (isAllowed) {
