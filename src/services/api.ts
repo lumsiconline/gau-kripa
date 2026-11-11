@@ -506,7 +506,7 @@ export const api = {
 
   // Standard Razorpay Checkout Methods
   createOrder: async (amountInPaise: number, currency = 'INR', receipt?: string) => {
-    if (!amountInPaise || amountInPaise < 100) {
+    if (!Number.isInteger(amountInPaise) || amountInPaise < 100) {
       throw new Error('Minimum order amount must be at least 100 paise (₹1).');
     }
     const res = await safeFetchJson<{ order_id: string; amount: number; currency: string; key_id: string }>(
@@ -517,17 +517,10 @@ export const api = {
         body: JSON.stringify({ amount: amountInPaise, currency, receipt })
       }
     );
-    if (res.ok && res.data?.order_id) {
-      return res.data;
+    if (!res.ok || !res.data?.order_id || !res.data?.key_id) {
+      throw new Error(res.error || 'Secure Razorpay order creation is unavailable. No payment was started.');
     }
-    // Fallback for static hosting where backend is not running
-    const keyId = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_TyRZQfpqrZVax7';
-    return {
-      order_id: '',
-      amount: amountInPaise,
-      currency,
-      key_id: keyId
-    };
+    return res.data;
   },
 
   verifyPayment: async (order_id: string, payment_id: string, signature: string) => {
@@ -542,166 +535,44 @@ export const api = {
         body: JSON.stringify({ order_id, payment_id, signature })
       }
     );
-    if (res.ok && res.data?.success) {
-      return res.data;
-    }
-    if (res.error && !res.isHtml) throw new Error(res.error);
-    return { success: true, verified: true, message: 'Payment verified successfully.' };
+    if (res.ok && res.data?.success && res.data?.verified) return res.data;
+    throw new Error(res.error || 'Server-side Razorpay payment verification failed.');
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount < 50) {
-      throw new Error('Minimum wallet recharge is ₹50.');
+    if (!Number.isInteger(numAmount) || numAmount < 50 || numAmount > 100000) {
+      throw new Error('Wallet recharge must be a whole-rupee amount between ₹50 and ₹1,00,000.');
     }
-    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
-    const amountInPaise = Math.round(numAmount * 100);
-    const payload = { phone: cleanPhone, amount: numAmount, name, email };
+    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15);
+    if (cleanPhone.length < 10) throw new Error('Please add a valid mobile number before recharging.');
 
-    // 1. Try Firebase Cloud Function if URL configured
-    if (WALLET_FUNCTIONS_BASE && !WALLET_FUNCTIONS_BASE.includes('undefined')) {
-      try {
-        const res = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.order_id) {
-            return data as { order_id: string; amount: number; currency: 'INR'; key_id: string };
-          }
-        }
-      } catch {}
+    const response = await fetch(`${WALLET_FUNCTIONS_BASE}/createRazorpayOrder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone, amount: numAmount, name, email })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.order_id || !data?.key_id) {
+      throw new Error(data?.error || 'Secure live Razorpay order creation failed. No payment was started.');
     }
-
-    // 2. Try server API
-    const res = await safeFetchJson<{ success: boolean; order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-      `${API_BASE}/create-order`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountInPaise, currency: 'INR', receipt: `gk_rcpt_${Date.now()}`, notes: { phone: cleanPhone, name } })
-      }
-    );
-
-    const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_TyRZQfpqrZVax7';
-
-    if (res.ok && orderId) {
-      return {
-        order_id: orderId,
-        amount: res.data?.amount || amountInPaise,
-        currency: (res.data?.currency || 'INR') as 'INR',
-        key_id: keyId
-      };
-    }
-
-    // 3. Fallback for static hosts (e.g. GitHub Pages gaukripa.site returning 405)
-    // Razorpay Standard Checkout opens smoothly with key_id, amount in paise, and currency
-    return {
-      order_id: '',
-      amount: amountInPaise,
-      currency: 'INR' as const,
-      key_id: keyId
-    };
+    return data as { order_id: string; amount: number; currency: 'INR'; key_id: string };
   },
 
   verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string; amount?: number }) => {
-    // 1. Try Firebase Cloud Function
-    if (WALLET_FUNCTIONS_BASE && !WALLET_FUNCTIONS_BASE.includes('undefined')) {
-      try {
-        const res = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.success) {
-            return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
-          }
-        }
-      } catch {}
+    if (!payload.order_id || !payload.payment_id || !payload.signature || !payload.phone) {
+      throw new Error('Required Razorpay payment verification details are missing.');
     }
-
-    // 2. Try server API
-    const res = await safeFetchJson<{ success: boolean; message: string; balance: number; wallet: WalletInfo }>(
-      `${API_BASE}/verify-payment`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id: payload.order_id,
-          payment_id: payload.payment_id,
-          signature: payload.signature,
-          phone: payload.phone,
-          amount: payload.amount
-        })
-      }
-    );
-
-    if (res.ok && res.data?.success) {
-      return {
-        success: true,
-        verified: true,
-        credited: true,
-        balance: res.data.balance
-      };
+    const response = await fetch(`${WALLET_FUNCTIONS_BASE}/verifyRazorpayPayment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data?.success !== true || data?.verified !== true) {
+      throw new Error(data?.error || 'Razorpay server-side verification failed. Wallet has not been credited.');
     }
-
-    // 3. Resilient fallback for static hosting (e.g. gaukripa.site where static server returned 405)
-    if (payload.payment_id) {
-      const cleanPhone = String(payload.phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
-      const storageKey = `gaukripa_wallet_${cleanPhone}`;
-      let currentWallet: WalletInfo = {
-        phone: cleanPhone,
-        name: 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-
-      try {
-        const raw = localStorage.getItem(storageKey);
-        if (raw) currentWallet = JSON.parse(raw);
-      } catch {}
-
-      const existingTx = currentWallet.transactions.find(
-        (tx: any) => tx.id === `tx-${payload.payment_id}` || tx.paymentId === payload.payment_id
-      );
-
-      if (existingTx) {
-        return {
-          success: true,
-          verified: true,
-          credited: false,
-          balance: currentWallet.balance
-        };
-      }
-
-      const creditAmount = Number(payload.amount) || 50;
-      currentWallet.balance = Number((currentWallet.balance + creditAmount).toFixed(2));
-      currentWallet.transactions.unshift({
-        id: `tx-${payload.payment_id}`,
-        type: 'credit',
-        amount: creditAmount,
-        description: `Razorpay Wallet Recharge (+₹${creditAmount})`,
-        date: new Date().toISOString()
-      });
-
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(currentWallet));
-      } catch {}
-
-      return {
-        success: true,
-        verified: true,
-        credited: true,
-        balance: currentWallet.balance
-      };
-    }
-
-    throw new Error(res.error || 'Razorpay payment could not be verified.');
+    return data as { success: boolean; verified: boolean; credited: boolean; balance: number };
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
