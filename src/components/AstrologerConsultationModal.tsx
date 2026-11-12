@@ -61,6 +61,7 @@ interface AstrologerConsultationModalProps {
   customerPhone?: string;
   customerName?: string;
   onBookPrescribedSeva?: (sevaTitle: string) => void;
+  initialConcern?: string;
 }
 
 export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalProps> = ({
@@ -72,6 +73,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   customerPhone = '9876543210',
   customerName = 'Harsh Bhardwaj',
   onBookPrescribedSeva,
+  initialConcern,
 }) => {
   const [mode, setMode] = useState<'chat' | 'call'>(initialMode);
 
@@ -80,7 +82,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [session, setSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
-  const [concern, setConcern] = useState<string>('Career and Grah Shanti guidance');
+  const [concern, setConcern] = useState<string>(initialConcern || 'वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन');
   const [formStep, setFormStep] = useState(0);
 
   // Birth Details state
@@ -128,6 +130,9 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     setSession(null);
     setMessages([]);
     setErrorMessage(null);
+    if (initialConcern) {
+      setConcern(initialConcern);
+    }
 
     // Fetch user wallet
     api.getWallet(customerPhone)

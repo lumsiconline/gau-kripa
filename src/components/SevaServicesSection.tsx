@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Video, CheckCircle2 } from 'lucide-react';
 import { SEVA_ITEMS, SevaItem } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
 
@@ -9,97 +9,137 @@ interface SevaServicesSectionProps {
 
 export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBookSeva }) => {
   return (
-    <section id="seva-services" className="py-10 sm:py-16 bg-[#faf5e8] border-b border-[#ebdcb9] overflow-hidden">
+    <section id="seva-services" className="py-12 sm:py-16 bg-[#faf5e8] border-b border-[#ebdcb9] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Heading with Sacred Leaf Flourish */}
-        <div className="text-center mb-6 sm:mb-10 space-y-1.5">
+        {/* Section Heading */}
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 space-y-2">
           <div className="inline-flex items-center justify-center gap-3">
-            {/* Left flourish */}
             <svg className="w-7 h-4 sm:w-8 text-[#4a6b49]" viewBox="0 0 40 20" fill="currentColor">
               <path d="M0,10 C15,5 25,0 40,10 C25,20 15,15 0,10 Z" opacity="0.7"/>
               <circle cx="36" cy="10" r="2.5" />
             </svg>
 
-            <h2 className="font-playfair text-2xl sm:text-4xl lg:text-[40px] font-bold text-[#153e29]">
-              Our Seva Services
-            </h2>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#8a6828] bg-[#fbf2dd] px-3.5 py-1 rounded-full border border-[#ebdcb9]">
+              गौमाता आहार व्यवस्था एवं सेवा
+            </span>
 
-            {/* Right flourish */}
             <svg className="w-7 h-4 sm:w-8 text-[#4a6b49] rotate-180" viewBox="0 0 40 20" fill="currentColor">
               <path d="M0,10 C15,5 25,0 40,10 C25,20 15,15 0,10 Z" opacity="0.7"/>
               <circle cx="36" cy="10" r="2.5" />
             </svg>
           </div>
 
-          <p className="text-xs sm:text-base text-[#6b5a45] font-medium">
-            Choose a seva and bring positivity into your life
+          <h2 className="font-playfair text-2xl sm:text-4xl lg:text-[40px] font-black text-[#153e29] leading-tight">
+            गौ-आहार प्रबंधन एवं प्रत्यक्ष सेवा
+          </h2>
+
+          <p className="text-xs sm:text-base text-[#6b5a45] font-medium leading-relaxed">
+            प्रमाणित गौशालाओं में आपके नाम एवं गोत्र संकल्प के साथ गौमाता के भोजन की व्यवस्था। सेवा उपरांत आपके व्हाट्सएप पर आहार वितरण की वीडियो पुष्टि भेजी जाती है।
           </p>
 
-          {/* Clean Mobile Swipe Indicator without buttons */}
-          <div className="lg:hidden pt-1 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#8a7251]">
-            <span>✨ Swipe left to explore all sacred sevas</span>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#1b4b32] bg-[#f2e6cb] px-4 py-1.5 rounded-full border border-[#d9c49c] mt-1 shadow-2xs">
+            <Video className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+            <span>प्रत्येक सेवा के साथ आहार वितरण की वीडियो पुष्टि उपलब्ध</span>
           </div>
         </div>
 
-        {/* 6 Seva Cards: Native Horizontal Scroll on Mobile, 6-col Grid on Desktop */}
-        <div className="flex lg:grid lg:grid-cols-6 gap-4 sm:gap-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory no-scrollbar pb-4 pt-1 px-4 sm:px-0 -mx-4 sm:mx-0">
+        {/* 6 Seva Service Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
           {SEVA_ITEMS.map((item) => (
             <div
               key={item.id}
-              className="w-[84vw] sm:w-[320px] lg:w-auto shrink-0 snap-center group bg-[#fffdf9] rounded-3xl lg:rounded-2xl overflow-hidden border border-[#ebdcb9] shadow-md lg:shadow-xs hover:shadow-lg hover:border-[#cfb784] transition-all flex flex-col justify-between"
+              className="group bg-[#fffdf9] rounded-3xl overflow-hidden border border-[#ebdcb9] shadow-sm hover:shadow-xl hover:border-[#cfb784] transition-all flex flex-col justify-between"
             >
-              {/* Card Image with Big, Crisp HD Presentation */}
               <div>
-                <div className="relative h-56 sm:h-64 lg:h-36 w-full overflow-hidden bg-amber-50">
+                {/* HD Authentic Visual with Planetary Badge */}
+                <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-amber-50">
                   <ImageCrop
                     cropKey={item.cropKey}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     alt={item.title}
                   />
 
-                  {/* Planetary Badge floating on top-left */}
-                  <div className="absolute top-3 left-3 lg:top-2 lg:left-2 z-10">
-                    <span className="inline-flex items-center gap-1.5 text-xs lg:text-[11px] font-bold px-3 py-1 lg:px-2.5 lg:py-0.5 rounded-full bg-[#faedd0]/95 text-[#6d460d] border border-[#d6ba7f] shadow-sm backdrop-blur-md">
+                  {/* Planetary Badge floating top-left */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-[#faedd0]/95 text-[#6d460d] border border-[#d6ba7f] shadow-xs backdrop-blur-md">
                       {item.planetTag}
                     </span>
                   </div>
 
-                  {/* Subtle gradient scrim at bottom of image for contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent pointer-events-none" />
-                </div>
-
-                {/* Card Content with Generous Touch Target Spacing */}
-                <div className="p-4 sm:p-5 lg:p-3.5 text-center flex flex-col items-center">
-                  <h3 className="font-playfair text-lg sm:text-xl lg:text-base font-bold text-[#1b4b32] leading-tight">
-                    {item.title}
-                  </h3>
-
-                  {/* Price */}
-                  <div className="mt-1.5 sm:mt-2 lg:mt-1.5 text-xl sm:text-2xl lg:text-lg font-black text-[#1b4b32] leading-none">
-                    {item.priceDisplay}
+                  {/* Video Proof Badge floating top-right */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-950/85 text-emerald-200 border border-emerald-400/50 shadow-xs backdrop-blur-md">
+                      <Video className="w-3 h-3 text-emerald-400" />
+                      <span>वीडियो पुष्टि</span>
+                    </span>
                   </div>
 
-                  {/* Benefit text */}
-                  <p className="mt-2 text-xs sm:text-[13px] lg:text-xs text-[#6e6351] leading-relaxed line-clamp-2 min-h-[36px] lg:min-h-[32px]">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+                </div>
+
+                {/* Service Details */}
+                <div className="p-5 sm:p-6 text-left space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-playfair text-xl font-bold text-[#1b4b32] leading-snug group-hover:text-[#123824] transition-colors">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  {/* Highlighted Price with Exact Quantity */}
+                  <div className="inline-flex items-baseline gap-2 bg-[#fdf6e7] px-3.5 py-1.5 rounded-xl border border-[#ebdcb9]">
+                    <span className="text-xs font-bold text-[#8a7251] uppercase">नियत शुल्क:</span>
+                    <span className="text-xl sm:text-2xl font-black text-[#1b4b32]">
+                      {item.priceDisplay}
+                    </span>
+                  </div>
+
+                  {/* Description / Fulfilment */}
+                  <p className="text-xs text-[#5e513e] leading-relaxed">
                     {item.benefit}
                   </p>
+
+                  {/* Fulfilment Assurance */}
+                  <div className="pt-2 border-t border-[#f2e7cd] flex items-center gap-1.5 text-[11px] text-[#1b4b32] font-semibold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{item.fulfilmentDetails}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Book Now Button */}
-              <div className="p-4 pt-0 sm:p-5 sm:pt-0 lg:p-3.5 lg:pt-0">
+              <div className="p-5 pt-0 sm:p-6 sm:pt-0">
                 <button
                   onClick={() => onBookSeva(item)}
-                  className="w-full py-3 lg:py-2 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-sm lg:text-xs flex items-center justify-center gap-2 transition-all shadow-md lg:shadow-xs cursor-pointer group-hover:shadow-sm"
+                  className="w-full py-3 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer group-hover:bg-[#123824]"
                 >
-                  <span>Book Now</span>
-                  <ArrowRight className="w-4 h-4 lg:w-3.5 lg:h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <span>आहार सेवा व्यवस्था करें</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-300" />
                 </button>
               </div>
 
             </div>
           ))}
+        </div>
+
+        {/* Service Transparency Assurance Card */}
+        <div className="mt-10 p-5 sm:p-6 rounded-3xl bg-[#fffdf9] border-2 border-[#ebdcb9] shadow-sm max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="space-y-1">
+              <h4 className="font-playfair text-base sm:text-lg font-bold text-[#1b4b32]">
+                100% प्रत्यक्ष एवं पारदर्शी आहार सेवा प्रबंधन
+              </h4>
+              <p className="text-xs text-[#6e6351]">
+                यह एक निर्धारित आहार प्रबंधन सेवा है। आपके द्वारा चयनित आहार (चारा, गुड़-चना या रोटी) को तय मात्रा में गौशाला तक पहुँचाकर गौमाता को अर्पित किया जाता है।
+              </p>
+            </div>
+            <div className="shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs border border-emerald-300">
+                <Video className="w-3.5 h-3.5 text-emerald-700" />
+                <span>व्हाट्सएप वीडियो पुष्टि</span>
+              </span>
+            </div>
+          </div>
         </div>
 
       </div>

@@ -6,6 +6,7 @@ interface FooterProps {
   onOpenAbout: () => void;
   onOpenServices: () => void;
   onOpenAstrology: () => void;
+  onOpenJyotish?: () => void;
   onOpenReviews: () => void;
   onOpenContact: () => void;
   onOpenAdmin?: () => void;
@@ -16,6 +17,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenAbout,
   onOpenServices,
   onOpenAstrology,
+  onOpenJyotish,
   onOpenReviews,
   onOpenContact,
   onOpenAdmin,
@@ -37,34 +39,38 @@ export const Footer: React.FC<FooterProps> = ({
                 GauKripa
               </span>
               <span className="text-[10px] font-medium text-amber-200/90 tracking-wide mt-1">
-                Seva • Shanti • Samriddhi
+                गौमाता आहार व्यवस्था • ज्योतिष मार्गदर्शन • आध्यात्मिक परामर्श
               </span>
             </div>
           </div>
 
           {/* Center Navigation Links */}
-          <nav className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-xs sm:text-sm font-medium text-emerald-100/90">
-            <button
-              onClick={onOpenAbout}
-              className="hover:text-amber-300 transition-colors cursor-pointer"
-            >
-              About Us
-            </button>
-            <span className="text-emerald-700/60" aria-hidden="true">|</span>
-
+          <nav className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-xs sm:text-sm font-medium text-emerald-100/90">
             <button
               onClick={onOpenServices}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              Our Services
+              गौ-आहार सेवाएँ
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
+
+            {onOpenJyotish && (
+              <>
+                <button
+                  onClick={onOpenJyotish}
+                  className="hover:text-amber-300 text-amber-200 transition-colors cursor-pointer"
+                >
+                  ज्योतिष मार्गदर्शन (5 विषय)
+                </button>
+                <span className="text-emerald-700/60" aria-hidden="true">|</span>
+              </>
+            )}
 
             <button
               onClick={onOpenAstrology}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              Astrology
+              ज्योतिषाचार्य
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -72,7 +78,15 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenReviews}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              Reviews
+              समीक्षाएं एवं वीडियो पुष्टि
+            </button>
+            <span className="text-emerald-700/60" aria-hidden="true">|</span>
+
+            <button
+              onClick={onOpenAbout}
+              className="hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              परिचय
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -80,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenContact}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              Contact Us
+              संपर्क करें
             </button>
 
             {onOpenAdmin && (
@@ -170,13 +184,13 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Bottom copyright notice */}
         <div className="mt-6 pt-4 border-t border-[#1a4a30]/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-emerald-200/60 gap-2">
-          <p>© {new Date().getFullYear()} GauKripa Seva Foundation. Dedicated to Sacred Animal Welfare &amp; Sanatana Dharma.</p>
+          <p>© {new Date().getFullYear()} GauKripa. गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष मार्गदर्शन। सर्वाधिकार सुरक्षित।</p>
           <div className="flex items-center gap-4">
-            <a href="#privacy" className="hover:underline">Privacy Policy</a>
+            <a href="#privacy" className="hover:underline">गोपनीयता नीति (Privacy Policy)</a>
             <span>•</span>
-            <a href="#terms" className="hover:underline">Terms of Seva</a>
+            <a href="#terms" className="hover:underline">सेवा नियम व शर्तें (Terms of Service)</a>
             <span>•</span>
-            <a href="#transparency" className="hover:underline">80G Tax Exemption</a>
+            <a href="#transparency" className="hover:underline">आहार वितरण वीडियो पुष्टि (Transparency)</a>
           </div>
         </div>
 

@@ -11,6 +11,7 @@ interface NavbarProps {
   onSelectSeva: (sevaId: string) => void;
   onSelectRemedy: (remedyId: string) => void;
   onScrollToAstrologers: () => void;
+  onScrollToJyotish?: () => void;
   onOpenAbout: () => void;
   onOpenReviews: () => void;
   onOpenCart?: () => void;
@@ -26,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectSeva,
   onSelectRemedy,
   onScrollToAstrologers,
+  onScrollToJyotish,
   onOpenAbout,
   onOpenReviews,
   onOpenCart,
@@ -70,10 +72,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#"
               className="px-3.5 py-1.5 rounded-full bg-[#1b4b32] text-white font-medium shadow-xs hover:bg-[#153e29] transition-all whitespace-nowrap"
             >
-              Home
+              मुख्य पृष्ठ
             </a>
 
-            {/* Our Seva Dropdown */}
+            {/* Gau Seva Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setSevaDropdownOpen(true)}
@@ -84,14 +86,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setSevaDropdownOpen(!sevaDropdownOpen)}
               >
-                <span>Our Seva</span>
+                <span>गौ-आहार सेवा</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${sevaDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {sevaDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-72 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
-                  <div className="px-3 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    Sacred Animal Sevas
+                <div className="absolute top-full left-0 mt-1 w-80 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
+                  <div className="px-3.5 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
+                    गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)
                   </div>
                   {SEVA_ITEMS.map((item) => (
                     <button
@@ -100,18 +102,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setSevaDropdownOpen(false);
                         onSelectSeva(item.id);
                       }}
-                      className="w-full text-left px-3.5 py-2.5 hover:bg-[#f6efe0] flex items-center justify-between text-xs transition-colors cursor-pointer"
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-[#f6efe0] flex items-center justify-between text-xs transition-colors cursor-pointer border-b border-[#f9f3e5] last:border-b-0"
                     >
                       <div>
                         <div className="font-semibold text-[#1b4b32]">{item.title}</div>
                         <div className="text-[11px] text-[#786c5a]">{item.planetTag}</div>
                       </div>
-                      <span className="font-bold text-[#c4821a] text-[11px]">{item.priceDisplay}</span>
+                      <span className="font-bold text-[#c4821a] text-[11px] whitespace-nowrap ml-2">{item.priceDisplay}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
+
+            {/* Jyotish Services Nav Link */}
+            {onScrollToJyotish && (
+              <button
+                onClick={onScrollToJyotish}
+                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium flex items-center gap-1"
+              >
+                <span>ज्योतिष मार्गदर्शन</span>
+                <span className="text-[10px] bg-[#fbf2dd] text-[#8a6828] border border-[#ebdcb9] px-1.5 py-0.2 rounded font-bold">5 विषय</span>
+              </button>
+            )}
 
             {/* Grah Shanti Upay Dropdown */}
             <div
@@ -124,14 +137,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setRemedyDropdownOpen(!remedyDropdownOpen)}
               >
-                <span>Grah Shanti Upay</span>
+                <span>ग्रह शांति उपाय</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${remedyDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {remedyDropdownOpen && (
                 <div className="absolute top-full left-0 mt-1 w-68 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
                   <div className="px-3 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    Vedic Dosha Remedies
+                    वैदिक ग्रह-दोष निवारण
                   </div>
                   {REMEDY_CATEGORIES.map((rem) => (
                     <button
@@ -143,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="w-full text-left px-3.5 py-2 hover:bg-[#f6efe0] text-xs transition-colors flex items-center justify-between cursor-pointer"
                     >
                       <span className="font-medium text-[#2d3a31]">{rem.title}</span>
-                      <span className="text-[10px] text-[#8b7355] bg-[#eedec0] px-1.5 py-0.5 rounded">Vedic</span>
+                      <span className="text-[10px] text-[#8b7355] bg-[#eedec0] px-1.5 py-0.5 rounded">वैदिक</span>
                     </button>
                   ))}
                 </div>
@@ -155,15 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onScrollToAstrologers}
               className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
-              Connect with Astrologer
-            </button>
-
-            {/* About Us */}
-            <button
-              onClick={onOpenAbout}
-              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
-            >
-              About Us
+              ज्योतिषाचार्य
             </button>
 
             {/* Reviews */}
@@ -171,7 +176,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenReviews}
               className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
-              Reviews
+              समीक्षाएं एवं पुष्टि
+            </button>
+
+            {/* About Us */}
+            <button
+              onClick={onOpenAbout}
+              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
+            >
+              परिचय
             </button>
           </nav>
 
@@ -250,44 +263,56 @@ export const Navbar: React.FC<NavbarProps> = ({
       {mobileMenuOpen && (
         <div className="xl:hidden bg-[#fffdf8] border-b border-[#ebdcb9] px-4 pt-3 pb-6 space-y-3">
           
-          <div className="grid grid-cols-2 gap-2 pb-2">
+          <div className="grid grid-cols-3 gap-2 pb-2">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="py-2 px-3 text-center rounded-lg bg-[#1b4b32] text-white text-sm font-semibold"
+              className="py-2 px-2 text-center rounded-lg bg-[#1b4b32] text-white text-xs font-semibold"
             >
-              Home
+              मुख्य पृष्ठ
             </button>
+            {onScrollToJyotish && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onScrollToJyotish();
+                }}
+                className="py-2 px-2 text-center rounded-lg bg-[#fbf2dd] border border-[#ebdcb9] text-[#8a6828] text-xs font-bold"
+              >
+                ज्योतिष सेवाएँ
+              </button>
+            )}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onScrollToAstrologers();
               }}
-              className="py-2 px-3 text-center rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-sm font-semibold"
+              className="py-2 px-2 text-center rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
             >
-              Astrologers
+              ज्योतिषाचार्य
             </button>
           </div>
 
           <div className="flex gap-2 pb-2 border-b border-[#ebdcb9]">
             <button
               onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
-              className="flex-1 py-2 px-3 rounded-lg bg-[#1b4b32] text-white text-sm font-semibold flex items-center justify-center gap-2"
+              className="flex-1 py-2 px-3 rounded-lg bg-[#1b4b32] text-white text-xs font-semibold flex items-center justify-center gap-2"
             >
-              <User className="w-4 h-4" /> {activeUser ? 'My Profile' : 'Sign In / Sign Up'}
+              <User className="w-4 h-4" /> {activeUser ? activeUser.name.split(' ')[0] : 'लॉगिन / पंजीकरण'}
             </button>
             <button
               onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
-              className="py-2 px-3 rounded-lg bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 text-sm font-bold flex items-center justify-center gap-1 cursor-pointer"
+              className="py-2 px-3 rounded-lg bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
             >
-              <span>Wallet</span>
+              <Wallet className="w-3.5 h-3.5" />
+              <span>वॉलेट</span>
             </button>
             {activeUser && onLogout && (
               <button
                 onClick={() => { setMobileMenuOpen(false); onLogout(); }}
-                className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-sm font-semibold"
+                className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -296,8 +321,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="space-y-1">
-            <div className="text-xs font-bold text-[#8b7355] uppercase tracking-wider px-2 py-1">
-              Select Seva
+            <div className="text-[11px] font-bold text-[#8b7355] uppercase tracking-wider px-2 py-1">
+              गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)
             </div>
             {SEVA_ITEMS.map((item) => (
               <button
@@ -306,32 +331,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onSelectSeva(item.id);
                 }}
-                className="w-full text-left px-3 py-2 text-sm text-[#2d3a31] hover:bg-[#f6efe0] rounded-md flex justify-between items-center"
+                className="w-full text-left px-3 py-2 text-xs text-[#2d3a31] hover:bg-[#f6efe0] rounded-md flex justify-between items-center"
               >
-                <span>{item.title}</span>
+                <span className="font-medium">{item.title}</span>
                 <span className="text-xs font-bold text-[#c4821a]">{item.priceDisplay}</span>
               </button>
             ))}
           </div>
 
-          <div className="pt-2 border-t border-[#f0e3c5] flex justify-around">
+          <div className="pt-2 border-t border-[#f0e3c5] flex justify-around text-xs">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenAbout();
               }}
-              className="text-sm font-medium text-[#1b4b32] underline"
+              className="font-medium text-[#1b4b32] underline"
             >
-              About GauKripa
+              गौकृपा परिचय
             </button>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenReviews();
               }}
-              className="text-sm font-medium text-[#1b4b32] underline"
+              className="font-medium text-[#1b4b32] underline"
             >
-              Devotee Proof &amp; Reviews
+              समीक्षाएं एवं वीडियो पुष्टि
             </button>
           </div>
 

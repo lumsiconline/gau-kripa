@@ -1,29 +1,27 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
-// Initialize the existing GauKripa Firebase project.
-const app = initializeApp(firebaseConfig);
+// Initialize the existing GauKripa Firebase project safely.
+export const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Use the project's default Firestore database.
-// The Web app config does not specify a custom database ID.
-export const db = getFirestore(app);
-
-// Initialize Firebase Authentication.
+// Export auth
 export const auth = getAuth(app);
 
-// Validate the Firestore connection on startup safely
-export async function testFirestoreConnection(): Promise<boolean> {
-  try {
-    await getDocFromServer(doc(db, 'settings', 'config'));
-    console.log('✅ Firestore Database connected successfully');
-    return true;
-  } catch (error) {
-    // If Cloud Firestore API is pending activation or offline, fall back cleanly without error logs
-    console.log('ℹ️ Firestore operating in local storage mode (Cloud Firestore pending activation in Firebase console).');
-    return false;
+// Lazy Firestore instance to prevent premature gRPC stream initialization
+let _db: Firestore | null = null;
+export function getDb(): Firestore {
+  if (!_db) {
+    _db = getFirestore(app);
   }
+  return _db;
 }
+
+export const db = {
+  get instance() {
+    return getDb();
+  }
+};
 
 export default app;

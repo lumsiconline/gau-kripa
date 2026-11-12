@@ -771,40 +771,40 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             {/* Digital Certificate Box */}
             <div className="bg-[#fff9ea] border-2 border-[#d9ba78] rounded-2xl p-4 text-left max-w-lg mx-auto shadow-xs space-y-2.5">
               <div className="flex items-center justify-between border-b border-[#ebdcb9] pb-2">
-                <span className="font-playfair font-bold text-[#1b4b32] text-sm">GauKripa Seva Trust</span>
+                <span className="font-playfair font-bold text-[#1b4b32] text-sm">GauKripa • गौमाता आहार व्यवस्था एवं सेवा</span>
                 <span className="text-xs font-mono font-bold text-[#8b6f38]">{bookingReceipt?.bookingId}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[#887863]">Devotee:</span>
+                  <span className="text-[#887863]">Devotee / यजमान:</span>
                   <div className="font-bold text-[#2d3a31]">{bookingReceipt?.devoteeName}</div>
                 </div>
                 <div>
-                  <span className="text-[#887863]">Gotra:</span>
+                  <span className="text-[#887863]">Gotra / गोत्र:</span>
                   <div className="font-bold text-[#2d3a31]">{bookingReceipt?.gotra}</div>
                 </div>
                 <div>
-                  <span className="text-[#887863]">Seva &amp; Duration:</span>
+                  <span className="text-[#887863]">सेवा एवं अवधि:</span>
                   <div className="font-bold text-[#1b4b32]">{bookingReceipt?.sevaTitle} ({bookingReceipt?.duration})</div>
                 </div>
                 <div>
-                  <span className="text-[#887863]">Total Dakshina{bookingReceipt?.extraFee > 0 ? ' (incl. ₹21 extra)' : ''}:</span>
+                  <span className="text-[#887863]">कुल सेवा शुल्क{bookingReceipt?.extraFee > 0 ? ' (सहित ₹21 विशेष संकल्प)' : ''}:</span>
                   <div className="font-bold text-[#1b4b32]">₹{bookingReceipt?.amount}</div>
                 </div>
               </div>
 
               {bookingReceipt?.familyMembers?.length > 0 && (
                 <div className="text-[11px] pt-1 border-t border-[#ebdcb9]">
-                  <span className="text-[#887863]">Family in Sankalp: </span>
+                  <span className="text-[#887863]">संकल्प में सम्मिलित परिवार: </span>
                   <span className="font-semibold text-[#1b4b32]">{bookingReceipt.familyMembers.join(', ')}</span>
                 </div>
               )}
 
               <div className="pt-2 border-t border-[#ebdcb9] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-[#6d5f4c]">
-                <span>Video will be shared on your registered number: <strong className="text-[#1b4b32]">+91 {bookingReceipt?.phone}</strong></span>
+                <span>आहार वितरण की वीडियो पुष्टि WhatsApp पर भेजी जाएगी: <strong className="text-[#1b4b32]">+91 {bookingReceipt?.phone}</strong></span>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Verified Priest
+                  <ShieldCheck className="w-3.5 h-3.5" /> प्रत्यक्ष गौशाला सेवा
                 </span>
               </div>
             </div>
