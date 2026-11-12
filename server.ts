@@ -446,11 +446,13 @@ async function startServer() {
         amountInPaise = Math.round(numAmount);
       }
 
-      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TyRZQfpqrZVax7';
+      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
       if (!keyId || !keySecret) {
-        return res.status(401).json({ error: 'Razorpay API credentials not configured.' });
+        return res.status(500).json({
+          error: 'Razorpay LIVE credentials (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET) are not configured in environment.'
+        });
       }
 
       const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
@@ -479,9 +481,14 @@ async function startServer() {
         });
       } catch (rzpErr: any) {
         console.error('Razorpay API error in orders.create:', rzpErr);
-        if (rzpErr?.statusCode === 401 || rzpErr?.error?.code === 'BAD_REQUEST_ERROR') {
-          return res.status(rzpErr.statusCode || 500).json({
-            error: rzpErr?.error?.description || rzpErr?.message || 'Razorpay order creation failed.'
+        if (rzpErr?.statusCode === 401 || rzpErr?.error?.description === 'Authentication failed') {
+          return res.status(401).json({
+            error: 'Razorpay authentication failed. Please verify that your active Razorpay Live Key ID and Key Secret are correctly attached in your backend .env or environment variables.'
+          });
+        }
+        if (rzpErr?.error?.code === 'BAD_REQUEST_ERROR') {
+          return res.status(400).json({
+            error: rzpErr?.error?.description || 'Razorpay order creation request was rejected.'
           });
         }
         return res.status(500).json({
@@ -500,7 +507,7 @@ async function startServer() {
   // STEP 3: BACKEND - Verify Signature
   // Endpoint: POST /api/verify-payment (and /api/wallet/verify-razorpay-payment)
   // Algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
-  // Compare generated signature with razorpay_signature
+  // Timing-safe comparison with razorpay_signature
   const handleVerifyPayment = async (req: express.Request, res: express.Response) => {
     try {
       const order_id = req.body.order_id || req.body.razorpay_order_id;
@@ -531,8 +538,15 @@ async function startServer() {
         .update(textToSign)
         .digest('hex');
 
-      // Compare generated signature with razorpay_signature
-      if (expectedSignature !== signature) {
+      const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+      const signatureBuffer = Buffer.from(String(signature), 'utf8');
+
+      // Timing-safe comparison to prevent timing attacks
+      const isMatch =
+        expectedBuffer.length === signatureBuffer.length &&
+        crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
+
+      if (!isMatch) {
         // Signature mismatch: return 400, do NOT mark as paid
         return res.status(400).json({
           error: 'Invalid payment signature. Verification failed.',

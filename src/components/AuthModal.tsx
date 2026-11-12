@@ -192,8 +192,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const RazorpayCheckout = (window as any).Razorpay;
       if (!RazorpayCheckout) throw new Error('Razorpay Checkout is unavailable. Please try again.');
 
+      const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        throw new Error('Razorpay LIVE Key ID is not configured.');
+      }
+
       const checkoutOptions: any = {
-        key: order.key_id,
+        key: keyId,
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'GauKripa',

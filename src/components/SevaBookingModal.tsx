@@ -42,6 +42,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [bookingReceipt, setBookingReceipt] = useState<any>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Sync selectedSeva whenever a different seva is clicked and modal opens
   useEffect(() => {
@@ -52,6 +53,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
       setOccasion('General Daily Seva');
       setIsCompleted(false);
       setIsProcessing(false);
+      setPaymentError(null);
     }
   }, [initialSeva, isOpen]);
 
@@ -105,37 +107,133 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
     setFamilyMembers(familyMembers.filter((_, i) => i !== idx));
   };
 
-  const handlePay = (e: React.FormEvent) => {
+  const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPaymentError(null);
+
+    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10) {
+      setPaymentError('Please enter a valid 10-digit mobile number for Sankalp video proof.');
+      return;
+    }
+
     setIsProcessing(true);
 
-    setTimeout(() => {
-      const receipt = {
-        bookingId: `GK-${Math.floor(100000 + Math.random() * 900000)}`,
+    try {
+      // 1. Create real order on LIVE backend / Cloud Function
+      const amountInPaise = Math.round(totalAmount * 100);
+      const receiptId = `gk_seva_${Date.now()}`;
+      const order = await api.createOrder(amountInPaise, 'INR', receiptId, {
         sevaTitle: selectedSeva.title,
-        planet: selectedSeva.planetTag,
-        quantity: `${quantity} ${selectedSeva.unit}`,
-        duration: getDurationText(),
         devoteeName: devoteeName || 'Devotee',
+        phone: cleanPhone,
         gotra: gotra || 'Kashyap',
-        familyMembers,
-        occasion,
-        phone,
-        date: sankalpDate,
-        baseAmount: baseTotal,
-        extraFee: extraOccasionFee,
-        amount: totalAmount,
-        goshala: 'Surabhi Seva Dham, Vrindavan',
-        astrologerCoupon: 'GAU50-FREE-ASTRO',
-        timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        occasion
+      });
+
+      // 2. Ensure Razorpay checkout.js script is loaded
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Unable to load secure Razorpay Checkout.'));
+          document.body.appendChild(script);
+        });
+      }
+
+      const RazorpayCheckout = (window as any).Razorpay;
+      if (!RazorpayCheckout) {
+        throw new Error('Razorpay Checkout is currently unavailable. Please try again.');
+      }
+
+      const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        throw new Error('Razorpay LIVE Key ID is not configured.');
+      }
+
+      const checkoutOptions: any = {
+        key: keyId,
+        amount: order.amount || amountInPaise,
+        currency: 'INR',
+        name: 'GauKripa',
+        description: `${selectedSeva.title} • Sacred Seva Sankalp`,
+        prefill: {
+          name: devoteeName || 'Devotee',
+          contact: cleanPhone
+        },
+        notes: {
+          sevaTitle: selectedSeva.title,
+          gotra: gotra || 'Kashyap',
+          occasion: occasion,
+          purpose: 'Sacred Seva Booking'
+        },
+        theme: { color: '#1b4b32' },
+        handler: async (response: any) => {
+          try {
+            // 3. Cryptographic signature verification on backend
+            await api.verifyPayment(
+              response.razorpay_order_id || order.order_id || '',
+              response.razorpay_payment_id,
+              response.razorpay_signature || ''
+            );
+
+            const receipt = {
+              bookingId: `GK-${Math.floor(100000 + Math.random() * 900000)}`,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              sevaTitle: selectedSeva.title,
+              planet: selectedSeva.planetTag,
+              quantity: `${quantity} ${selectedSeva.unit}`,
+              duration: getDurationText(),
+              devoteeName: devoteeName || 'Devotee',
+              gotra: gotra || 'Kashyap',
+              familyMembers,
+              occasion,
+              phone: cleanPhone,
+              date: sankalpDate,
+              baseAmount: baseTotal,
+              extraFee: extraOccasionFee,
+              amount: totalAmount,
+              goshala: 'Surabhi Seva Dham, Vrindavan',
+              astrologerCoupon: 'GAU50-FREE-ASTRO',
+              timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            };
+
+            setBookingReceipt(receipt);
+            setIsCompleted(true);
+            await api.createBooking({ ...receipt, sevaId: selectedSeva.id });
+            if (onBookingSuccess) onBookingSuccess(receipt);
+          } catch (verifyErr: any) {
+            setPaymentError(verifyErr?.message || 'Payment signature verification failed.');
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+          },
+          escape: true,
+          confirm_close: true
+        }
       };
-      setBookingReceipt(receipt);
+
+      if (order.order_id) {
+        checkoutOptions.order_id = order.order_id;
+      }
+
+      const checkout = new RazorpayCheckout(checkoutOptions);
+      checkout.on('payment.failed', (resp: any) => {
+        setPaymentError(resp?.error?.description || 'Razorpay payment was not completed. Please try again.');
+        setIsProcessing(false);
+      });
+
+      checkout.open();
+    } catch (err: any) {
+      setPaymentError(err?.message || 'Failed to initiate secure Razorpay checkout.');
       setIsProcessing(false);
-      setIsCompleted(true);
-      // Persist to backend database for real dashboard and discount eligibility
-      api.createBooking({ ...receipt, sevaId: selectedSeva.id }).catch((e) => console.error(e));
-      if (onBookingSuccess) onBookingSuccess(receipt);
-    }, 1200);
+    }
   };
 
   return (
@@ -607,6 +705,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 <span className="font-extrabold text-[#1b4b32] text-xs shrink-0 bg-[#faedd0] px-2.5 py-1 rounded-lg border border-[#d6ba7f]">
                   +₹21 Extra
                 </span>
+              </div>
+            )}
+
+            {/* Payment error message */}
+            {paymentError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                <span>{paymentError}</span>
               </div>
             )}
 
