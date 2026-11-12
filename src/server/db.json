@@ -4,9 +4,9 @@
       "id": "gau-chara",
       "title": "Gau Chara Seva",
       "planet": "Surya Grah",
-      "planetTag": "☀️ Surya Grah",
+      "planetTag": "\u2600\ufe0f Surya Grah",
       "tagColor": "bg-amber-100 text-amber-900 border-amber-300",
-      "priceDisplay": "₹251 (5 kg)",
+      "priceDisplay": "\u20b9251 (5 kg)",
       "basePrice": 251,
       "unit": "lot (5 kg)",
       "minQty": 1,
@@ -21,9 +21,9 @@
       "id": "gau-roti",
       "title": "Gau Roti Seva",
       "planet": "Chandra Grah",
-      "planetTag": "🌙 Chandra Grah",
+      "planetTag": "\ud83c\udf19 Chandra Grah",
       "tagColor": "bg-amber-50 text-amber-900 border-amber-200",
-      "priceDisplay": "₹51 (4 Rotis)",
+      "priceDisplay": "\u20b951 (4 Rotis)",
       "basePrice": 51,
       "unit": "lot (4 rotis)",
       "minQty": 1,
@@ -38,9 +38,9 @@
       "id": "gau-gud-chana",
       "title": "Gau Gud-Chana Seva",
       "planet": "Mangal Grah",
-      "planetTag": "🪐 Mangal Grah",
+      "planetTag": "\ud83e\ude90 Mangal Grah",
       "tagColor": "bg-amber-100 text-amber-900 border-amber-300",
-      "priceDisplay": "₹151",
+      "priceDisplay": "\u20b9151",
       "basePrice": 151,
       "unit": "thali",
       "minQty": 1,
@@ -55,9 +55,9 @@
       "id": "pakshi-dana",
       "title": "Pakshi Dana Seva",
       "planet": "Budh Grah",
-      "planetTag": "🦅 Budh Grah",
+      "planetTag": "\ud83e\udd85 Budh Grah",
       "tagColor": "bg-amber-100 text-amber-900 border-amber-300",
-      "priceDisplay": "₹101",
+      "priceDisplay": "\u20b9101",
       "basePrice": 101,
       "unit": "katori mix",
       "minQty": 1,
@@ -72,9 +72,9 @@
       "id": "cheenti-aata",
       "title": "Cheenti Aata Seva",
       "planet": "Rahu-Ketu",
-      "planetTag": "🪱 Rahu-Ketu",
+      "planetTag": "\ud83e\udeb1 Rahu-Ketu",
       "tagColor": "bg-amber-100 text-amber-900 border-amber-300",
-      "priceDisplay": "₹149",
+      "priceDisplay": "\u20b9149",
       "basePrice": 149,
       "unit": "pudika pack",
       "minQty": 1,
@@ -89,9 +89,9 @@
       "id": "street-dogs",
       "title": "Street Dogs Seva",
       "planet": "Ketu Grah",
-      "planetTag": "🐕 Ketu Grah",
+      "planetTag": "\ud83d\udc15 Ketu Grah",
       "tagColor": "bg-amber-100 text-amber-900 border-amber-300",
-      "priceDisplay": "₹199+",
+      "priceDisplay": "\u20b9199+",
       "basePrice": 199,
       "unit": "meal tray",
       "minQty": 1,
@@ -317,7 +317,7 @@
           "id": "sys-1793985213935",
           "sender": "astrologer",
           "senderName": "System",
-          "text": "Consultation concluded. Total Duration: 0 min 0 sec. Total Dakshina: ₹10. Jai Gaumata!",
+          "text": "Consultation concluded. Total Duration: 0 min 0 sec. Total Dakshina: \u20b910. Jai Gaumata!",
           "timestamp": "05:13 PM"
         }
       ],
@@ -374,7 +374,7 @@
           "id": "sys-1793985076265",
           "sender": "astrologer",
           "senderName": "System",
-          "text": "Consultation concluded. Total Duration: 0 min 15 sec. Total Dakshina: ₹10. Jai Gaumata!",
+          "text": "Consultation concluded. Total Duration: 0 min 15 sec. Total Dakshina: \u20b910. Jai Gaumata!",
           "timestamp": "05:11 PM"
         }
       ],
@@ -395,7 +395,7 @@
           "orderId": "order_TyRgJNSirUInEf",
           "type": "credit",
           "amount": 50,
-          "description": "Razorpay Wallet Recharge (+₹50)",
+          "description": "Razorpay Wallet Recharge (+\u20b950)",
           "date": "2026-11-10T10:51:21.074Z"
         },
         {
@@ -404,7 +404,7 @@
           "orderId": "order_TyRgJNSirUInEf",
           "type": "credit",
           "amount": 50,
-          "description": "Razorpay Wallet Recharge (+₹50)",
+          "description": "Razorpay Wallet Recharge (+\u20b950)",
           "date": "2026-11-10T10:50:48.109Z"
         }
       ]
@@ -420,10 +420,16 @@
           "orderId": "order_TySS3PBEEs8rL7",
           "type": "credit",
           "amount": 50,
-          "description": "Razorpay Wallet Recharge (+₹50)",
+          "description": "Razorpay Wallet Recharge (+\u20b950)",
           "date": "2026-11-10T11:35:22.650Z"
         }
       ]
+    },
+    "7838031067": {
+      "phone": "7838031067",
+      "name": "Devotee",
+      "balance": 0,
+      "transactions": []
     }
   },
   "settings": {
@@ -431,9 +437,9 @@
     "discountedRatePerMin": 10,
     "discountEnabled": true,
     "extraOccasionFee": 21,
-    "promoBannerText": "✨ Subh Deepawali Special Offer: 50% Off on Astrologer Consultation with any Seva Booking!",
+    "promoBannerText": "\u2728 Subh Deepawali Special Offer: 50% Off on Astrologer Consultation with any Seva Booking!",
     "bannerEnabled": true,
-    "trustName": "GauKripa Seva Trust • Vrindavan & Mathura"
+    "trustName": "GauKripa Seva Trust \u2022 Vrindavan & Mathura"
   },
   "reviews": [
     {

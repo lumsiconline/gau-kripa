@@ -518,9 +518,9 @@ export const api = {
     );
 
     const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+    const keyId = res.data?.key_id || res.data?.keyId;
 
-    if (res.ok && orderId) {
+    if (res.ok && orderId && keyId) {
       return {
         order_id: orderId,
         amount: res.data?.amount || amountInPaise,
@@ -528,18 +528,8 @@ export const api = {
         key_id: keyId
       };
     }
+    throw new Error(res.error || 'Unable to create Razorpay order. Please check the payment server.');
 
-    // 2. If endpoint returned an error, check if it was not just a static 404/405
-    if (res.error && !res.isHtml) {
-      throw new Error(res.error);
-    }
-
-    return {
-      order_id: '',
-      amount: amountInPaise,
-      currency,
-      key_id: keyId
-    };
   },
 
   verifyPayment: async (order_id: string, payment_id: string, signature: string) => {
@@ -559,12 +549,9 @@ export const api = {
     if (res.ok && res.data?.success) {
       return res.data;
     }
+    if (res.error && !res.isHtml) throw new Error(res.error);
+    throw new Error(res.error || 'Payment verification failed. Please contact support before retrying.');
 
-    if (res.error && !res.isHtml) {
-      throw new Error(res.error);
-    }
-
-    return { success: true, verified: true, message: 'Payment verified successfully.' };
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
@@ -595,9 +582,9 @@ export const api = {
     );
 
     const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+    const keyId = res.data?.key_id || res.data?.keyId;
 
-    if (res.ok && orderId) {
+    if (res.ok && orderId && keyId) {
       return {
         order_id: orderId,
         amount: res.data?.amount || amountInPaise,
@@ -606,16 +593,8 @@ export const api = {
       };
     }
 
-    if (res.error && !res.isHtml) {
-      throw new Error(res.error);
-    }
+    throw new Error(res.error || 'Razorpay order creation failed. No valid order ID was returned.');
 
-    return {
-      order_id: '',
-      amount: amountInPaise,
-      currency: 'INR' as const,
-      key_id: keyId
-    };
   },
 
   verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string; amount?: number }) => {
@@ -1385,19 +1364,8 @@ export const api = {
       }
     }
 
-    if (trimmedPass.length < 4) {
-      throw new Error('Password must be at least 4 characters.');
-    }
-
-    const devName = trimmedEmail.split('@')[0].replace(/[._-]/g, ' ');
-    const user = {
-      name: devName.charAt(0).toUpperCase() + devName.slice(1),
-      email: trimmedEmail,
-      role: 'devotee' as const,
-      phone: credentials.phone || '9876543210',
-      isAdmin: false
-    };
-    try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
-    return { success: true, user };
+    throw new Error(
+      'Account not found. Please sign up first, or try again when the login service is online.'
+    );
   }
 };

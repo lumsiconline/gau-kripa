@@ -150,28 +150,10 @@ async function startServer() {
       return res.json({ success: true, user: devoteeUser });
     }
 
-    // Fallback devotee authentication
-    const devoteeUser = {
-      name: cleanEmail.split('@')[0],
-      email: cleanEmail,
-      role: 'devotee',
-      phone: phone || '9876543210',
-      isAdmin: false
-    };
-
-    // Ensure wallet exists for devotee with actual balance (0 default)
-    if (!db.wallets[devoteeUser.phone]) {
-      db.wallets[devoteeUser.phone] = {
-        phone: devoteeUser.phone,
-        name: devoteeUser.name,
-        balance: 0,
-        transactions: []
-      };
-      writeDb(db);
-      syncWallet(db.wallets[devoteeUser.phone]).catch(console.error);
-    }
-
-    return res.json({ success: true, user: devoteeUser });
+    // Only registered accounts can log in.
+    return res.status(401).json({
+      error: 'Account not found. Please sign up first, then log in.'
+    });
   });
 
   // ==========================================
@@ -446,7 +428,8 @@ async function startServer() {
         amountInPaise = Math.round(numAmount);
       }
 
-      const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
+      const keyId = process.env.RAZORPAY_KEY_ID;
+
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
       if (!keyId || !keySecret) {
