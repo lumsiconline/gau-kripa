@@ -31,6 +31,8 @@ jobs:
         run: npm install
 
       - name: Build frontend
+        env:
+          VITE_RAZORPAY_KEY_ID: ${{ vars.VITE_RAZORPAY_KEY_ID }}
         run: npm run build
 
       - name: Build Firebase Functions
