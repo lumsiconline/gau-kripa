@@ -55,7 +55,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('9876543210');
+  const [phone, setPhone] = useState('');
 
   // Status states
   const [loading, setLoading] = useState(false);
@@ -89,6 +89,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }).catch(console.error);
     }
   }, [currentUser, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setPhone('');
+      setAuthMode('login');
+      setErrorMsg(null);
+      setSuccessMsg(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -553,6 +566,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <Mail className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
                     <input
                       type="email"
+                      autoComplete="off"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -627,7 +641,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               )}
 
-              <form onSubmit={handleSignupSubmit} className="space-y-3">
+              <form onSubmit={handleSignupSubmit} autoComplete="off" className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-[#483d2e] mb-1">
                     Full Name / Devotee Name <span className="text-rose-600">*</span>
@@ -636,6 +650,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <User className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
                     <input
                       type="text"
+                      autoComplete="off"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -670,6 +685,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <Phone className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
                     <input
                       type="tel"
+                      autoComplete="off"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="9876543210"
@@ -687,6 +703,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <Lock className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
                       <input
                         type="password"
+                        autoComplete="new-password"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -704,6 +721,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <Lock className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
                       <input
                         type="password"
+                        autoComplete="new-password"
                         required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
