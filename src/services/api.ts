@@ -678,9 +678,10 @@ export const api = {
   // Reviews
   getReviews: async (): Promise<ReviewItem[]> => {
     try {
-      const { supabaseRest } = await import('./supabaseClient');
+      const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+      const session = getSupabaseSession();
       const rows = await supabaseRest<Array<{data: ReviewItem}>>(
-        'reviews', '?select=data&order=created_at.desc'
+        'reviews', '?select=data&order=created_at.desc', session?.access_token
       );
       return rows.map((row) => ({ ...row.data, isApproved: Boolean((row.data as any).isApproved) }));
     } catch (error) {
@@ -710,8 +711,9 @@ export const api = {
   },
 
   approveReview: async (id: string, isApproved: boolean): Promise<ReviewItem> => {
-    const { supabaseRest, supabaseMutation } = await import('./supabaseClient');
-    const rows = await supabaseRest<Array<{data:ReviewItem}>>('reviews', `?select=data&id=eq.${encodeURIComponent(id)}&limit=1`);
+    const { supabaseRest, supabaseMutation, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    const rows = await supabaseRest<Array<{data:ReviewItem}>>('reviews', `?select=data&id=eq.${encodeURIComponent(id)}&limit=1`, session?.access_token);
     if (!rows[0]) throw new Error('Review not found or admin access denied.');
     const updated = { ...rows[0].data, isApproved };
     await supabaseMutation('reviews','PATCH',`?id=eq.${encodeURIComponent(id)}`,{is_approved:isApproved,data:updated});
