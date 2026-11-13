@@ -1140,14 +1140,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <label className="text-[11px] font-bold text-[#786a55]">
                               {tr('खाता भूमिका', 'Account Role')}
-                              <select
-                                value={customer.role === 'astrologer' ? 'astrologer' : 'devotee'}
-                                onChange={(e) => handleCustomerRoleChange(customer, e.target.value as 'devotee' | 'astrologer')}
-                                className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
-                              >
-                                <option value="devotee">Devotee</option>
-                                <option value="astrologer">Astrologer</option>
-                              </select>
+                              {customer.role === 'super_admin' || customer.role === 'admin' ? (
+                                <span className="mt-1 block rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">Protected Administrator</span>
+                              ) : (
+                                <select
+                                  value={customer.role === 'astrologer' ? 'astrologer' : 'devotee'}
+                                  onChange={(e) => handleCustomerRoleChange(customer, e.target.value as 'devotee' | 'astrologer')}
+                                  className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
+                                >
+                                  <option value="devotee">Devotee</option>
+                                  <option value="astrologer">Astrologer</option>
+                                </select>
+                              )}
                             </label>
                             {customer.role === 'astrologer' && (
                               <label className="text-[11px] font-bold text-[#786a55]">
