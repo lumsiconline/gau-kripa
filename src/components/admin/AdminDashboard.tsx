@@ -202,7 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     if (!proofModalBooking) return;
     try {
       await api.uploadBookingProof(proofModalBooking.id, {
-        videoProofUrl: videoUrlInput || 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4',
+        videoProofUrl: videoUrlInput.trim(),
         priestName: priestNameInput,
         status: 'completed',
       });
@@ -372,12 +372,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <div className="text-[11px] text-[#786a55] font-semibold">{tr('लाइव सिस्टम स्थिति:', 'Live System Status:')}</div>
             <div className="flex items-center gap-2 text-xs text-emerald-800 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{tr('Express API सर्वर (3000)', 'Express API Server (3000)')}</span>
+              <span>{tr('Supabase Edge Functions', 'Supabase Edge Functions')}</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
               <span className={`w-2 h-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
               <span>
-                {tr('Cloud Firestore:', 'Cloud Firestore:')}{' '}
+                {tr('Supabase PostgreSQL:', 'Cloud Firestore:')}{' '}
                 {dbStatus?.connected ? tr('कनेक्टेड', 'Connected') : tr('कनेक्ट हो रहा है...', 'Connecting...')}
               </span>
             </div>
@@ -406,13 +406,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-sm text-amber-200">{tr('Google Cloud Firestore कनेक्टेड', 'Google Cloud Firestore Connected')}</h3>
+                          <h3 className="font-bold text-sm text-amber-200">{tr('Supabase Database Connected', 'Supabase Database Connected')}</h3>
                           <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                             {tr('लाइव डेटाबेस', 'Live Database')}
                           </span>
                         </div>
                         <p className="text-xs text-emerald-100/90 mt-0.5">
-                          {tr('प्रोजेक्ट:', 'Project:')} <code className="text-amber-300 font-mono text-[11px]">{dbStatus?.projectId || 'polished-philosophy-r7cdj'}</code> &bull; {tr('डेटाबेस:', 'Database:')} <code className="text-emerald-200 font-mono text-[11px]">{dbStatus?.databaseId || 'ai-studio-gaukripasevashan'}</code>
+                          {tr('प्रोजेक्ट:', 'Project:')} <code className="text-amber-300 font-mono text-[11px]">{dbStatus?.projectId || 'nwvsesrnhuhcihftagcp'}</code> &bull; {tr('डेटाबेस:', 'Database:')} <code className="text-emerald-200 font-mono text-[11px]">{dbStatus?.databaseId || 'Supabase PostgreSQL'}</code>
                         </p>
                       </div>
                     </div>
