@@ -76,6 +76,42 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (action === "create-booking") {
+      const booking = body.booking ?? {};
+      const orderId = String(booking.orderId || "");
+      const paymentId = String(booking.paymentId || "");
+      const phone = digits(booking.phone);
+      const amount = Number(booking.amount);
+      if (!orderId || !paymentId || !phone || !Number.isFinite(amount) || amount <= 0) {
+        return json({ error: "Verified payment and booking details are required." }, 400);
+      }
+      if (phone !== digits(profile.phone)) return json({ error: "Booking phone does not match your account." }, 403);
+      const { data: orderRow, error: orderError } = await supabase.from("payment_orders")
+        .select("*").eq("order_id", orderId).maybeSingle();
+      if (orderError) throw orderError;
+      if (!orderRow || orderRow.user_id !== profile.id || orderRow.phone !== phone ||
+          orderRow.status !== "paid" || orderRow.payment_id !== paymentId ||
+          orderRow.data?.purpose !== "seva" || Number(orderRow.amount_paise) !== Math.round(amount * 100)) {
+        return json({ error: "A matching, verified seva payment is required before booking." }, 402);
+      }
+      const bookingId = String(booking.bookingId || ("GK-" + crypto.randomUUID().slice(0, 8))).slice(0, 40);
+      const { data: existing } = await supabase.from("bookings").select("data")
+        .eq("user_id", profile.id).eq("booking_id", bookingId).maybeSingle();
+      if (existing?.data) return json({ success: true, booking: existing.data, already_saved: true });
+      const savedBooking = {
+        ...booking, bookingId, phone, email: profile.email,
+        devoteeName: profile.full_name || booking.devoteeName || "Devotee",
+        status: "confirmed", createdAt: new Date().toISOString()
+      };
+      const { error: insertError } = await supabase.from("bookings").insert({
+        id: String(booking.id || ("bkg-" + crypto.randomUUID())),
+        booking_id: bookingId, user_id: profile.id, phone, email: profile.email,
+        status: "confirmed", amount, data: savedBooking
+      });
+      if (insertError) throw insertError;
+      return json({ success: true, booking: savedBooking });
+    }
+
     if (action === "create-seva-order") {
       if (!razorpayKeyId || !razorpaySecret) return json({ error: "Razorpay secrets are not configured." }, 503);
       const phone = digits(body.phone);
@@ -93,7 +129,7 @@ Deno.serve(async (req: Request) => {
       const order = await rpResponse.json();
       if (!rpResponse.ok) return json({ error: order.error?.description ?? "Razorpay order creation failed." }, 502);
       const { error: insertError } = await supabase.from("payment_orders").insert({
-        order_id: order.id, phone, amount_paise: amountPaise, currency: order.currency,
+        order_id: order.id, user_id: profile.id, phone, amount_paise: amountPaise, currency: order.currency,
         data: { receipt, purpose: "seva", notes: body.notes || {} }
       });
       if (insertError) throw insertError;
@@ -153,7 +189,7 @@ Deno.serve(async (req: Request) => {
       const order = await rpResponse.json();
       if (!rpResponse.ok) return json({ error: order.error?.description ?? "Razorpay order creation failed." }, 502);
       const { error: insertError } = await supabase.from("payment_orders").insert({
-        order_id: order.id, phone, amount_paise: amountPaise, currency: "INR",
+        order_id: order.id, user_id: profile.id, phone, amount_paise: amountPaise, currency: "INR",
         data: { receipt, customer_name: profile.full_name },
       });
       if (insertError) throw insertError;
