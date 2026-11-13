@@ -286,7 +286,7 @@ export default function App() {
     return (
       <AstrologerDashboard
         onBackToWebsite={() => navigateTo('website')}
-        selectedAstroId={activeAstrologer?.id}
+        selectedAstroId={currentUser?.astrologerId || activeAstrologer?.id}
       />
     );
   }
