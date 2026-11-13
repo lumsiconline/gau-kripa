@@ -391,7 +391,7 @@ export const api = {
     return wallet;
   },
 
-  // Standard Razorpay Checkout Methods (Express Backend LIVE Payments)
+  // Standard Razorpay Checkout Methods (Supabase Edge Function)
   createOrder: async (amountInPaise: number, currency = 'INR', receipt?: string, notes?: Record<string, string>) => {
     if (!Number.isInteger(amountInPaise) || amountInPaise < 100) throw new Error('Minimum order amount must be at least ₹1.');
     const { invokeGauKripaPayments } = await import('./supabaseClient');
