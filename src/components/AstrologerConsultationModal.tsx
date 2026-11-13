@@ -118,7 +118,8 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   useEffect(() => {
     if (!isOpen) return;
 
-    setMode(initialMode);
+    setMode(initialMode === 'call' ? 'chat' : initialMode);
+    if (initialMode === 'call') setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'));
     setChatStatus('idle');
     setFormStep(0);
     setBirthDetails({
@@ -440,14 +441,10 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode('call');
-                    setCallStatus('connecting');
-                    setCallSeconds(0);
-                    setTimeout(() => setCallStatus('connected'), 1200);
-                  }}
-                  className="p-2 rounded-full hover:bg-white/15 text-white transition-colors cursor-pointer"
-                  title={tr('ऑडियो परामर्श कॉल', 'Audio Consultation Call')}
+                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'))}
+                  disabled
+                  className="p-2 rounded-full text-white/40 cursor-not-allowed"
+                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup pending')}
                 >
                   <Phone className="w-4 h-4" />
                 </button>
@@ -798,20 +795,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode('call');
-                    setCallStatus('connecting');
-                    setCallSeconds(0);
-                    setTimeout(() => setCallStatus('connected'), 1500);
-                  }}
-                  className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    mode === 'call'
-                      ? 'bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 shadow-xs'
-                      : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-900'
-                  }`}
+                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'))}
+                  disabled
+                  className="py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-400/30 text-slate-500 cursor-not-allowed"
+                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup pending')}
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>{tr('त्वरित कॉल', 'Instant Call')}</span>
+                  <span>{tr('कॉल सेटअप लंबित', 'Call Setup Pending')}</span>
                 </button>
               </div>
             </div>
