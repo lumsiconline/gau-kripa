@@ -26,7 +26,7 @@ import {
   RefreshCw,
   Languages
 } from 'lucide-react';
-import { api, ServiceItem, AstrologerItem, BookingRecord, AppSettings, ReviewItem } from '../../services/api';
+import { api, ServiceItem, AstrologerItem, BookingRecord, AppSettings, ReviewItem, AdminCustomerRecord } from '../../services/api';
 import { ImageCrop } from '../ImageCrop';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -48,6 +48,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [customers, setCustomers] = useState<AdminCustomerRecord[]>([]);
   const [dbStatus, setDbStatus] = useState<{
     connected: boolean;
     projectId: string;
@@ -80,13 +81,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [srv, ast, bkg, set, rev, dbs] = await Promise.all([
+      const [srv, ast, bkg, set, rev, dbs, users] = await Promise.all([
         api.getServices(true),
         api.getAstrologers(),
         api.getBookings(),
         api.getSettings(),
         api.getReviews(),
         api.getDatabaseStatus(),
+        api.getAdminCustomers(),
       ]);
       setServices(srv);
       setAstrologers(ast);
@@ -94,6 +96,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       setSettings(set);
       setReviews(rev);
       setDbStatus(dbs);
+      setCustomers(users);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -220,6 +223,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       await loadAllData();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleCustomerRoleChange = async (customer: AdminCustomerRecord, role: 'devotee' | 'astrologer') => {
+    try {
+      const assignedAstrologer = customer.astrologerId || astrologers[0]?.id;
+      await api.updateCustomerAccess(customer.id, role, role === 'astrologer' ? assignedAstrologer : undefined);
+      showNotification(role === 'astrologer' ? 'Astrologer access assigned.' : 'Devotee access restored.');
+      await loadAllData();
+    } catch (err: any) {
+      showNotification(err?.message || 'Unable to update account role.');
+    }
+  };
+
+  const handleCustomerAstrologerChange = async (customer: AdminCustomerRecord, astrologerId: string) => {
+    try {
+      await api.updateCustomerAccess(customer.id, 'astrologer', astrologerId);
+      showNotification('Astrologer profile assigned successfully.');
+      await loadAllData();
+    } catch (err: any) {
+      showNotification(err?.message || 'Unable to assign astrologer profile.');
     }
   };
 
@@ -1083,35 +1107,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
               )}
 
-              {/* TAB 7: CUSTOMERS & WALLETS */}
+              {/* TAB 7: REGISTERED ACCOUNTS & WALLET BALANCES */}
               {activeTab === 'customers' && (
                 <div className="space-y-4">
                   <div>
                     <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                      {tr('पंजीकृत श्रद्धालु एवं वॉलेट शेष राशि', 'Registered Devotees & Wallet Balances')}
+                      {tr('पंजीकृत खाते एवं वॉलेट', 'Registered Accounts & Wallets')}
                     </h2>
                     <p className="text-xs text-[#71614e]">
-                      {tr('श्रद्धालु प्रोफ़ाइल, वॉलेट शेष और परामर्श शुल्क कटौती देखें।', 'View devotee profiles, wallet balances, and automatic consultation deductions.')}
+                      {tr('वास्तविक Supabase उपयोगकर्ता, वॉलेट शेष और ज्योतिषाचार्य एक्सेस प्रबंधित करें।', 'Manage real Supabase users, wallet balances and astrologer access.')}
                     </p>
                   </div>
-
-                  <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-sm text-[#1b4b32]">{tr('श्री हर्ष भारद्वाज (नमूना श्रद्धालु)', 'Shri Harsh Bhardwaj (Sample Devotee)')}</h4>
-                      <p className="text-xs text-[#71614e]">+91 9876543210 • {tr('गोत्र: कश्यप', 'Gotra: Kashyap')}</p>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-1">
-                        {tr('50% ज्योतिषाचार्य छूट हेतु पात्र (पूर्ण सेवा सत्यापित)', 'Eligible for 50% Astrologer Discount (Completed Seva Verified)')}
-                      </span>
+                  {customers.length === 0 ? (
+                    <div className="rounded-2xl border border-[#ebdcb9] bg-[#fcf8ee] p-8 text-center text-sm text-[#71614e]">
+                      {tr('अभी कोई पंजीकृत खाता नहीं है।', 'No registered accounts yet.')}
                     </div>
-
-                    <div className="text-right">
-                      <div className="text-xs text-[#786a55] font-semibold">{tr('वॉलेट शेष', 'Wallet Balance')}</div>
-                      <div className="text-2xl font-black text-[#1b4b32]">₹250</div>
-                      <div className="text-[10px] text-emerald-700 font-bold">{tr('25 मिनट परामर्श क्रेडिट', '25 min consultation credit')}</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {customers.map((customer) => (
+                        <div key={customer.id} className="rounded-2xl border border-[#ebdcb9] bg-[#fffdf8] p-4 flex flex-col gap-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="font-bold text-sm text-[#1b4b32]">{customer.fullName}</div>
+                              <div className="text-xs text-[#71614e] break-all">{customer.email}</div>
+                              <div className="text-xs text-[#71614e]">{customer.phone || tr('फोन दर्ज नहीं', 'No phone saved')}</div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="text-[10px] uppercase font-bold text-[#786a55]">{tr('वॉलेट शेष', 'Wallet Balance')}</div>
+                              <div className="text-xl font-black text-[#1b4b32]">₹{customer.walletBalance.toFixed(2)}</div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label className="text-[11px] font-bold text-[#786a55]">
+                              {tr('खाता भूमिका', 'Account Role')}
+                              <select
+                                value={customer.role === 'astrologer' ? 'astrologer' : 'devotee'}
+                                onChange={(e) => handleCustomerRoleChange(customer, e.target.value as 'devotee' | 'astrologer')}
+                                className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
+                              >
+                                <option value="devotee">Devotee</option>
+                                <option value="astrologer">Astrologer</option>
+                              </select>
+                            </label>
+                            {customer.role === 'astrologer' && (
+                              <label className="text-[11px] font-bold text-[#786a55]">
+                                {tr('ज्योतिषाचार्य प्रोफ़ाइल', 'Astrologer Profile')}
+                                <select
+                                  value={customer.astrologerId || ''}
+                                  onChange={(e) => handleCustomerAstrologerChange(customer, e.target.value)}
+                                  className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
+                                >
+                                  <option value="" disabled>Select astrologer</option>
+                                  {astrologers.map((astro) => <option key={astro.id} value={astro.id}>{astro.name}</option>)}
+                                </select>
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
+       )}
             </>
           )}
 
