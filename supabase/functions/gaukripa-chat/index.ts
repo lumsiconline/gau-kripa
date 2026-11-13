@@ -98,7 +98,6 @@ Deno.serve(async (req: Request) => {
       let q = supabase.from("chat_sessions").select("*").eq("status", "waiting_approval").order("created_at", { ascending: true }).limit(1);
       if (profile.role === "astrologer") q = q.eq("astrologer_id", String(profile.astrologer_id));
       else if (body.astrologerId && body.astrologerId !== "all") q = q.eq("astrologer_id", String(body.astrologerId));
-      else if (body.astrologerId && body.astrologerId !== "all") q = q.eq("astrologer_id", String(body.astrologerId));
       const { data, error } = await q;
       if (error) throw error;
       return json({ incoming: data?.[0] ? await toSession(data[0]) : null });
@@ -122,7 +121,6 @@ Deno.serve(async (req: Request) => {
       if (error) throw error;
       if (!row) return json({ error: "Chat session not found." }, 404);
       if (row.customer_id !== auth.user.id && !staff) return json({ error: "Access denied." }, 403);
-      if (profile.role === "astrologer" && row.astrologer_id !== profile.astrologer_id) return json({ error: "This chat is assigned to another astrologer." }, 403);
       if (profile.role === "astrologer" && row.astrologer_id !== profile.astrologer_id) return json({ error: "This chat is assigned to another astrologer." }, 403);
       const session = await toSession(row);
       const { data: wallet } = await supabase.from("wallets").select("balance").eq("phone", session.customerPhone).maybeSingle();
