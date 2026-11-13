@@ -4,6 +4,7 @@ import { SevaItem, getLocalizedSevaItems } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
 import { api, normalizePhone } from '../services/api';
 import { useLanguage } from '../i18n/LanguageContext';
+import { getSupabaseSession } from '../services/supabaseClient';
 
 interface SevaBookingModalProps {
   initialSeva: SevaItem;
@@ -29,9 +30,9 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
   const [customDays, setCustomDays] = useState<number>(11);
   
   // Devotee Sankalp info
-  const [devoteeName, setDevoteeName] = useState<string>('हर्ष भारद्वाज');
+  const [devoteeName, setDevoteeName] = useState<string>(() => String(getSupabaseSession()?.user?.user_metadata?.full_name || ''));
   const [gotra, setGotra] = useState<string>('कश्यप');
-  const [phone, setPhone] = useState<string>('9876543210');
+  const [phone, setPhone] = useState<string>(() => String(getSupabaseSession()?.user?.user_metadata?.phone || ''));
   const [sankalpDate, setSankalpDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [sankalpWish, setSankalpWish] = useState<string>('');
   const [occasionId, setOccasionId] = useState<string>('general');
@@ -188,7 +189,8 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             await api.verifyPayment(
               response.razorpay_order_id || order.order_id || '',
               response.razorpay_payment_id,
-              response.razorpay_signature || ''
+              response.razorpay_signature || '',
+              cleanPhone
             );
 
             const receipt = {
