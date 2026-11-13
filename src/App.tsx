@@ -30,6 +30,7 @@ import { ContactModal } from './components/ContactModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AstrologerDashboard } from './components/astrologer/AstrologerDashboard';
 import { useLanguage } from './i18n/LanguageContext';
+import { getSupabaseSession, clearSupabaseSession } from './services/supabaseClient';
 
 export default function App() {
   const { lang, tr } = useLanguage();
@@ -40,6 +41,16 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const session = getSupabaseSession();
+        if (!session?.access_token) {
+          localStorage.removeItem('gaukripa_user');
+          return null;
+        }
+        if (session.expires_at && session.expires_at * 1000 <= Date.now()) {
+          clearSupabaseSession();
+          localStorage.removeItem('gaukripa_user');
+          return null;
+        }
         const stored = localStorage.getItem('gaukripa_user');
         if (stored) return JSON.parse(stored);
       } catch (err) {
