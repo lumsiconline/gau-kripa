@@ -151,7 +151,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
     if (password.length < 8) {
-      setErrorMsg(tr('पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।', 'Password must be at least 8 characters long.'));
+      setErrorMsg(tr('पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।', 'Password must be at least 8 characters long.'));
+      return;
+    }
+    if (normalizePhone(phone, '').length !== 10) {
+      setErrorMsg(tr('कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।', 'Please enter a valid 10-digit mobile number for secure payments and consultations.'));
       return;
     }
     if (password !== confirmPassword) {
@@ -747,6 +751,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <input
                       type="tel"
                       autoComplete="off"
+                      required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="9876543210"
