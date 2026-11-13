@@ -161,7 +161,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
         throw new Error(tr('Razorpay चेकआउट अभी उपलब्ध नहीं है। कृपया पुनः प्रयास करें।', 'Razorpay Checkout is currently unavailable. Please try again.'));
       }
 
-      const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+      const keyId = order.key_id;
       if (!keyId) {
         throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID is not configured.'));
       }
