@@ -62,3 +62,24 @@ export async function invokeGauKripaPayments<T>(body: Record<string, unknown>): 
   if (!response.ok) throw new Error(data.error || 'Secure payment request failed.');
   return data as T;
 }
+
+export async function supabaseMutation<T>(
+  table: string,
+  method: 'POST' | 'PATCH' | 'DELETE',
+  query: string,
+  body?: unknown
+): Promise<T> {
+  const session = getSupabaseSession();
+  if (!session?.access_token) throw new Error('Please sign in with an administrator account.');
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    method,
+    headers: {
+      ...headers(session.access_token),
+      Prefer: 'return=representation'
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || data.details || data.error || 'Supabase update failed. Check administrator permissions.');
+  return data as T;
+}
