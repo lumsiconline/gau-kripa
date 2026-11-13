@@ -319,22 +319,15 @@ export const api = {
   },
 
   createBooking: async (booking: Partial<BookingRecord>): Promise<BookingRecord> => {
-    const { supabaseRest, supabaseMutation, getSupabaseSession } = await import('./supabaseClient');
-    const session = getSupabaseSession();
-    if (!session?.access_token) throw new Error('Please sign in before booking a seva.');
-    const profiles = await supabaseRest<Array<{id:string;phone:string|null;email:string}>>(
-      'app_users', '?select=id,phone,email&limit=1', session.access_token
-    );
-    const profile = profiles[0];
-    if (!profile) throw new Error('Your account profile is not ready. Please sign in again.');
+    if (!booking.orderId || !booking.paymentId) throw new Error('A verified Razorpay seva payment is required before booking.');
     const newBooking: BookingRecord = {
       id: booking.id || `bkg-${crypto.randomUUID()}`,
       bookingId: booking.bookingId || `GK-${Math.floor(100000 + Math.random() * 900000)}`,
       paymentId: booking.paymentId,
       orderId: booking.orderId,
       devoteeName: booking.devoteeName || 'Devotee',
-      phone: profile.phone || booking.phone || '',
-      email: profile.email,
+      phone: normalizePhone(booking.phone, ''),
+      email: booking.email,
       gotra: booking.gotra || '',
       sevaId: booking.sevaId || '',
       sevaTitle: booking.sevaTitle || '',
@@ -351,12 +344,12 @@ export const api = {
       goshala: booking.goshala || '',
       createdAt: new Date().toISOString()
     };
-    const rows = await supabaseMutation<Array<{id:string}>>(
-      'bookings', 'POST', '?select=id',
-      [{ id: newBooking.id, booking_id: newBooking.bookingId, user_id: profile.id, phone: newBooking.phone, email: newBooking.email, status: newBooking.status, amount: newBooking.amount, data: newBooking }]
-    );
-    if (!rows[0]) throw new Error('Supabase did not save the seva booking.');
-    return newBooking;
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const result = await invokeGauKripaPayments<{success:boolean;booking:BookingRecord}>({
+      action:'create-booking', booking:newBooking
+    });
+    if (!result.success || !result.booking) throw new Error('Supabase did not confirm the paid seva booking.');
+    return result.booking;
   },
 
   updateBookingStatus: async (id: string, status: BookingRecord['status']): Promise<BookingRecord> => {
