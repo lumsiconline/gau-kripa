@@ -122,6 +122,16 @@ export interface AppSettings {
   trustName: string;
 }
 
+export interface AdminCustomerRecord {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: 'devotee' | 'astrologer' | 'admin' | 'super_admin';
+  astrologerId?: string;
+  walletBalance: number;
+}
+
 export interface ReviewItem {
   id: string;
   name: string;
@@ -703,6 +713,37 @@ export const api = {
   uploadMediaFile: async (file: File): Promise<string> => {
     const { uploadGauKripaMedia } = await import('./supabaseClient');
     return await uploadGauKripaMedia(file);
+  },
+
+  getAdminCustomers: async (): Promise<AdminCustomerRecord[]> => {
+    const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    if (!session?.access_token) throw new Error('Admin sign-in required.');
+    const [profiles, wallets] = await Promise.all([
+      supabaseRest<Array<{id:string;full_name:string;email:string;phone:string|null;role:string;astrologer_id:string|null}>>(
+        'app_users','?select=id,full_name,email,phone,role,astrologer_id&order=created_at.desc',session.access_token
+      ),
+      supabaseRest<Array<{user_id:string|null;phone:string;balance:number}>>(
+        'wallets','?select=user_id,phone,balance',session.access_token
+      )
+    ]);
+    const byUser = new Map(wallets.map((w) => [w.user_id || w.phone, Number(w.balance || 0)]));
+    return profiles.map((p) => ({
+      id:p.id, fullName:p.full_name || 'Devotee', email:p.email, phone:p.phone || '',
+      role:(p.role || 'devotee') as AdminCustomerRecord['role'],
+      astrologerId:p.astrologer_id || undefined,
+      walletBalance:byUser.get(p.id) || (p.phone ? byUser.get(p.phone) : 0) || 0
+    }));
+  },
+
+  updateCustomerAccess: async (profileId: string, role: 'devotee' | 'astrologer', astrologerId?: string): Promise<void> => {
+    if (role === 'astrologer' && !astrologerId) throw new Error('Select an astrologer profile before assigning astrologer access.');
+    const { supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseMutation<Array<{id:string}>>(
+      'app_users','PATCH',`?id=eq.${encodeURIComponent(profileId)}&select=id`,
+      { role, astrologer_id: role === 'astrologer' ? astrologerId : null, updated_at:new Date().toISOString() }
+    );
+    if (!rows.length) throw new Error('Profile update was not saved. Check admin permissions.');
   },
 
   getDatabaseStatus: async (): Promise<{
