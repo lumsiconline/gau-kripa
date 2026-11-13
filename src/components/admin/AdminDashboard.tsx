@@ -200,6 +200,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
   const handleSaveProof = async () => {
     if (!proofModalBooking) return;
+    if (!videoUrlInput.trim()) {
+      showNotification(tr('कृपया वास्तविक वीडियो प्रमाण URL दर्ज करें।', 'Please enter the actual video proof URL before completing this booking.'));
+      return;
+    }
     try {
       await api.uploadBookingProof(proofModalBooking.id, {
         videoProofUrl: videoUrlInput.trim(),
@@ -208,8 +212,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       });
       showNotification(
         tr(
-          'वीडियो प्रमाण अपलोड हो गया और सेवा पूर्ण चिह्नित हुई! व्हाट्सएप सूचना कतारबद्ध है।',
-          'Video Proof uploaded and marked Completed! WhatsApp notification queued.'
+          'वीडियो प्रमाण सहेजा गया और सेवा पूर्ण चिह्नित हुई।',
+          'Video proof saved and booking marked completed.'
         )
       );
       setProofModalBooking(null);
