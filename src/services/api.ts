@@ -39,6 +39,8 @@ export interface AstrologerItem {
 export interface BookingRecord {
   id: string;
   bookingId: string;
+  paymentId?: string;
+  orderId?: string;
   devoteeName: string;
   phone: string;
   email?: string;
@@ -366,6 +368,8 @@ export const api = {
     const newBooking: BookingRecord = {
       id: booking.id || `bkg-${crypto.randomUUID()}`,
       bookingId: booking.bookingId || `GK-${Math.floor(100000 + Math.random() * 900000)}`,
+      paymentId: booking.paymentId,
+      orderId: booking.orderId,
       devoteeName: booking.devoteeName || 'Devotee',
       phone: profile.phone || booking.phone || '',
       email: profile.email,
@@ -434,60 +438,30 @@ export const api = {
 
   // Standard Razorpay Checkout Methods (Express Backend LIVE Payments)
   createOrder: async (amountInPaise: number, currency = 'INR', receipt?: string, notes?: Record<string, string>) => {
-    if (!amountInPaise || amountInPaise < 100) {
-      throw new Error('Minimum order amount must be at least 100 paise (₹1).');
-    }
-
-    const payload = {
-      amount: amountInPaise,
-      amountInPaise,
-      isPaise: true,
+    if (!Number.isInteger(amountInPaise) || amountInPaise < 100) throw new Error('Minimum order amount must be at least ₹1.');
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const result = await invokeGauKripaPayments<{order_id:string;amount:number;currency:string;key_id:string}>({
+      action: 'create-seva-order',
+      amount_paise: amountInPaise,
       currency,
-      receipt: receipt || `gk_${Date.now()}`,
+      receipt: receipt || `gk_seva_${Date.now()}`,
+      phone: normalizePhone(notes?.phone, ''),
+      seva_title: notes?.sevaTitle || '',
       notes
-    };
-
-    const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-      `${API_BASE}/create-order`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
-
-    if (res.ok && orderId && keyId) {
-      return {
-        order_id: orderId,
-        amount: res.data?.amount || amountInPaise,
-        currency: (res.data?.currency || 'INR') as string,
-        key_id: keyId
-      };
-    }
-    throw new Error(res.error || 'Unable to create Razorpay order. Please check the payment server.');
+    });
+    if (!result.order_id || !result.key_id) throw new Error('Supabase did not return a valid Razorpay order.');
+    return result;
   },
 
-  verifyPayment: async (order_id: string, payment_id: string, signature: string) => {
-    if (!order_id || !payment_id || !signature) {
-      throw new Error('order_id, payment_id, and signature are required.');
-    }
-
-    const res = await safeFetchJson<{ success: boolean; verified: boolean; message: string }>(
-      `${API_BASE}/verify-payment`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id, payment_id, signature })
-      }
-    );
-
-    if (res.ok && res.data?.success && res.data?.verified) {
-      return res.data;
-    }
-    throw new Error(res.error || 'Payment verification failed. Please contact support before retrying.');
+  verifyPayment: async (order_id: string, payment_id: string, signature: string, phone: string) => {
+    if (!order_id || !payment_id || !signature) throw new Error('order_id, payment_id, and signature are required.');
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const result = await invokeGauKripaPayments<{success:boolean;verified:boolean;message?:string}>({
+      action:'verify-seva-payment', order_id, payment_id, signature,
+      phone: normalizePhone(phone, '')
+    });
+    if (!result.success || !result.verified) throw new Error('Payment verification failed. Please contact support before retrying.');
+    return result;
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
