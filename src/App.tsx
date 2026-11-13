@@ -62,7 +62,9 @@ export default function App() {
   });
 
   // Super Admin Check - strictly for bankush014@gmail.com
-  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'admin';
+  const isAstrologer = currentUser?.role === 'astrologer';
+  const canAccessAstrologer = isSuperAdmin || isAstrologer;
 
   // Navigation prompt & action resumption queue
   const [authPromptMessage, setAuthPromptMessage] = useState<string | null>(null);
@@ -77,15 +79,14 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'website' | 'admin' | 'astrologer'>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
-      if ((hash === '#admin' || hash === '#astrologer' || hash === '#astro') && isSuperAdmin) {
-        return hash === '#admin' ? 'admin' : 'astrologer';
-      }
+      if (hash === '#admin' && isSuperAdmin) return 'admin';
+      if ((hash === '#astrologer' || hash === '#astro') && canAccessAstrologer) return 'astrologer';
     }
     return 'website';
   });
 
   const navigateTo = (view: 'website' | 'admin' | 'astrologer') => {
-    if ((view === 'admin' || view === 'astrologer') && !isSuperAdmin) {
+    if ((view === 'admin' && !isSuperAdmin) || (view === 'astrologer' && !canAccessAstrologer)) {
       setAuthPromptMessage(
         tr(
           'प्रबंधन कंसोल खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
@@ -123,7 +124,7 @@ export default function App() {
           setCurrentView('admin');
         }
       } else if (hash === '#astrologer' || hash === '#astro') {
-        if (!isSuperAdmin) {
+        if (!canAccessAstrologer) {
           setAuthPromptMessage(
             tr(
               'ज्योतिषी डेस्क खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
@@ -141,7 +142,7 @@ export default function App() {
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isSuperAdmin, lang]);
+  }, [isSuperAdmin, canAccessAstrologer, lang]);
 
   // Modal visibility states
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
@@ -281,7 +282,7 @@ export default function App() {
     return <AdminDashboard onBackToWebsite={() => navigateTo('website')} />;
   }
 
-  if (currentView === 'astrologer' && isSuperAdmin) {
+  if (currentView === 'astrologer' && canAccessAstrologer) {
     return (
       <AstrologerDashboard
         onBackToWebsite={() => navigateTo('website')}
@@ -308,7 +309,7 @@ export default function App() {
         onOpenAbout={() => setAboutModalOpen(true)}
         onOpenReviews={() => setProofGalleryOpen(true)}
         onOpenAdminDashboard={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologerDashboard={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologerDashboard={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
       />
 
       {/* Hero Section */}
@@ -363,7 +364,7 @@ export default function App() {
         onOpenReviews={() => setProofGalleryOpen(true)}
         onOpenContact={() => setContactModalOpen(true)}
         onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologer={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
       />
 
       {/* Floating Quick Access Dock - EXCLUSIVELY FOR SUPER ADMIN (bankush014@gmail.com) */}
