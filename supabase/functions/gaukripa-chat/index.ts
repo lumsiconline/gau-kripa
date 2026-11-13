@@ -84,13 +84,14 @@ Deno.serve(async (req: Request) => {
         status: "waiting_approval", data: session
       });
       if (insertError) throw insertError;
-      const messages = [intake, welcome].map((message) => ({
+      const initialMessages = [intake, welcome];
+      const messageRows = initialMessages.map((message) => ({
         id: message.id, session_id: sessionId, sender_user_id: auth.user.id,
         sender_role: message.sender, message
       }));
-      const { error: messageError } = await supabase.from("chat_messages").insert(messages);
+      const { error: messageError } = await supabase.from("chat_messages").insert(messageRows);
       if (messageError) throw messageError;
-      return json({ success: true, session: { ...session, messages } });
+      return json({ success: true, session: { ...session, messages: initialMessages } });
     }
 
     if (action === "incoming") {
