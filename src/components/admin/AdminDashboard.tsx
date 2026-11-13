@@ -405,7 +405,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
               <span className={`w-2 h-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
               <span>
-                {tr('Supabase PostgreSQL:', 'Cloud Firestore:')}{' '}
+                {tr('Supabase PostgreSQL:', 'Supabase PostgreSQL:')}{' '}
                 {dbStatus?.connected ? tr('कनेक्टेड', 'Connected') : tr('कनेक्ट हो रहा है...', 'Connecting...')}
               </span>
             </div>
