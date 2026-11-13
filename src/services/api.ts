@@ -376,109 +376,82 @@ export const api = {
 
   // Bookings
   getBookings: async (phone?: string): Promise<BookingRecord[]> => {
-    const url = phone ? `${API_BASE}/bookings?phone=${encodeURIComponent(phone)}` : `${API_BASE}/bookings`;
-    const res = await safeFetchJson<BookingRecord[]>(url);
-    if (res.ok && Array.isArray(res.data)) return res.data;
-
-    try {
-      const stored = localStorage.getItem('gaukripa_bookings');
-      if (stored) {
-        const bookings: BookingRecord[] = JSON.parse(stored);
-        if (phone) return bookings.filter((b) => b.phone.includes(phone));
-        return bookings;
-      }
-    } catch {}
-    return [];
+    const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    if (!session?.access_token) return [];
+    const phoneFilter = phone ? `&phone=eq.${encodeURIComponent(normalizePhone(phone,''))}` : '';
+    const rows = await supabaseRest<Array<{id:string;booking_id:string;phone:string;email:string|null;status:string;amount:number;data:BookingRecord;created_at:string}>>(
+      'bookings', `?select=id,booking_id,phone,email,status,amount,data,created_at&order=created_at.desc${phoneFilter}`, session.access_token
+    );
+    return rows.map((row) => ({ ...row.data, id: row.id, bookingId: row.booking_id, phone: row.phone, email: row.email || undefined, status: row.status as BookingRecord['status'], amount: Number(row.amount), createdAt: row.created_at }));
   },
 
   createBooking: async (booking: Partial<BookingRecord>): Promise<BookingRecord> => {
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(booking)
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
-
+    const { supabaseRest, supabaseMutation, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    if (!session?.access_token) throw new Error('Please sign in before booking a seva.');
+    const profiles = await supabaseRest<Array<{id:string;phone:string|null;email:string}>>(
+      'app_users', '?select=id,phone,email&limit=1', session.access_token
+    );
+    const profile = profiles[0];
+    if (!profile) throw new Error('Your account profile is not ready. Please sign in again.');
     const newBooking: BookingRecord = {
-      id: booking.id || `bkg-${Date.now()}`,
+      id: booking.id || `bkg-${crypto.randomUUID()}`,
       bookingId: booking.bookingId || `GK-${Math.floor(100000 + Math.random() * 900000)}`,
       devoteeName: booking.devoteeName || 'Devotee',
-      phone: booking.phone || '9876543210',
-      email: booking.email,
-      gotra: booking.gotra || 'Kashyap',
-      sevaId: booking.sevaId || 'gau-chara',
-      sevaTitle: booking.sevaTitle || 'Gau Chara Seva',
+      phone: profile.phone || booking.phone || '',
+      email: profile.email,
+      gotra: booking.gotra || '',
+      sevaId: booking.sevaId || '',
+      sevaTitle: booking.sevaTitle || '',
       quantity: booking.quantity || '1 unit',
       duration: booking.duration || '1 Day',
       occasion: booking.occasion || 'General Daily Seva',
-      amount: booking.amount || 251,
-      baseAmount: booking.baseAmount || 251,
-      extraFee: booking.extraFee || 0,
+      amount: Number(booking.amount || 0),
+      baseAmount: Number(booking.baseAmount || booking.amount || 0),
+      extraFee: Number(booking.extraFee || 0),
       status: 'confirmed',
       date: booking.date || new Date().toISOString().split('T')[0],
       familyMembers: booking.familyMembers || [],
       sankalpWish: booking.sankalpWish,
-      goshala: booking.goshala || 'Surabhi Seva Dham, Vrindavan',
+      goshala: booking.goshala || '',
       createdAt: new Date().toISOString()
     };
-
-    try {
-      const stored = localStorage.getItem('gaukripa_bookings');
-      const list: BookingRecord[] = stored ? JSON.parse(stored) : [];
-      list.unshift(newBooking);
-      localStorage.setItem('gaukripa_bookings', JSON.stringify(list));
-    } catch {}
-
+    const rows = await supabaseMutation<Array<{id:string}>>(
+      'bookings', 'POST', '?select=id',
+      [{ id: newBooking.id, booking_id: newBooking.bookingId, user_id: profile.id, phone: newBooking.phone, email: newBooking.email, status: newBooking.status, amount: newBooking.amount, data: newBooking }]
+    );
+    if (!rows[0]) throw new Error('Supabase did not save the seva booking.');
     return newBooking;
   },
 
   updateBookingStatus: async (id: string, status: BookingRecord['status']): Promise<BookingRecord> => {
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
-
-    try {
-      const stored = localStorage.getItem('gaukripa_bookings');
-      if (stored) {
-        const list: BookingRecord[] = JSON.parse(stored);
-        const idx = list.findIndex((b) => b.id === id);
-        if (idx !== -1) {
-          list[idx].status = status;
-          localStorage.setItem('gaukripa_bookings', JSON.stringify(list));
-          return list[idx];
-        }
-      }
-    } catch {}
-    return { id, status } as any;
+    const { supabaseRest, supabaseMutation, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    if (!session?.access_token) throw new Error('Please sign in with an administrator account.');
+    const rows = await supabaseRest<Array<{data:BookingRecord}>>(
+      'bookings', `?select=data&id=eq.${encodeURIComponent(id)}&limit=1`, session.access_token
+    );
+    if (!rows[0]) throw new Error('Booking was not found or access is denied.');
+    const updated = { ...rows[0].data, status };
+    await supabaseMutation('bookings', 'PATCH', `?id=eq.${encodeURIComponent(id)}`, { status, data: updated, updated_at: new Date().toISOString() });
+    return updated;
   },
 
   uploadBookingProof: async (
     id: string,
     proof: { videoProofUrl?: string; photoProofUrls?: string[]; priestName?: string; status?: string }
   ): Promise<BookingRecord> => {
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/proof`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(proof)
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
-
-    try {
-      const stored = localStorage.getItem('gaukripa_bookings');
-      if (stored) {
-        const list: BookingRecord[] = JSON.parse(stored);
-        const idx = list.findIndex((b) => b.id === id);
-        if (idx !== -1) {
-          list[idx] = { ...list[idx], ...proof, status: 'completed' };
-          localStorage.setItem('gaukripa_bookings', JSON.stringify(list));
-          return list[idx];
-        }
-      }
-    } catch {}
-    return { id, ...proof, status: 'completed' } as any;
+    const { supabaseRest, supabaseMutation, getSupabaseSession } = await import('./supabaseClient');
+    const session = getSupabaseSession();
+    if (!session?.access_token) throw new Error('Please sign in with an administrator account.');
+    const rows = await supabaseRest<Array<{data:BookingRecord}>>(
+      'bookings', `?select=data&id=eq.${encodeURIComponent(id)}&limit=1`, session.access_token
+    );
+    if (!rows[0]) throw new Error('Booking was not found or access is denied.');
+    const updated = { ...rows[0].data, ...proof, status: proof.status || 'completed' };
+    await supabaseMutation('bookings', 'PATCH', `?id=eq.${encodeURIComponent(id)}`, { status: updated.status, data: updated, updated_at: new Date().toISOString() });
+    return updated;
   },
 
   // Wallet: balances and transaction history (Firebase Functions asia-south1)
