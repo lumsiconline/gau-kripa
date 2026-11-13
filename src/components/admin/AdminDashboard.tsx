@@ -578,7 +578,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               <td className="p-3">
                                 {b.videoProofUrl ? (
                                   <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-                                    <Video className="w-3.5 h-3.5" /> {tr('व्हाट्सएप पर भेजा गया', 'Sent on WhatsApp')}
+                                    <Video className="w-3.5 h-3.5" /> {tr('प्रमाण अपलोड हुआ', 'Proof Uploaded')}
                                   </span>
                                 ) : (
                                   <button
@@ -894,7 +894,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           <th className="p-3">{tr('अवसर', 'Occasion')}</th>
                           <th className="p-3">{tr('सेवा शुल्क', 'Service Fee')}</th>
                           <th className="p-3">{tr('स्थिति', 'Status')}</th>
-                          <th className="p-3">{tr('प्रमाण एवं व्हाट्सएप', 'Proof & WhatsApp')}</th>
+                          <th className="p-3">{tr('सेवा प्रमाण स्थिति', 'Proof Status')}</th>
                           <th className="p-3 text-right">{tr('कार्रवाई', 'Actions')}</th>
                         </tr>
                       </thead>
@@ -947,7 +947,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                     <Video className="w-3.5 h-3.5" /> {tr('वीडियो देखें', 'View Video')}
                                   </a>
                                   <span className="text-[9px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold block">
-                                    {tr('व्हाट्सएप पर भेजा गया ✓', 'WhatsApp Shared ✓')}
+                                    {tr('प्रमाण अपलोड हुआ ✓', 'Proof Uploaded ✓')}
                                   </span>
                                 </div>
                               ) : (
@@ -1555,7 +1555,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 onClick={handleSaveProof}
                 className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-bold hover:bg-[#153e29] cursor-pointer"
               >
-                {tr('पुष्टि करें एवं व्हाट्सएप प्रमाण भेजें', 'Confirm & Send WhatsApp Proof')}
+                {tr('प्रमाण सहेजें एवं सेवा पूर्ण करें', 'Save Proof & Complete Booking')}
               </button>
             </div>
           </div>
