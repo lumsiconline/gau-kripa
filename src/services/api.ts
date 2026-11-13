@@ -965,9 +965,9 @@ export const api = {
     try {
       const { supabaseRest } = await import('./supabaseClient');
       const rows = await supabaseRest<Array<{data: ReviewItem}>>(
-        'reviews', '?select=data&is_approved=eq.true&order=created_at.desc'
+        'reviews', '?select=data&order=created_at.desc'
       );
-      return rows.map((row) => ({ ...row.data, isApproved: true }));
+      return rows.map((row) => ({ ...row.data, isApproved: Boolean((row.data as any).isApproved) }));
     } catch (error) {
       console.error('Supabase reviews read failed', error);
       try {
@@ -1064,20 +1064,27 @@ export const api = {
     collections?: Record<string, number>;
     error?: string;
   }> => {
-    const res = await safeFetchJson<{
-      connected: boolean;
-      projectId: string;
-      databaseId?: string;
-      collections?: Record<string, number>;
-    }>(`${API_BASE}/database/status`);
-    if (res.ok && res.data) return res.data;
-
-    return {
-      connected: true,
-      projectId: 'gau-kripa',
-      databaseId: '(default)',
-      collections: { services: 6, astrologers: 3, bookings: 5, wallets: 1, reviews: 3 }
-    };
+    try {
+      const { supabaseRest } = await import('./supabaseClient');
+      const [services, astrologers, reviews] = await Promise.all([
+        supabaseRest<Array<{id:string}>>('services', '?select=id&is_active=eq.true'),
+        supabaseRest<Array<{id:string}>>('astrologers', '?select=id&is_online=eq.true'),
+        supabaseRest<Array<{id:string}>>('reviews', '?select=id&is_approved=eq.true')
+      ]);
+      return {
+        connected: true,
+        projectId: 'nwvsesrnhuhcihftagcp',
+        databaseId: 'Supabase PostgreSQL',
+        collections: { services: services.length, astrologers: astrologers.length, reviews: reviews.length }
+      };
+    } catch (error: any) {
+      return {
+        connected: false,
+        projectId: 'nwvsesrnhuhcihftagcp',
+        databaseId: 'Supabase PostgreSQL',
+        error: error?.message || 'Unable to connect to Supabase.'
+      };
+    }
   },
 
   // User Registration
