@@ -1,0 +1,35 @@
+project_id = "gaukripa"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[auth]
+enabled = true
+site_url = "https://gaukripa.site"
+additional_redirect_urls = ["https://www.gaukripa.site", "http://localhost:3000"]
+
+[functions.get-wallet]
+verify_jwt = false
+
+[functions.create-razorpay-order]
+verify_jwt = false
+
+[functions.verify-razorpay-payment]
+verify_jwt = false
+
+[functions.auth-register]
+verify_jwt = false
+
+[functions.auth-login]
+verify_jwt = false
+
+[functions.chat-heartbeat]
+verify_jwt = false

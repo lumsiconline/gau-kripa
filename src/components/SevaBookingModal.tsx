@@ -4,7 +4,6 @@ import { SevaItem, getLocalizedSevaItems } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
 import { api, normalizePhone } from '../services/api';
 import { useLanguage } from '../i18n/LanguageContext';
-import { getSupabaseSession } from '../services/supabaseClient';
 
 interface SevaBookingModalProps {
   initialSeva: SevaItem;
@@ -30,9 +29,9 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
   const [customDays, setCustomDays] = useState<number>(11);
   
   // Devotee Sankalp info
-  const [devoteeName, setDevoteeName] = useState<string>(() => String(getSupabaseSession()?.user?.user_metadata?.full_name || ''));
+  const [devoteeName, setDevoteeName] = useState<string>('हर्ष भारद्वाज');
   const [gotra, setGotra] = useState<string>('कश्यप');
-  const [phone, setPhone] = useState<string>(() => String(getSupabaseSession()?.user?.user_metadata?.phone || ''));
+  const [phone, setPhone] = useState<string>('9876543210');
   const [sankalpDate, setSankalpDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [sankalpWish, setSankalpWish] = useState<string>('');
   const [occasionId, setOccasionId] = useState<string>('general');
@@ -64,8 +63,16 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Dynamically resolve localized Seva so toggling language inside modal updates card cleanly
-  const displaySeva = localizedItems.find((s) => s.id === selectedSeva.id) || selectedSeva;
+  // Dynamically resolve localized Seva so toggling language inside modal preserves custom Admin image & price overrides
+  const matchedLocalized = localizedItems.find((s) => s.id === selectedSeva.id);
+  const displaySeva = matchedLocalized
+    ? {
+        ...matchedLocalized,
+        customImageUrl: selectedSeva.customImageUrl || matchedLocalized.customImageUrl,
+        basePrice: selectedSeva.basePrice ?? matchedLocalized.basePrice,
+        priceDisplay: selectedSeva.priceDisplay || matchedLocalized.priceDisplay,
+      }
+    : selectedSeva;
 
   const occasionPresets = [
     { id: 'general', hi: 'दैनिक गौ-आहार सेवा', en: 'General Daily Feed Seva', isExtra: false },
@@ -161,7 +168,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
         throw new Error(tr('Razorpay चेकआउट अभी उपलब्ध नहीं है। कृपया पुनः प्रयास करें।', 'Razorpay Checkout is currently unavailable. Please try again.'));
       }
 
-      const keyId = order.key_id;
+      const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
       if (!keyId) {
         throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID is not configured.'));
       }
@@ -185,18 +192,12 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
         theme: { color: '#1b4b32' },
         handler: async (response: any) => {
           try {
-            // 3. Cryptographic signature verification on backend
-            await api.verifyPayment(
-              response.razorpay_order_id || order.order_id || '',
-              response.razorpay_payment_id,
-              response.razorpay_signature || '',
-              cleanPhone
-            );
-
             const receipt = {
+              id: `bkg-${response.razorpay_payment_id || Date.now()}`,
               bookingId: `GK-${Math.floor(100000 + Math.random() * 900000)}`,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
+              sevaId: displaySeva.id,
               sevaTitle: displaySeva.title,
               planet: displaySeva.planetTag,
               quantity: `${quantity} × ${displaySeva.unit}`,
@@ -207,6 +208,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               occasion: occasionLabel,
               phone: cleanPhone,
               date: sankalpDate,
+              sankalpWish,
               baseAmount: baseTotal,
               extraFee: extraOccasionFee,
               amount: totalAmount,
@@ -215,9 +217,19 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
             };
 
-            await api.createBooking({ ...receipt, sevaId: displaySeva.id });
+            // 3. Cryptographic signature verification + booking persistence on backend
+            const verifyRes = await api.verifyPayment(
+              response.razorpay_order_id || order.order_id || '',
+              response.razorpay_payment_id,
+              response.razorpay_signature || '',
+              receipt
+            );
+
             setBookingReceipt(receipt);
             setIsCompleted(true);
+            if (!verifyRes?.booking) {
+              await api.createBooking({ ...receipt, sevaId: displaySeva.id });
+            }
             if (onBookingSuccess) onBookingSuccess(receipt);
           } catch (verifyErr: any) {
             setPaymentError(verifyErr?.message || tr('भुगतान हस्ताक्षर सत्यापन असफल रहा।', 'Payment signature verification failed.'));
@@ -285,11 +297,20 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 {/* Big HD Image of this particular seva */}
                 <div className="w-full sm:w-40 h-36 sm:h-32 rounded-xl overflow-hidden shrink-0 border border-[#d9ba78] shadow-xs relative bg-amber-50">
-                  <ImageCrop
-                    cropKey={displaySeva.cropKey}
-                    className="w-full h-full object-cover"
-                    alt={displaySeva.title}
-                  />
+                  {displaySeva.customImageUrl ? (
+                    <img
+                      src={displaySeva.customImageUrl}
+                      alt={displaySeva.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ImageCrop
+                      cropKey={displaySeva.cropKey}
+                      className="w-full h-full object-cover"
+                      alt={displaySeva.title}
+                    />
+                  )}
                   <div className="absolute top-2 left-2">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#faedd0]/95 text-[#6d460d] border border-[#d6ba7f] shadow-xs backdrop-blur-xs">
                       {displaySeva.planetTag}
@@ -841,7 +862,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
               <div className="pt-2 border-t border-[#ebdcb9] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-[#6d5f4c]">
                 <span>
-                  {tr('आहार वितरण की वीडियो पुष्टि आपकी बुकिंग में उपलब्ध होगी:', 'Video distribution proof will be added to your booking record:')}{' '}
+                  {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर भेजी जाएगी:', 'Video distribution proof will be sent on WhatsApp:')}{' '}
                   <strong className="text-[#1b4b32]">+91 {bookingReceipt?.phone}</strong>
                 </span>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1">

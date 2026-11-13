@@ -807,7 +807,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <span>
                     {loading
                       ? tr('खाता बन रहा है...', 'Creating Account...')
-                      : tr('खाता बनाएँ व ₹150 बोनस पाएँ', 'Create Account & Get ₹150 Bonus')}
+                      : tr('नया खाता बनाएँ', 'Create Account')}
                   </span>
                 </button>
               </form>

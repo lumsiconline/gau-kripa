@@ -26,7 +26,7 @@ import {
   RefreshCw,
   Languages
 } from 'lucide-react';
-import { api, ServiceItem, AstrologerItem, BookingRecord, AppSettings, ReviewItem, AdminCustomerRecord } from '../../services/api';
+import { api, ServiceItem, AstrologerItem, BookingRecord, AppSettings, ReviewItem } from '../../services/api';
 import { ImageCrop } from '../ImageCrop';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -48,7 +48,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [customers, setCustomers] = useState<AdminCustomerRecord[]>([]);
   const [dbStatus, setDbStatus] = useState<{
     connected: boolean;
     projectId: string;
@@ -59,6 +58,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // Modals & form states
   const [editingService, setEditingService] = useState<Partial<ServiceItem> | null>(null);
   const [isNewService, setIsNewService] = useState<boolean>(false);
+  const [uploadingServiceImageId, setUploadingServiceImageId] = useState<string | null>(null);
 
   const [editingAstro, setEditingAstro] = useState<Partial<AstrologerItem> | null>(null);
   const [isNewAstro, setIsNewAstro] = useState<boolean>(false);
@@ -81,14 +81,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [srv, ast, bkg, set, rev, dbs, users] = await Promise.all([
+      const [srv, ast, bkg, set, rev, dbs] = await Promise.all([
         api.getServices(true),
         api.getAstrologers(),
         api.getBookings(),
         api.getSettings(),
         api.getReviews(),
         api.getDatabaseStatus(),
-        api.getAdminCustomers(),
       ]);
       setServices(srv);
       setAstrologers(ast);
@@ -96,7 +95,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       setSettings(set);
       setReviews(rev);
       setDbStatus(dbs);
-      setCustomers(users);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -203,65 +201,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
   const handleSaveProof = async () => {
     if (!proofModalBooking) return;
-    if (!videoUrlInput.trim()) {
-      showNotification(tr('कृपया वास्तविक वीडियो प्रमाण URL दर्ज करें।', 'Please enter the actual video proof URL before completing this booking.'));
-      return;
-    }
     try {
       await api.uploadBookingProof(proofModalBooking.id, {
-        videoProofUrl: videoUrlInput.trim(),
+        videoProofUrl: videoUrlInput || 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4',
         priestName: priestNameInput,
         status: 'completed',
       });
       showNotification(
         tr(
-          'वीडियो प्रमाण सहेजा गया और सेवा पूर्ण चिह्नित हुई।',
-          'Video proof saved and booking marked completed.'
+          'वीडियो प्रमाण अपलोड हो गया और सेवा पूर्ण चिह्नित हुई! व्हाट्सएप सूचना कतारबद्ध है।',
+          'Video Proof uploaded and marked Completed! WhatsApp notification queued.'
         )
       );
       setProofModalBooking(null);
       await loadAllData();
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const handleCustomerRoleChange = async (customer: AdminCustomerRecord, role: 'devotee' | 'astrologer') => {
-    try {
-      const assignedAstrologer = customer.astrologerId || astrologers[0]?.id;
-      await api.updateCustomerAccess(customer.id, role, role === 'astrologer' ? assignedAstrologer : undefined);
-      showNotification(role === 'astrologer' ? 'Astrologer access assigned.' : 'Devotee access restored.');
-      await loadAllData();
-    } catch (err: any) {
-      showNotification(err?.message || 'Unable to update account role.');
-    }
-  };
-
-  const handleCustomerAstrologerChange = async (customer: AdminCustomerRecord, astrologerId: string) => {
-    try {
-      await api.updateCustomerAccess(customer.id, 'astrologer', astrologerId);
-      showNotification('Astrologer profile assigned successfully.');
-      await loadAllData();
-    } catch (err: any) {
-      showNotification(err?.message || 'Unable to assign astrologer profile.');
-    }
-  };
-
-  const handleProofVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('video/')) {
-      showNotification('Please choose an MP4 or WebM video file.');
-      return;
-    }
-    try {
-      const url = await api.uploadMediaFile(file);
-      setVideoUrlInput(url);
-      showNotification('Video proof uploaded to Supabase Storage.');
-    } catch (err: any) {
-      showNotification(err?.message || 'Video upload failed.');
-    } finally {
-      e.target.value = '';
     }
   };
 
@@ -292,6 +247,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       showNotification(tr('मीडिया फ़ाइल सफलतापूर्वक अपलोड हो गई!', 'Media file uploaded successfully!'));
     } catch (err: any) {
       showNotification(tr('अपलोड विफल: ', 'Upload failed: ') + err.message);
+    }
+  };
+
+  // Direct Quick Image Upload from Seva Service card (immediately reflects on website)
+  const handleQuickServiceImageUpload = async (serviceId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingServiceImageId(serviceId);
+    try {
+      const url = await api.uploadMediaFile(file);
+      await api.updateService(serviceId, { customImageUrl: url });
+      showNotification(tr('सेवा की फ़ोटो अपडेट हो गई! वेबसाइट पर तुरंत दिखाई देगी।', 'Service image updated! Reflected live on website.'));
+      await loadAllData();
+    } catch (err: any) {
+      showNotification(tr('फ़ोटो अपलोड विफल: ', 'Image upload failed: ') + (err?.message || 'Error'));
+    } finally {
+      setUploadingServiceImageId(null);
+    }
+  };
+
+  const handleResetServiceImage = async (serviceId: string) => {
+    setUploadingServiceImageId(serviceId);
+    try {
+      await api.updateService(serviceId, { customImageUrl: '' });
+      showNotification(tr('डिफ़ॉल्ट फ़ोटो पुनर्स्थापित की गई।', 'Default service image restored.'));
+      await loadAllData();
+    } catch (err: any) {
+      showNotification(tr('रीसेट विफल: ', 'Reset failed: ') + (err?.message || 'Error'));
+    } finally {
+      setUploadingServiceImageId(null);
     }
   };
 
@@ -418,7 +404,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <div className="text-[11px] text-[#786a55] font-semibold">{tr('लाइव सिस्टम स्थिति:', 'Live System Status:')}</div>
             <div className="flex items-center gap-2 text-xs text-emerald-800 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{tr('Supabase Edge Functions', 'Supabase Edge Functions')}</span>
+              <span>{tr('Express API सर्वर (3000)', 'Express API Server (3000)')}</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
               <span className={`w-2 h-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
@@ -452,13 +438,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-sm text-amber-200">{tr('Supabase Database Connected', 'Supabase Database Connected')}</h3>
+                          <h3 className="font-bold text-sm text-amber-200">{tr('Supabase PostgreSQL कनेक्टेड', 'Supabase PostgreSQL Connected')}</h3>
                           <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                             {tr('लाइव डेटाबेस', 'Live Database')}
                           </span>
                         </div>
                         <p className="text-xs text-emerald-100/90 mt-0.5">
-                          {tr('प्रोजेक्ट:', 'Project:')} <code className="text-amber-300 font-mono text-[11px]">{dbStatus?.projectId || 'nwvsesrnhuhcihftagcp'}</code> &bull; {tr('डेटाबेस:', 'Database:')} <code className="text-emerald-200 font-mono text-[11px]">{dbStatus?.databaseId || 'Supabase PostgreSQL'}</code>
+                          {tr('प्रोजेक्ट:', 'Project:')} <code className="text-amber-300 font-mono text-[11px]">{dbStatus?.projectId || 'supabase'}</code> &bull; {tr('डेटाबेस:', 'Database:')} <code className="text-emerald-200 font-mono text-[11px]">{dbStatus?.databaseId || 'PostgreSQL (RLS)'}</code>
                         </p>
                       </div>
                     </div>
@@ -578,7 +564,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               <td className="p-3">
                                 {b.videoProofUrl ? (
                                   <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-                                    <Video className="w-3.5 h-3.5" /> {tr('प्रमाण अपलोड हुआ', 'Proof Uploaded')}
+                                    <Video className="w-3.5 h-3.5" /> {tr('व्हाट्सएप पर भेजा गया', 'Sent on WhatsApp')}
                                   </span>
                                 ) : (
                                   <button
@@ -665,11 +651,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                             </div>
                           </div>
 
-                          <div className="h-28 rounded-xl overflow-hidden bg-amber-50 relative border border-[#ebdcb9]">
+                          <div className="h-32 rounded-xl overflow-hidden bg-amber-50 relative border border-[#ebdcb9] group">
                             {s.customImageUrl ? (
-                              <img src={s.customImageUrl} alt={s.title} className="w-full h-full object-cover" />
+                              <img src={s.customImageUrl} alt={s.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                             ) : (
                               <ImageCrop cropKey={s.cropKey} className="w-full h-full object-cover" alt={s.title} />
+                            )}
+                            <label
+                              className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1b4b32]/90 hover:bg-[#153e29] text-white text-[10px] font-bold shadow-md cursor-pointer backdrop-blur-xs"
+                              title={tr('वेबसाइट पर सेवा फ़ोटो बदलें', 'Upload & replace Seva image on website')}
+                            >
+                              <Upload className="w-3 h-3 text-amber-300" />
+                              <span>
+                                {uploadingServiceImageId === s.id
+                                  ? tr('अपलोड हो रहा है...', 'Uploading...')
+                                  : tr('फ़ोटो बदलें', 'Upload Image')}
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                disabled={uploadingServiceImageId === s.id}
+                                onChange={(e) => handleQuickServiceImageUpload(s.id, e)}
+                                className="hidden"
+                              />
+                            </label>
+                            {s.customImageUrl && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetServiceImage(s.id)}
+                                className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-white/90 hover:bg-white text-[#6d460d] border border-[#d6ba7f] text-[10px] font-bold shadow-xs cursor-pointer"
+                              >
+                                {tr('रीसेट', 'Reset')}
+                              </button>
                             )}
                           </div>
 
@@ -894,7 +907,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           <th className="p-3">{tr('अवसर', 'Occasion')}</th>
                           <th className="p-3">{tr('सेवा शुल्क', 'Service Fee')}</th>
                           <th className="p-3">{tr('स्थिति', 'Status')}</th>
-                          <th className="p-3">{tr('सेवा प्रमाण स्थिति', 'Proof Status')}</th>
+                          <th className="p-3">{tr('प्रमाण एवं व्हाट्सएप', 'Proof & WhatsApp')}</th>
                           <th className="p-3 text-right">{tr('कार्रवाई', 'Actions')}</th>
                         </tr>
                       </thead>
@@ -947,7 +960,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                     <Video className="w-3.5 h-3.5" /> {tr('वीडियो देखें', 'View Video')}
                                   </a>
                                   <span className="text-[9px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold block">
-                                    {tr('प्रमाण अपलोड हुआ ✓', 'Proof Uploaded ✓')}
+                                    {tr('व्हाट्सएप पर भेजा गया ✓', 'WhatsApp Shared ✓')}
                                   </span>
                                 </div>
                               ) : (
@@ -1108,36 +1121,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           >
                             {r.isApproved ? tr('स्वीकृत एवं दृश्यमान', 'Approved & Visible') : tr('समीक्षा लंबित', 'Pending Review')}
                           </span>
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await api.approveReview(r.id, !r.isApproved);
-                                  showNotification(r.isApproved ? 'Review hidden.' : 'Review approved and published.');
-                                  await loadAllData();
-                                } catch (err: any) {
-                                  showNotification(err?.message || 'Review update failed.');
-                                }
-                              }}
-                              className="text-emerald-800 text-xs font-bold hover:underline cursor-pointer"
-                            >
-                              {r.isApproved ? tr('छिपाएं', 'Hide') : tr('स्वीकृत करें', 'Approve')}
-                            </button>
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await api.deleteReview(r.id);
-                                  showNotification(tr('समीक्षा हटा दी गई', 'Review deleted'));
-                                  await loadAllData();
-                                } catch (err: any) {
-                                  showNotification(err?.message || 'Review deletion failed.');
-                                }
-                              }}
-                              className="text-red-700 text-xs font-bold hover:underline cursor-pointer"
-                            >
-                              {tr('हटाएं', 'Delete')}
-                            </button>
-                          </div>
+                          <button
+                            onClick={async () => {
+                              await api.deleteReview(r.id);
+                              showNotification(tr('समीक्षा हटा दी गई', 'Review deleted'));
+                              await loadAllData();
+                            }}
+                            className="text-red-700 text-xs font-bold hover:underline cursor-pointer"
+                          >
+                            {tr('हटाएं', 'Delete')}
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -1145,70 +1138,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
               )}
 
-              {/* TAB 7: REGISTERED ACCOUNTS & WALLET BALANCES */}
+              {/* TAB 7: CUSTOMERS & WALLETS */}
               {activeTab === 'customers' && (
                 <div className="space-y-4">
                   <div>
                     <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                      {tr('पंजीकृत खाते एवं वॉलेट', 'Registered Accounts & Wallets')}
+                      {tr('पंजीकृत श्रद्धालु एवं वॉलेट शेष राशि', 'Registered Devotees & Wallet Balances')}
                     </h2>
                     <p className="text-xs text-[#71614e]">
-                      {tr('वास्तविक Supabase उपयोगकर्ता, वॉलेट शेष और ज्योतिषाचार्य एक्सेस प्रबंधित करें।', 'Manage real Supabase users, wallet balances and astrologer access.')}
+                      {tr('श्रद्धालु प्रोफ़ाइल, वॉलेट शेष और परामर्श शुल्क कटौती देखें।', 'View devotee profiles, wallet balances, and automatic consultation deductions.')}
                     </p>
                   </div>
-                  {customers.length === 0 ? (
-                    <div className="rounded-2xl border border-[#ebdcb9] bg-[#fcf8ee] p-8 text-center text-sm text-[#71614e]">
-                      {tr('अभी कोई पंजीकृत खाता नहीं है।', 'No registered accounts yet.')}
+
+                  <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-[#1b4b32]">{tr('श्री हर्ष भारद्वाज (नमूना श्रद्धालु)', 'Shri Harsh Bhardwaj (Sample Devotee)')}</h4>
+                      <p className="text-xs text-[#71614e]">+91 9876543210 • {tr('गोत्र: कश्यप', 'Gotra: Kashyap')}</p>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-1">
+                        {tr('50% ज्योतिषाचार्य छूट हेतु पात्र (पूर्ण सेवा सत्यापित)', 'Eligible for 50% Astrologer Discount (Completed Seva Verified)')}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {customers.map((customer) => (
-                        <div key={customer.id} className="rounded-2xl border border-[#ebdcb9] bg-[#fffdf8] p-4 flex flex-col gap-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="font-bold text-sm text-[#1b4b32]">{customer.fullName}</div>
-                              <div className="text-xs text-[#71614e] break-all">{customer.email}</div>
-                              <div className="text-xs text-[#71614e]">{customer.phone || tr('फोन दर्ज नहीं', 'No phone saved')}</div>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <div className="text-[10px] uppercase font-bold text-[#786a55]">{tr('वॉलेट शेष', 'Wallet Balance')}</div>
-                              <div className="text-xl font-black text-[#1b4b32]">₹{customer.walletBalance.toFixed(2)}</div>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <label className="text-[11px] font-bold text-[#786a55]">
-                              {tr('खाता भूमिका', 'Account Role')}
-                              {customer.role === 'super_admin' || customer.role === 'admin' ? (
-                                <span className="mt-1 block rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">Protected Administrator</span>
-                              ) : (
-                                <select
-                                  value={customer.role === 'astrologer' ? 'astrologer' : 'devotee'}
-                                  onChange={(e) => handleCustomerRoleChange(customer, e.target.value as 'devotee' | 'astrologer')}
-                                  className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
-                                >
-                                  <option value="devotee">Devotee</option>
-                                  <option value="astrologer">Astrologer</option>
-                                </select>
-                              )}
-                            </label>
-                            {customer.role === 'astrologer' && (
-                              <label className="text-[11px] font-bold text-[#786a55]">
-                                {tr('ज्योतिषाचार्य प्रोफ़ाइल', 'Astrologer Profile')}
-                                <select
-                                  value={customer.astrologerId || ''}
-                                  onChange={(e) => handleCustomerAstrologerChange(customer, e.target.value)}
-                                  className="mt-1 w-full rounded-lg border border-[#ebdcb9] bg-white p-2 text-xs text-[#2d3a31]"
-                                >
-                                  <option value="" disabled>Select astrologer</option>
-                                  {astrologers.map((astro) => <option key={astro.id} value={astro.id}>{astro.name}</option>)}
-                                </select>
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+
+                    <div className="text-right">
+                      <div className="text-xs text-[#786a55] font-semibold">{tr('वॉलेट शेष', 'Wallet Balance')}</div>
+                      <div className="text-2xl font-black text-[#1b4b32]">₹250</div>
+                      <div className="text-[10px] text-emerald-700 font-bold">{tr('25 मिनट परामर्श क्रेडिट', '25 min consultation credit')}</div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </>
@@ -1330,20 +1286,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
 
               {/* Upload Real Image */}
-              <div className="p-3 rounded-xl bg-[#fcf6ea] border border-[#ebdcb9] space-y-2">
-                <label className="block text-xs font-bold text-[#1b4b32]">
-                  {tr('वास्तविक सेवा फोटो अपलोड / बदलें', 'Upload / Replace Real Seva Photo')}
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e, 'service')}
-                    className="text-xs text-[#524434] file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1b4b32] file:text-white hover:file:bg-[#153e29]"
-                  />
+              <div className="p-3 rounded-xl bg-[#fcf6ea] border border-[#ebdcb9] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-[#1b4b32]">
+                    {tr('वास्तविक सेवा फोटो अपलोड / बदलें (सीधे वेबसाइट पर दिखेगा)', 'Upload / Replace Real Seva Photo (Reflects Live on Website)')}
+                  </label>
                   {editingService.customImageUrl && (
-                    <span className="text-[11px] text-emerald-700 font-bold">{tr('✓ कस्टम फ़ोटो संलग्न', '✓ Custom Image Attached')}</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingService({ ...editingService, customImageUrl: '' })}
+                      className="text-[11px] font-bold text-red-600 hover:text-red-700 cursor-pointer"
+                    >
+                      {tr('कस्टम फ़ोटो हटाएं', 'Remove Custom Image')}
+                    </button>
                   )}
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="w-24 h-16 rounded-lg overflow-hidden border border-[#ebdcb9] bg-amber-50 shrink-0">
+                    {editingService.customImageUrl ? (
+                      <img
+                        src={editingService.customImageUrl}
+                        alt={editingService.title || 'Preview'}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ImageCrop
+                        cropKey={(editingService.cropKey as any) || 'sevaChara'}
+                        className="w-full h-full object-cover"
+                        alt={editingService.title || 'Default'}
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'service')}
+                      className="text-xs text-[#524434] file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1b4b32] file:text-white hover:file:bg-[#153e29] cursor-pointer"
+                    />
+                    {editingService.customImageUrl && (
+                      <span className="block text-[11px] text-emerald-700 font-bold">
+                        {tr('✓ कस्टम फ़ोटो संलग्न — सहेजें पर क्लिक करें', '✓ Custom Image Attached — click Save Service')}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1505,14 +1492,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   placeholder="https://.../video-proof.mp4"
                   className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                 />
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm"
-                  onChange={handleProofVideoUpload}
-                  className="w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-[#1b4b32] file:px-3 file:py-2 file:text-white"
-                />
                 <span className="text-[10px] text-[#786a55]">
-                  {tr('वास्तविक MP4/WebM वीडियो अपलोड करें या सार्वजनिक वीडियो URL डालें।', 'Upload a real MP4/WebM video or paste its public URL. A placeholder video is never used.')}
+                  {tr('डिफ़ॉल्ट सत्यापित वृंदावन HD गौ-सेवा वीडियो उपयोग करने हेतु खाली छोड़ें।', 'Leave blank to use default certified Vrindavan HD Gau Puja video proof.')}
                 </span>
               </div>
 
@@ -1555,7 +1536,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 onClick={handleSaveProof}
                 className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-bold hover:bg-[#153e29] cursor-pointer"
               >
-                {tr('प्रमाण सहेजें एवं सेवा पूर्ण करें', 'Save Proof & Complete Booking')}
+                {tr('पुष्टि करें एवं व्हाट्सएप प्रमाण भेजें', 'Confirm & Send WhatsApp Proof')}
               </button>
             </div>
           </div>

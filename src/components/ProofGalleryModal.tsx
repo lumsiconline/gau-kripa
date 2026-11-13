@@ -43,7 +43,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
           city: 'Chennai',
           stars: 5,
           date: '1 week ago',
-          text: 'Consulted Acharya Rohan Mehta regarding business hurdles. He suggested Gaumata Fodder service and Kundali remedies. The calmness and clarity we experienced is remarkable.',
+          text: 'Consulted Astrologer Nipunjj regarding business hurdles. He suggested Gaumata Fodder service and Numerology & Kundali remedies. The calmness and clarity we experienced is remarkable.',
           seva: 'Fodder & Jyotish Guidance'
         },
         {
@@ -69,7 +69,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
           city: 'चेन्नई',
           stars: 5,
           date: '1 सप्ताह पहले',
-          text: 'व्यापारिक बाधाओं के लिए आचार्य रोहन मेहता से ज्योतिष परामर्श लिया। उनके सुझाव से गौ-चारा आहार सेवा करवाई। घर में बहुत सकारात्मक ऊर्जा और मानसिक शांति का अनुभव हुआ।',
+          text: 'व्यापारिक बाधाओं के लिए ज्योतिषाचार्य निपुंज जी से ज्योतिष परामर्श लिया। उनके सुझाव से गौ-चारा आहार सेवा करवाई। घर में बहुत सकारात्मक ऊर्जा और मानसिक शांति का अनुभव हुआ।',
           seva: 'गौ-चारा एवं ज्योतिष मार्गदर्शन'
         },
         {

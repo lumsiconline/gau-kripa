@@ -713,8 +713,8 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
               </div>
               <p className="text-xs text-[#71614e] font-medium mt-0.5">
                 {tr(
-                  'डॉ. सोफिया शर्मा, आचार्य वेद प्रकाश एवं पंडित राजेश शास्त्री के लिए केंद्रीकृत परामर्श पैनल।',
-                  'Centralized consultation panel for Dr. Sophia Sharma, Acharya Ved Prakash, & Pandit Rajesh Shastri.'
+                  'निपुंज (Nipunjj) एवं द्रविना (Dravina) के लिए केंद्रीकृत परामर्श पैनल।',
+                  'Centralized consultation panel for Nipunjj & Dravina.'
                 )}
               </p>
               <div className="flex items-center gap-2 text-xs text-[#8b5a0a] font-bold mt-1 flex-wrap">

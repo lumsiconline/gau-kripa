@@ -98,7 +98,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [timePeriod, setTimePeriod] = useState<'AM' | 'PM'>('AM');
 
   // Wallet & simulation state
-  const [walletBalance, setWalletBalance] = useState<number>(150);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isTopupOpen, setIsTopupOpen] = useState<boolean>(false);
   const [topupLoading, setTopupLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

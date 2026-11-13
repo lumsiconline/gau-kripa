@@ -3,10 +3,7 @@ dist
 .env
 .env.*
 !.env.example
-.firebase
-.firebase/
-functions/node_modules
-functions/.env
-functions/.secret.local
+supabase/.temp
+supabase/.branches
 .aistudio
 *.log

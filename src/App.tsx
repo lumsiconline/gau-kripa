@@ -29,24 +29,46 @@ import { SevaParivarModal } from './components/SevaParivarModal';
 import { ContactModal } from './components/ContactModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AstrologerDashboard } from './components/astrologer/AstrologerDashboard';
+import { LiveSevaBookingPopup } from './components/LiveSevaBookingPopup';
 import { useLanguage } from './i18n/LanguageContext';
-import { getSupabaseSession } from './services/supabaseClient';
+import { api, ServiceItem } from './services/api';
 
 export default function App() {
   const { lang, tr } = useLanguage();
-  const localizedSevaItems = getLocalizedSevaItems(lang);
+  const [liveServices, setLiveServices] = useState<ServiceItem[]>([]);
+
+  React.useEffect(() => {
+    let active = true;
+    const sync = async () => {
+      try {
+        const fetched = await api.getServices(true);
+        if (active && Array.isArray(fetched)) {
+          setLiveServices(fetched);
+        }
+      } catch {}
+    };
+    sync();
+    window.addEventListener('gaukripa_services_updated', sync);
+    return () => {
+      active = false;
+      window.removeEventListener('gaukripa_services_updated', sync);
+    };
+  }, []);
+
+  const localizedSevaItems = getLocalizedSevaItems(lang).map((item) => {
+    const live = liveServices.find((s) => s.id === item.id);
+    if (!live) return item;
+    return {
+      ...item,
+      customImageUrl: live.customImageUrl || item.customImageUrl,
+    };
+  });
   const localizedAstrologers = getLocalizedAstrologers(lang);
 
   // User session state - stored in localStorage
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem('gaukripa_registered_users');
-        const session = getSupabaseSession();
-        if (!session?.access_token) {
-          localStorage.removeItem('gaukripa_user');
-          return null;
-        }
         const stored = localStorage.getItem('gaukripa_user');
         if (stored) return JSON.parse(stored);
       } catch (err) {
@@ -57,9 +79,7 @@ export default function App() {
   });
 
   // Super Admin Check - strictly for bankush014@gmail.com
-  const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'admin';
-  const isAstrologer = currentUser?.role === 'astrologer';
-  const canAccessAstrologer = isSuperAdmin || isAstrologer;
+  const isSuperAdmin = currentUser?.email?.toLowerCase() === 'bankush014@gmail.com' || currentUser?.role === 'super_admin';
 
   // Navigation prompt & action resumption queue
   const [authPromptMessage, setAuthPromptMessage] = useState<string | null>(null);
@@ -74,14 +94,15 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'website' | 'admin' | 'astrologer'>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
-      if (hash === '#admin' && isSuperAdmin) return 'admin';
-      if ((hash === '#astrologer' || hash === '#astro') && canAccessAstrologer) return 'astrologer';
+      if ((hash === '#admin' || hash === '#astrologer' || hash === '#astro') && isSuperAdmin) {
+        return hash === '#admin' ? 'admin' : 'astrologer';
+      }
     }
     return 'website';
   });
 
   const navigateTo = (view: 'website' | 'admin' | 'astrologer') => {
-    if ((view === 'admin' && !isSuperAdmin) || (view === 'astrologer' && !canAccessAstrologer)) {
+    if ((view === 'admin' || view === 'astrologer') && !isSuperAdmin) {
       setAuthPromptMessage(
         tr(
           'प्रबंधन कंसोल खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
@@ -119,7 +140,7 @@ export default function App() {
           setCurrentView('admin');
         }
       } else if (hash === '#astrologer' || hash === '#astro') {
-        if (!canAccessAstrologer) {
+        if (!isSuperAdmin) {
           setAuthPromptMessage(
             tr(
               'ज्योतिषी डेस्क खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
@@ -137,7 +158,7 @@ export default function App() {
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isSuperAdmin, canAccessAstrologer, lang]);
+  }, [isSuperAdmin, lang]);
 
   // Modal visibility states
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
@@ -182,7 +203,11 @@ export default function App() {
 
   // Handlers
   const handleOpenSevaBooking = (item: SevaItem, discount = false) => {
-    setActiveBookingSeva(item);
+    const liveMatch = liveServices.find((s) => s.id === item.id);
+    const mergedItem = liveMatch && !item.customImageUrl
+      ? { ...item, customImageUrl: liveMatch.customImageUrl }
+      : item;
+    setActiveBookingSeva(mergedItem);
     setHasAstrologerDiscount(discount);
     setBookingModalOpen(true);
   };
@@ -245,11 +270,7 @@ export default function App() {
 
   const handleUserLogout = () => {
     setCurrentUser(null);
-    try {
-      localStorage.removeItem('gaukripa_user');
-    } catch (e) {
-      console.error(e);
-    }
+    api.logout().catch(console.error);
     setCurrentView('website');
     if (typeof window !== 'undefined') {
       history.pushState(null, '', window.location.pathname);
@@ -277,11 +298,11 @@ export default function App() {
     return <AdminDashboard onBackToWebsite={() => navigateTo('website')} />;
   }
 
-  if (currentView === 'astrologer' && canAccessAstrologer) {
+  if (currentView === 'astrologer' && isSuperAdmin) {
     return (
       <AstrologerDashboard
         onBackToWebsite={() => navigateTo('website')}
-        selectedAstroId={currentUser?.astrologerId || activeAstrologer?.id}
+        selectedAstroId={activeAstrologer?.id}
       />
     );
   }
@@ -304,7 +325,7 @@ export default function App() {
         onOpenAbout={() => setAboutModalOpen(true)}
         onOpenReviews={() => setProofGalleryOpen(true)}
         onOpenAdminDashboard={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologerDashboard={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologerDashboard={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
       />
 
       {/* Hero Section */}
@@ -359,8 +380,11 @@ export default function App() {
         onOpenReviews={() => setProofGalleryOpen(true)}
         onOpenContact={() => setContactModalOpen(true)}
         onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologer={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
       />
+
+      {/* Continuous Shuffled Seva Booking Popup (20 states/cities, every 4s) */}
+      <LiveSevaBookingPopup />
 
       {/* Floating Quick Access Dock - EXCLUSIVELY FOR SUPER ADMIN (bankush014@gmail.com) */}
       {isSuperAdmin && (
@@ -433,7 +457,7 @@ export default function App() {
         onLogin={handleUserLogin}
         onLogout={handleUserLogout}
         onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologer={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
         customMessage={authPromptMessage}
       />
 

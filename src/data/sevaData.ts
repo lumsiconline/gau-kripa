@@ -12,6 +12,7 @@ export interface SevaItem {
   minQty: number;
   benefit: string;
   cropKey: 'sevaChara' | 'sevaRoti' | 'sevaGudChana' | 'sevaPakshi' | 'sevaCheenti' | 'sevaDogs';
+  customImageUrl?: string;
   detailedDescription: string;
   vedicSignificance: string;
   fulfilmentDetails: string;
@@ -230,6 +231,7 @@ export interface Astrologer {
   reviewsCount: string;
   ratePerMin: number;
   cropKey: 'astroSophia' | 'astroRohan' | 'astroMaria';
+  customImageUrl?: string;
   languages: string[];
   bio: string;
   specializations: string[];
@@ -237,85 +239,59 @@ export interface Astrologer {
 
 export const ASTROLOGERS_HI: Astrologer[] = [
   {
-    id: 'dr-sophia',
-    name: 'डॉ. सोफिया शर्मा',
-    title: 'वरिष्ठ वैदिक ज्योतिषाचार्य एवं रत्न विशेषज्ञ',
-    experience: '15+ वर्ष का अनुभव',
+    id: 'nipunjj',
+    name: 'निपुंज (Nipunjj)',
+    title: 'अंक ज्योतिष, वैदिक, टैरो एवं हस्तरेखा विशेषज्ञ',
+    experience: '7+ वर्ष का अनुभव',
     rating: 4.9,
-    reviewsCount: '12k+ परामर्श',
-    ratePerMin: 20,
-    cropKey: 'astroSophia',
-    languages: ['हिन्दी', 'English', 'संस्कृत'],
-    bio: 'वैदिक ज्योतिष, जन्म कुंडली गहन विश्लेषण, विवाह योग तथा ग्रह-नक्षत्र शांति के प्रमाणित विशेषज्ञ। सरल एवं सटीक मार्गदर्शन।',
-    specializations: ['जन्म कुंडली विश्लेषण', 'विवाह संबंधी ज्योतिष परामर्श', 'प्रेम एवं संबंध मार्गदर्शन', 'रत्न एवं वैदिक उपाय']
-  },
-  {
-    id: 'acharya-rohan',
-    name: 'आचार्य रोहन मेहता',
-    title: 'काशी प्रशिक्षित वैदिक शास्त्री एवं जीवन मार्गदर्शक',
-    experience: '14+ वर्ष का अनुभव',
-    rating: 4.8,
-    reviewsCount: '10k+ परामर्श',
+    reviewsCount: '5239+ रीडिंग पूर्ण',
     ratePerMin: 20,
     cropKey: 'astroRohan',
-    languages: ['हिन्दी', 'गुजराती', 'English'],
-    bio: 'काशी विश्वनाथ गुरुकुल से प्रशिक्षित, करियर व व्यापार के शुभ समय, मांगलिक दोष, कालसर्प शांति एवं गृह-क्लेश निवारण विशेषज्ञ।',
-    specializations: ['करियर एवं व्यवसाय मार्गदर्शन', 'ग्रह एवं नक्षत्र विश्लेषण', 'दशा-अंतर्दशा फल', 'मांगलिक शांति']
+    languages: ['हिन्दी', 'English'],
+    bio: 'अंक ज्योतिष (Numerology), वैदिक ज्योतिष, टैरो कार्ड रीडिंग एवं हस्तरेखा (Palmistry) में 7+ वर्षों के अनुभव के साथ 5239+ सटीक रीडिंग पूर्ण। करियर, प्रेम, विवाह एवं जीवन निर्णय हेतु स्पष्ट मार्गदर्शन।',
+    specializations: ['अंक ज्योतिष', 'वैदिक ज्योतिष', 'टैरो रीडिंग', 'हस्तरेखा विज्ञान']
   },
   {
-    id: 'maria-kapoor',
-    name: 'मारिया कपूर',
-    title: 'रिलेशनशिप एवं आध्यात्मिक परामर्शदात्री',
-    experience: '12+ वर्ष का अनुभव',
-    rating: 4.8,
-    reviewsCount: '8k+ परामर्श',
+    id: 'dravina',
+    name: 'द्रविना (Dravina)',
+    title: 'वरिष्ठ वैदिक ज्योतिष एवं टैरो विशेषज्ञ',
+    experience: '10+ वर्ष का अनुभव',
+    rating: 4.9,
+    reviewsCount: '7648+ रीडिंग पूर्ण',
     ratePerMin: 20,
-    cropKey: 'astroMaria',
-    languages: ['हिन्दी', 'English', 'पंजाबी'],
-    bio: 'प्रेम, दांपत्य जीवन, संबंध सामंजस्य एवं भावनात्मक शांति हेतु समर्पित परामर्शदात्री। 8000+ से अधिक परिवारों का सफल मार्गदर्शन।',
-    specializations: ['प्रेम एवं संबंध मार्गदर्शन', 'विवाह संबंधी ज्योतिष परामर्श', 'पारिवारिक सुख-शांति', 'अंक ज्योतिष']
+    cropKey: 'astroSophia',
+    languages: ['हिन्दी', 'English'],
+    bio: '10+ वर्षों के गहन वैदिक एवं टैरो परामर्श अनुभव के साथ 7648+ सफल रीडिंग पूर्ण। जन्म कुंडली विश्लेषण, संबंध सामंजस्य, दशा फल और सरल आध्यात्मिक उपायों की विशेषज्ञ।',
+    specializations: ['वैदिक ज्योतिष', 'टैरो रीडिंग']
   }
 ];
 
 export const ASTROLOGERS_EN: Astrologer[] = [
   {
-    id: 'dr-sophia',
-    name: 'Dr. Sophia Sharma',
-    title: 'Senior Vedic Astrologer & Gemstone Expert',
-    experience: '15+ Years Experience',
+    id: 'nipunjj',
+    name: 'Nipunjj',
+    title: 'Numerology, Vedic, Tarot & Palmistry Expert',
+    experience: '7+ Years Experience',
     rating: 4.9,
-    reviewsCount: '12k+ Consults',
-    ratePerMin: 20,
-    cropKey: 'astroSophia',
-    languages: ['Hindi', 'English', 'Sanskrit'],
-    bio: 'Certified expert in Vedic astrology, in-depth birth chart reading, marriage yoga analysis, and planetary-nakshatra guidance.',
-    specializations: ['Birth Chart Analysis', 'Marriage Astrology', 'Love & Relationship', 'Gemstones & Vedic Remedies']
-  },
-  {
-    id: 'acharya-rohan',
-    name: 'Acharya Rohan Mehta',
-    title: 'Kashi-Trained Vedic Shastri & Life Guide',
-    experience: '14+ Years Experience',
-    rating: 4.8,
-    reviewsCount: '10k+ Consults',
+    reviewsCount: '5239+ Readings',
     ratePerMin: 20,
     cropKey: 'astroRohan',
-    languages: ['Hindi', 'Gujarati', 'English'],
-    bio: 'Trained at Kashi Vishwanath Gurukula, specializing in career & business timing, Manglik Dosh, Kaal Sarp Shanti, and household harmony.',
-    specializations: ['Career & Business Guidance', 'Planetary & Nakshatra', 'Mahadasha Analysis', 'Manglik Shanti']
+    languages: ['Hindi', 'English'],
+    bio: 'Trusted Numerology, Vedic Astrology, Tarot, and Palmistry specialist with 7+ years of experience and 5239+ readings completed for career, marriage, and life clarity.',
+    specializations: ['Numerology', 'Vedic', 'Tarot', 'Palmistry']
   },
   {
-    id: 'maria-kapoor',
-    name: 'Maria Kapoor',
-    title: 'Relationship & Spiritual Counselor',
-    experience: '12+ Years Experience',
-    rating: 4.8,
-    reviewsCount: '8k+ Consults',
+    id: 'dravina',
+    name: 'Dravina',
+    title: 'Senior Vedic & Tarot Expert',
+    experience: '10+ Years Experience',
+    rating: 4.9,
+    reviewsCount: '7648+ Readings',
     ratePerMin: 20,
-    cropKey: 'astroMaria',
-    languages: ['Hindi', 'English', 'Punjabi'],
-    bio: 'Dedicated counselor for love, marital harmony, relationship balance, and emotional clarity. Successfully guided over 8,000 families.',
-    specializations: ['Love & Relationship', 'Marriage Astrology', 'Family Harmony', 'Numerology']
+    cropKey: 'astroSophia',
+    languages: ['Hindi', 'English'],
+    bio: 'Seasoned Vedic Astrologer and intuitive Tarot reader with 10+ years of experience and 7648+ readings completed, offering clear Kundali, relationship, and remedial guidance.',
+    specializations: ['Vedic', 'Tarot']
   }
 ];
 
