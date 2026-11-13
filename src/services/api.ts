@@ -263,14 +263,6 @@ export const api = {
   },
 
   createService: async (service: Partial<ServiceItem>): Promise<ServiceItem> => {
-    const res = await safeFetchJson<{ service: ServiceItem }>(`${API_BASE}/services`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(service)
-    });
-    if (res.ok && res.data?.service) return res.data.service;
-
-    const services = getStoredServices();
     const newService: ServiceItem = {
       id: service.id || `seva-${Date.now()}`,
       title: service.title || 'New Sacred Seva',
@@ -289,35 +281,30 @@ export const api = {
       isActive: service.isActive !== false,
       category: service.category || 'cow'
     };
-    services.push(newService);
-    try { localStorage.setItem('gaukripa_services', JSON.stringify(services)); } catch {}
-    return newService;
+    const { supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseMutation<Array<{data: ServiceItem}>>(
+      'services', 'POST', '?select=data', [{ id: newService.id, data: newService, is_active: newService.isActive }]
+    );
+    if (!rows[0]?.data) throw new Error('Supabase did not save the seva service.');
+    return rows[0].data;
   },
 
   updateService: async (id: string, service: Partial<ServiceItem>): Promise<ServiceItem> => {
-    const res = await safeFetchJson<{ service: ServiceItem }>(`${API_BASE}/services/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(service)
-    });
-    if (res.ok && res.data?.service) return res.data.service;
-
-    const services = getStoredServices();
-    const idx = services.findIndex((s) => s.id === id);
-    if (idx !== -1) {
-      services[idx] = { ...services[idx], ...service };
-      try { localStorage.setItem('gaukripa_services', JSON.stringify(services)); } catch {}
-      return services[idx];
-    }
-    return { ...service, id } as ServiceItem;
+    const current = (await api.getServices(true)).find((item) => item.id === id);
+    if (!current) throw new Error('Seva service was not found.');
+    const updated = { ...current, ...service, id };
+    const { supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseMutation<Array<{data: ServiceItem}>>(
+      'services', 'PATCH', `?id=eq.${encodeURIComponent(id)}&select=data`,
+      { data: updated, is_active: updated.isActive, updated_at: new Date().toISOString() }
+    );
+    if (!rows[0]?.data) throw new Error('Supabase did not update the seva service.');
+    return rows[0].data;
   },
 
   deleteService: async (id: string): Promise<boolean> => {
-    const res = await safeFetchJson<{ success: boolean }>(`${API_BASE}/services/${id}`, { method: 'DELETE' });
-    if (res.ok) return true;
-
-    const services = getStoredServices().filter((s) => s.id !== id);
-    try { localStorage.setItem('gaukripa_services', JSON.stringify(services)); } catch {}
+    const { supabaseMutation } = await import('./supabaseClient');
+    await supabaseMutation('services', 'DELETE', `?id=eq.${encodeURIComponent(id)}`);
     return true;
   },
 
@@ -337,14 +324,6 @@ export const api = {
   },
 
   createAstrologer: async (astro: Partial<AstrologerItem>): Promise<AstrologerItem> => {
-    const res = await safeFetchJson<{ astrologer: AstrologerItem }>(`${API_BASE}/astrologers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(astro)
-    });
-    if (res.ok && res.data?.astrologer) return res.data.astrologer;
-
-    const astros = getStoredAstrologers();
     const newAstro: AstrologerItem = {
       id: astro.id || `astro-${Date.now()}`,
       name: astro.name || 'New Astrologer',
@@ -362,43 +341,36 @@ export const api = {
       totalConsultations: astro.totalConsultations || 0,
       totalEarnings: astro.totalEarnings || 0
     };
-    astros.push(newAstro);
-    try { localStorage.setItem('gaukripa_astrologers', JSON.stringify(astros)); } catch {}
-    return newAstro;
+    const { supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseMutation<Array<{data: AstrologerItem}>>(
+      'astrologers', 'POST', '?select=data', [{ id: newAstro.id, data: newAstro, is_online: newAstro.isOnline }]
+    );
+    if (!rows[0]?.data) throw new Error('Supabase did not save the astrologer.');
+    return rows[0].data;
   },
 
   updateAstrologer: async (id: string, astro: Partial<AstrologerItem>): Promise<AstrologerItem> => {
-    const res = await safeFetchJson<{ astrologer: AstrologerItem }>(`${API_BASE}/astrologers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(astro)
-    });
-    if (res.ok && res.data?.astrologer) return res.data.astrologer;
-
-    const astros = getStoredAstrologers();
-    const idx = astros.findIndex((a) => a.id === id);
-    if (idx !== -1) {
-      astros[idx] = { ...astros[idx], ...astro };
-      try { localStorage.setItem('gaukripa_astrologers', JSON.stringify(astros)); } catch {}
-      return astros[idx];
-    }
-    return { ...astro, id } as AstrologerItem;
+    const current = (await api.getAstrologers()).find((item) => item.id === id);
+    if (!current) throw new Error('Astrologer was not found.');
+    const updated = { ...current, ...astro, id };
+    const { supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseMutation<Array<{data: AstrologerItem}>>(
+      'astrologers', 'PATCH', `?id=eq.${encodeURIComponent(id)}&select=data`,
+      { data: updated, is_online: updated.isOnline, updated_at: new Date().toISOString() }
+    );
+    if (!rows[0]?.data) throw new Error('Supabase did not update the astrologer.');
+    return rows[0].data;
   },
 
   setAstrologerAvailability: async (id: string, isOnline: boolean): Promise<boolean> => {
-    const res = await safeFetchJson<{ isOnline: boolean }>(`${API_BASE}/astrologers/${id}/availability`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isOnline })
-    });
-    if (res.ok && typeof res.data?.isOnline === 'boolean') return res.data.isOnline;
-
-    const astros = getStoredAstrologers();
-    const idx = astros.findIndex((a) => a.id === id);
-    if (idx !== -1) {
-      astros[idx].isOnline = isOnline;
-      try { localStorage.setItem('gaukripa_astrologers', JSON.stringify(astros)); } catch {}
-    }
+    const current = (await api.getAstrologers()).find((item) => item.id === id);
+    if (!current) throw new Error('Astrologer was not found.');
+    const updated = { ...current, isOnline };
+    const { supabaseMutation } = await import('./supabaseClient');
+    await supabaseMutation(
+      'astrologers', 'PATCH', `?id=eq.${encodeURIComponent(id)}`,
+      { data: updated, is_online: isOnline, updated_at: new Date().toISOString() }
+    );
     return isOnline;
   },
 
@@ -1005,16 +977,13 @@ export const api = {
   },
 
   updateSettings: async (settings: Partial<AppSettings>): Promise<AppSettings> => {
-    const res = await safeFetchJson<{ settings: AppSettings }>(`${API_BASE}/settings`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    });
-    if (res.ok && res.data?.settings) return res.data.settings;
-
     const current = await api.getSettings();
     const updated = { ...current, ...settings };
-    try { localStorage.setItem('gaukripa_settings', JSON.stringify(updated)); } catch {}
+    const { supabaseMutation } = await import('./supabaseClient');
+    await supabaseMutation(
+      'app_settings', 'PATCH', '?id=eq.global',
+      { data: updated, updated_at: new Date().toISOString() }
+    );
     return updated;
   },
 
