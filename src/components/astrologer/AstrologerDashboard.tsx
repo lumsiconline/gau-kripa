@@ -230,6 +230,17 @@ export const AstrologerDashboard: React.FC<AstrologerDashboardProps> = ({
       const data = await api.getAstrologerChatHistory('all');
       setHistorySessions(data.sessions || []);
       setAnalytics(data.analytics || { totalConsultations: 0, todayEarnings: 0, weeklyEarnings: 0, monthlyEarnings: 0 });
+      const restored = (data.sessions || []).find((session) => session.status === 'active' &&
+        (!selectedAstroId || session.astrologerId === selectedAstroId));
+      if (restored) {
+        setActiveSession(restored);
+        setChatMessages(restored.messages || []);
+        api.getChatSession(restored.id).then((fresh) => {
+          setActiveSession(fresh.session);
+          setChatMessages(fresh.session.messages || []);
+          setCustomerWallet(fresh.customerWalletBalance);
+        }).catch((error) => console.error('Unable to restore active consultation:', error));
+      }
     } catch (err) {
       console.error(err);
     }
