@@ -555,339 +555,86 @@ export const api = {
     return { eligible: false, ratePerMin: 20, standardRate: 20, discountedRate: 10, rule: 'Standard Consultation Rate' };
   },
 
-  // Live Chat Workflow (Unified Real-Time 2-Way Sync)
+  // Live Chat Workflow — Supabase Edge Function backed, authenticated and persistent.
   requestChat: async (payload: {
-    astrologerId: string;
-    customerId?: string;
-    customerName: string;
-    customerPhone: string;
-    customerConcern: string;
-    birthDate: string;
-    birthTime: string;
-    birthPlace: string;
+    astrologerId: string; customerId?: string; customerName: string; customerPhone: string;
+    customerConcern: string; birthDate: string; birthTime: string; birthPlace: string;
     initialMessages?: ChatMessage[];
   }): Promise<{ success: boolean; session: ChatSession }> => {
-    // 1. Try hitting the server API
-    const res = await safeFetchJson<{ success: boolean; session: ChatSession }>(`${API_BASE}/chat/request`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{success:boolean;session:ChatSession}>({
+      action: 'request', ...payload
     });
-
-    let session: ChatSession;
-    if (res.ok && res.data?.session) {
-      session = res.data.session;
-    } else {
-      // 2. Client-side static fallback
-      const astros = getStoredAstrologers();
-      const astro = astros.find((a) => a.id === payload.astrologerId) || astros[0];
-      const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      const defaultMessages: ChatMessage[] = payload.initialMessages && payload.initialMessages.length > 0
-        ? payload.initialMessages
-        : [
-            {
-              id: `msg-intake-${Date.now()}`,
-              sender: 'customer',
-              senderName: payload.customerName || 'Devotee',
-              text: `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Name: ${payload.customerName}\n• Date of Birth: ${payload.birthDate}\n• Birth Time: ${payload.birthTime}\n• Birth Place: ${payload.birthPlace}\n• Guidance Needed: ${payload.customerConcern || 'Kundali & Grah Upay guidance'}\n\nPranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.`,
-              timestamp: currentTimeStr
-            },
-            {
-              id: `msg-welcome-${Date.now() + 1}`,
-              sender: 'astrologer',
-              senderName: astro?.name || 'Vedic Astrologer',
-              text: `Pranam ${payload.customerName} ji! 🙏 Har Har Mahadev. I have received your complete birth details (DOB: ${payload.birthDate}, Time: ${payload.birthTime}, Place: ${payload.birthPlace}). I am analyzing your Lagna Kundali now for ${payload.customerConcern || 'your spiritual guidance'}. Please feel free to ask your questions.`,
-              timestamp: currentTimeStr
-            }
-          ];
-
-      session = {
-        id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        astrologerId: payload.astrologerId,
-        astrologerName: astro?.name || 'Vedic Astrologer',
-        customerId: payload.customerId || payload.customerPhone,
-        customerName: payload.customerName || 'Devotee',
-        customerPhone: payload.customerPhone,
-        customerConcern: payload.customerConcern || 'Vedic Guidance',
-        birthDate: payload.birthDate,
-        birthTime: payload.birthTime,
-        birthPlace: payload.birthPlace,
-        status: 'active',
-        ratePerMin: 20,
-        hasDiscount: true,
-        createdAt: new Date().toISOString(),
-        startedAt: new Date().toISOString(),
-        durationSeconds: 0,
-        totalCharged: 0,
-        astrologerEarned: 0,
-        messages: defaultMessages
-      };
-    }
-
-    // Persist and broadcast live event to Astro Dashboard
-    saveLocalSession(session);
-    broadcastChatEvent({ type: 'NEW_CHAT_REQUEST', session });
-
-    return { success: true, session };
+    saveLocalSession(result.session);
+    broadcastChatEvent({ type: 'NEW_CHAT_REQUEST', session: result.session });
+    return result;
   },
 
   getIncomingChat: async (astrologerId: string): Promise<ChatSession | null> => {
-    const targetAstro = astrologerId || 'all';
-    // Check server first
-    const res = await safeFetchJson<{ incoming: ChatSession | null }>(`${API_BASE}/chat/incoming/${encodeURIComponent(targetAstro)}`);
-    if (res.ok && res.data?.incoming) {
-      saveLocalSession(res.data.incoming);
-      return res.data.incoming;
-    }
-
-    // Check local session store
-    if (targetAstro !== 'all') {
-      const local = getAstrologerActiveSession(targetAstro);
-      if (local) return local;
-    } else {
-      // Look across all stored sessions for any active or waiting consultation
-      try {
-        const latestId = localStorage.getItem('gaukripa_latest_chat_id');
-        if (latestId) {
-          const s = getLocalSession(latestId);
-          if (s && (s.status === 'active' || s.status === 'waiting_approval')) return s;
-        }
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith('gaukripa_session_')) {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-              const sess: ChatSession = JSON.parse(raw);
-              if (sess.status === 'active' || sess.status === 'waiting_approval') return sess;
-            }
-          }
-        }
-      } catch {}
-    }
-
-    try {
-      const raw = localStorage.getItem(`gaukripa_incoming_chat_${targetAstro}`);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return null;
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{incoming:ChatSession|null}>({
+      action: 'incoming', astrologerId: astrologerId || 'all'
+    });
+    if (result.incoming) saveLocalSession(result.incoming);
+    return result.incoming;
   },
 
   respondChat: async (sessionId: string, astrologerId: string, action: 'accept' | 'reject'): Promise<ChatSession> => {
-    const res = await safeFetchJson<{ session: ChatSession }>(`${API_BASE}/chat/respond`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, astrologerId, action })
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{session:ChatSession}>({
+      action: 'respond', sessionId, astrologerId, response: action
     });
-
-    let session: ChatSession;
-    if (res.ok && res.data?.session) {
-      session = res.data.session;
-    } else {
-      const existing = getLocalSession(sessionId);
-      session = existing || (await api.getChatSession(sessionId)).session;
-      if (action === 'accept') {
-        session.status = 'active';
-        if (!session.startedAt) session.startedAt = new Date().toISOString();
-      } else {
-        session.status = 'rejected';
-        session.endedAt = new Date().toISOString();
-      }
-    }
-
-    saveLocalSession(session);
-    broadcastChatEvent({ type: 'CHAT_ACCEPTED', session });
-    return session;
+    saveLocalSession(result.session);
+    broadcastChatEvent({ type: 'CHAT_ACCEPTED', session: result.session });
+    return result.session;
   },
 
-  getChatSession: async (sessionId: string): Promise<{ session: ChatSession; customerWalletBalance: number }> => {
-    // 1. Check local session first for instant retrieval
-    const local = getLocalSession(sessionId);
-
-    // 2. Check server
-    const res = await safeFetchJson<{ session: ChatSession; customerWalletBalance: number }>(`${API_BASE}/chat/session/${sessionId}`);
-    if (res.ok && res.data?.session) {
-      // Merge messages if server has more
-      if (local && local.messages.length > (res.data.session.messages?.length || 0)) {
-        res.data.session.messages = local.messages;
-      }
-      saveLocalSession(res.data.session);
-      return res.data;
-    }
-
-    if (local) {
-      return { session: local, customerWalletBalance: 0 };
-    }
-
-    throw new Error('Chat session not found');
+  getChatSession: async (sessionId: string): Promise<{session:ChatSession;customerWalletBalance:number}> => {
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{session:ChatSession;customerWalletBalance:number}>({
+      action: 'get-session', sessionId
+    });
+    saveLocalSession(result.session);
+    return result;
   },
 
   sendChatMessage: async (
     sessionId: string,
-    payload: {
-      sender: 'customer' | 'astrologer';
-      senderName?: string;
-      text: string;
-      suggestedSeva?: string;
-      clientMessageId?: string;
-    }
+    payload: { sender:'customer'|'astrologer'; senderName?:string; text:string; suggestedSeva?:string; clientMessageId?:string }
   ): Promise<ChatMessage> => {
-    // Persist first; only broadcast the server-confirmed message once.
-    const res = await safeFetchJson<{ success: boolean; message: ChatMessage; session: ChatSession }>(
-      `${API_BASE}/chat/session/${sessionId}/message`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    if (res.ok && res.data?.message && res.data?.session) {
-      saveLocalSession(res.data.session);
-      broadcastChatEvent({
-        type: 'NEW_MESSAGE',
-        sessionId,
-        message: res.data.message,
-        session: res.data.session
-      });
-      return res.data.message;
-    }
-
-    // Offline fallback: append exactly once to the local session.
-    const local = getLocalSession(sessionId);
-    if (!local) throw new Error('Chat session is unavailable. Please reconnect and try again.');
-    const message: ChatMessage = {
-      id: payload.clientMessageId || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      sender: payload.sender,
-      senderName: payload.senderName || (payload.sender === 'customer' ? 'Devotee' : 'Vedic Astrologer'),
-      text: payload.text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedSeva: payload.suggestedSeva
-    };
-    if (!local.messages.some((item) => item.id === message.id)) {
-      local.messages.push(message);
-      saveLocalSession(local);
-      broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message, session: local });
-    }
-    return message;
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{success:boolean;message:ChatMessage;session:ChatSession}>({
+      action:'send-message', sessionId, ...payload
+    });
+    broadcastChatEvent({ type:'NEW_MESSAGE', sessionId, message:result.message, session:result.session });
+    return result.message;
   },
 
-  sendChatHeartbeat: async (
-    sessionId: string
-  ): Promise<{
-    durationSeconds: number;
-    totalCharged: number;
-    astrologerEarned: number;
-    walletBalance: number;
-    status: string;
+  sendChatHeartbeat: async (sessionId: string): Promise<{
+    durationSeconds:number; totalCharged:number; astrologerEarned:number; walletBalance:number; status:string;
   }> => {
-    const res = await safeFetchJson<{
-      durationSeconds: number;
-      totalCharged: number;
-      astrologerEarned: number;
-      walletBalance: number;
-      status: string;
-    }>(`${API_BASE}/chat/session/${sessionId}/heartbeat`, { method: 'POST' });
-    if (res.ok && res.data) return res.data;
-
-    const { session, customerWalletBalance } = await api.getChatSession(sessionId);
-    session.durationSeconds = (session.durationSeconds || 0) + 5;
-    const costPer5s = session.ratePerMin / 12;
-    session.totalCharged = Number(((session.totalCharged || 0) + costPer5s).toFixed(2));
-    session.astrologerEarned = Number((session.totalCharged * 0.7).toFixed(2));
-    const newBal = Math.max(0, Number((customerWalletBalance - costPer5s).toFixed(2)));
-
-    if (newBal <= 0) {
-      session.status = 'ended';
-      session.endedAt = new Date().toISOString();
-    }
-
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${sessionId}`, JSON.stringify(session));
-      const w = await api.getWallet(session.customerPhone);
-      w.balance = newBal;
-      localStorage.setItem(`gaukripa_wallet_${session.customerPhone}`, JSON.stringify(w));
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
-
-    return {
-      durationSeconds: session.durationSeconds,
-      totalCharged: session.totalCharged,
-      astrologerEarned: session.astrologerEarned,
-      walletBalance: newBal,
-      status: session.status
-    };
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    return await invokeGauKripaChat({
+      action:'heartbeat', sessionId
+    });
   },
 
   endChat: async (sessionId: string): Promise<ChatSession> => {
-    // Broadcast immediately so all listeners react instantly
-    broadcastChatEvent({ type: 'CHAT_ENDED', sessionId });
-
-    const res = await safeFetchJson<{ session: ChatSession }>(`${API_BASE}/chat/session/${sessionId}/end`, { method: 'POST' });
-    if (res.ok && res.data?.session) {
-      saveLocalSession(res.data.session);
-      return res.data.session;
-    }
-
-    const { session } = await api.getChatSession(sessionId);
-    session.status = 'ended';
-    session.endedAt = new Date().toISOString();
-    saveLocalSession(session);
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${sessionId}`, JSON.stringify(session));
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
-    return session;
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{session:ChatSession}>({ action:'end', sessionId });
+    saveLocalSession(result.session);
+    broadcastChatEvent({ type:'CHAT_ENDED', sessionId });
+    return result.session;
   },
 
-  getAstrologerChatHistory: async (
-    astrologerId: string
-  ): Promise<{
-    sessions: ChatSession[];
-    analytics: {
-      totalConsultations: number;
-      todayEarnings: number;
-      weeklyEarnings: number;
-      monthlyEarnings: number;
-    };
+  getAstrologerChatHistory: async (astrologerId: string): Promise<{
+    sessions:ChatSession[];
+    analytics:{totalConsultations:number;todayEarnings:number;weeklyEarnings:number;monthlyEarnings:number};
   }> => {
-    const isAll = !astrologerId || astrologerId === 'all';
-    const res = await safeFetchJson<{
-      sessions: ChatSession[];
-      analytics: {
-        totalConsultations: number;
-        todayEarnings: number;
-        weeklyEarnings: number;
-        monthlyEarnings: number;
-      };
-    }>(`${API_BASE}/chat/history/${encodeURIComponent(isAll ? 'all' : astrologerId)}`);
-    if (res.ok && res.data) return res.data;
-
-    const matchedSessions: ChatSession[] = [];
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('gaukripa_chat_session_') || key.startsWith('gaukripa_session_'))) {
-          const s: ChatSession = JSON.parse(localStorage.getItem(key) || '{}');
-          if (s && s.id && (isAll || s.astrologerId === astrologerId)) {
-            if (!matchedSessions.some((existing) => existing.id === s.id)) {
-              matchedSessions.push(s);
-            }
-          }
-        }
-      }
-    } catch {}
-
-    const totalEarned = matchedSessions.reduce((sum, s) => sum + (s.astrologerEarned || 0), 0);
-    return {
-      sessions: matchedSessions,
-      analytics: {
-        totalConsultations: matchedSessions.length,
-        todayEarnings: totalEarned,
-        weeklyEarnings: Math.round(totalEarned * 0.4),
-        monthlyEarnings: totalEarned
-      }
-    };
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    return await invokeGauKripaChat({
+      action:'history', astrologerId: astrologerId || 'all'
+    });
   },
 
   // Settings
