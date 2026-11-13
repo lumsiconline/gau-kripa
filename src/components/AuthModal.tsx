@@ -23,7 +23,7 @@ export interface AuthUser {
   name: string;
   phone?: string;
   email: string;
-  role?: 'super_admin' | 'devotee';
+  role?: 'super_admin' | 'admin' | 'astrologer' | 'devotee';
   isAdmin?: boolean;
 }
 
@@ -286,8 +286,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const isSuperAdmin =
-    currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'admin';
+  const isAstrologer = currentUser?.role === 'astrologer';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
@@ -301,6 +301,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {currentUser
                 ? isSuperAdmin
                   ? tr('सुपर एडमिन कंसोल एवं प्रोफ़ाइल', 'Super Admin Console & Profile')
+                  : isAstrologer
+                    ? tr('ज्योतिषाचार्य डेस्क', 'Astrologer Desk')
                   : tr('मेरी भक्त प्रोफ़ाइल', 'My Devotee Profile')
                 : authMode === 'login'
                 ? tr('गौकृपा में साइन इन करें', 'Sign In to GauKripa')
