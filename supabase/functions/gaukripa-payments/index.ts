@@ -89,15 +89,22 @@ Deno.serve(async (req: Request) => {
       const { data: orderRow, error: orderError } = await supabase.from("payment_orders")
         .select("*").eq("order_id", orderId).maybeSingle();
       if (orderError) throw orderError;
+      const paidNotes = orderRow?.data?.notes || {};
       if (!orderRow || orderRow.user_id !== profile.id || orderRow.phone !== phone ||
           orderRow.status !== "paid" || orderRow.payment_id !== paymentId ||
-          orderRow.data?.purpose !== "seva" || Number(orderRow.amount_paise) !== Math.round(amount * 100)) {
+          orderRow.data?.purpose !== "seva" || Number(orderRow.amount_paise) !== Math.round(amount * 100) ||
+          (paidNotes.sevaTitle && paidNotes.sevaTitle !== booking.sevaTitle) ||
+          (paidNotes.gotra && paidNotes.gotra !== booking.gotra) ||
+          (paidNotes.occasion && paidNotes.occasion !== booking.occasion)) {
         return json({ error: "A matching, verified seva payment is required before booking." }, 402);
       }
       const bookingId = String(booking.bookingId || ("GK-" + crypto.randomUUID().slice(0, 8))).slice(0, 40);
       const { data: existing } = await supabase.from("bookings").select("data")
         .eq("user_id", profile.id).eq("booking_id", bookingId).maybeSingle();
-      if (existing?.data) return json({ success: true, booking: existing.data, already_saved: true });
+      if (existing?.data) {
+        if (existing.data.orderId !== orderId || existing.data.paymentId !== paymentId) return json({ error: "Booking reference is already in use." }, 409);
+        return json({ success: true, booking: existing.data, already_saved: true });
+      }
       const savedBooking = {
         ...booking, bookingId, phone, email: profile.email,
         devoteeName: profile.full_name || booking.devoteeName || "Devotee",
@@ -146,7 +153,7 @@ Deno.serve(async (req: Request) => {
       if (phone !== digits(profile.phone)) return json({ error: "Booking phone does not match your verified account." }, 403);
       const { data: orderRow, error: orderError } = await supabase.from("payment_orders").select("*").eq("order_id", orderId).maybeSingle();
       if (orderError) throw orderError;
-      if (!orderRow || orderRow.phone !== phone || orderRow.data?.purpose !== "seva") return json({ error: "Seva payment order not found." }, 404);
+      if (!orderRow || orderRow.user_id !== profile.id || orderRow.phone !== phone || orderRow.data?.purpose !== "seva") return json({ error: "Seva payment order not found." }, 404);
       const expected = await hmacSha256(razorpaySecret, `${orderId}|${paymentId}`);
       if (!safeEqual(expected, signature)) return json({ error: "Invalid Razorpay payment signature." }, 400);
       const rpResponse = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`, {
@@ -208,7 +215,7 @@ Deno.serve(async (req: Request) => {
       const { data: orderRow, error: orderError } = await supabase.from("payment_orders")
         .select("*").eq("order_id", orderId).maybeSingle();
       if (orderError) throw orderError;
-      if (!orderRow || orderRow.phone !== phone) return json({ error: "Payment order not found for this account." }, 404);
+      if (!orderRow || orderRow.user_id !== profile.id || orderRow.phone !== phone) return json({ error: "Payment order not found for this account." }, 404);
 
       const expected = await hmacSha256(razorpaySecret, `${orderId}|${paymentId}`);
       if (!safeEqual(expected, signature)) return json({ error: "Invalid Razorpay payment signature." }, 400);
