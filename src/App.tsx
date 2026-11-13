@@ -438,7 +438,7 @@ export default function App() {
         onLogin={handleUserLogin}
         onLogout={handleUserLogout}
         onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
+        onOpenAstrologer={canAccessAstrologer ? () => navigateTo('astrologer') : undefined}
         customMessage={authPromptMessage}
       />
 
