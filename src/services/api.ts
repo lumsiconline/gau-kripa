@@ -496,31 +496,12 @@ export const api = {
 
   // Wallet: balances and transaction history (Firebase Functions asia-south1)
   getWallet: async (phone: string): Promise<WalletInfo> => {
-    const cleanPhone = normalizePhone(phone);
-
-    // 1. Fetch verified wallet balance from Firebase Function getWallet
-    const serverRes = await safeFetchJson<WalletInfo>(
-      `${FIREBASE_FUNCTIONS_URL}/getWallet?phone=${encodeURIComponent(cleanPhone)}`
-    );
-    if (serverRes.ok && serverRes.data) {
-      try {
-        localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(serverRes.data));
-      } catch {}
-      return serverRes.data;
-    }
-
-    // 2. Read-only cached wallet when offline
-    try {
-      const raw = localStorage.getItem(`gaukripa_wallet_${cleanPhone}`);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-
-    return {
-      phone: cleanPhone,
-      name: 'Devotee',
-      balance: 0,
-      transactions: []
-    };
+    const cleanPhone = normalizePhone(phone, '');
+    if (cleanPhone.length !== 10) throw new Error('Please sign in with a valid mobile number.');
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const wallet = await invokeGauKripaPayments<WalletInfo>({ action: 'get-wallet', phone: cleanPhone });
+    try { localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(wallet)); } catch {}
+    return wallet;
   },
 
   // Standard Razorpay Checkout Methods (Express Backend LIVE Payments)
@@ -587,95 +568,36 @@ export const api = {
       throw new Error('Minimum wallet recharge is ₹50 (whole-rupee amount up to ₹1,00,000).');
     }
     const cleanPhone = normalizePhone(phone, '');
-    if (cleanPhone.length < 10) {
-      throw new Error('Please add a valid 10-digit mobile number to your profile before recharging.');
-    }
-
-    const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-      `${FIREBASE_FUNCTIONS_URL}/createRazorpayOrder`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          amount: numAmount,
-          name,
-          email
-        })
-      }
-    );
-
-    const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
-
-    if (res.ok && orderId && keyId) {
-      return {
-        order_id: orderId,
-        amount: res.data?.amount || numAmount * 100,
-        currency: (res.data?.currency || 'INR') as 'INR',
-        key_id: keyId
-      };
-    }
-
-    throw new Error(res.error || 'Razorpay order creation failed. No valid order ID was returned.');
+    if (cleanPhone.length !== 10) throw new Error('Please add a valid 10-digit mobile number to your profile.');
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const result = await invokeGauKripaPayments<{order_id:string;amount:number;currency:string;key_id:string}>({
+      action: 'create-order', phone: cleanPhone, amount: numAmount, name, email
+    });
+    if (!result.order_id || !result.key_id) throw new Error('Supabase did not return a valid Razorpay order.');
+    return result;
   },
 
   verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string; amount?: number }) => {
     if (!payload.order_id || !payload.payment_id || !payload.signature) {
       throw new Error('Missing Razorpay payment signature details. Verification cannot proceed.');
     }
-
     const cleanPhone = normalizePhone(payload.phone, '');
-    if (cleanPhone.length < 10) {
-      throw new Error('A valid 10-digit mobile number is required to verify wallet payment.');
-    }
-
-    const res = await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message?: string; balance?: number; wallet?: WalletInfo }>(
-      `${FIREBASE_FUNCTIONS_URL}/verifyRazorpayPayment`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id: payload.order_id,
-          payment_id: payload.payment_id,
-          signature: payload.signature,
-          phone: cleanPhone
-        })
-      }
-    );
-
-    if (res.ok && res.data?.success && res.data?.verified) {
-      const storageKey = `gaukripa_wallet_${cleanPhone}`;
-      let existingTransactions: WalletInfo['transactions'] = [];
-      let existingName = 'Devotee';
-      try {
-        const cached = localStorage.getItem(storageKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed.transactions)) existingTransactions = parsed.transactions;
-          if (parsed.name) existingName = parsed.name;
-        }
-      } catch {}
-
-      const verifiedWallet: WalletInfo = res.data.wallet || {
-        phone: cleanPhone,
-        name: existingName,
-        balance: typeof res.data.balance === 'number' ? res.data.balance : 0,
-        transactions: existingTransactions
-      };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(verifiedWallet));
-      } catch {}
-
-      return {
-        success: true,
-        verified: true,
-        credited: res.data.credited !== false,
-        balance: verifiedWallet.balance
-      };
-    }
-
-    throw new Error(res.error || 'Razorpay payment could not be verified.');
+    if (cleanPhone.length !== 10) throw new Error('A valid 10-digit mobile number is required to verify wallet payment.');
+    const { invokeGauKripaPayments } = await import('./supabaseClient');
+    const result = await invokeGauKripaPayments<{success:boolean;verified:boolean;credited:boolean;already_credited:boolean;balance:number}>({
+      action: 'verify-payment',
+      order_id: payload.order_id,
+      payment_id: payload.payment_id,
+      signature: payload.signature,
+      phone: cleanPhone
+    });
+    if (!result.success || !result.verified) throw new Error('Razorpay payment could not be verified.');
+    return {
+      success: true,
+      verified: true,
+      credited: result.credited,
+      balance: Number(result.balance || 0)
+    };
   },
 
   topupWallet: async (_phone: string, _amount: number, _name?: string): Promise<WalletInfo> => {
