@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages-and-functions
+  group: github-pages
   cancel-in-progress: false
 
 jobs:
@@ -31,9 +31,6 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-          VITE_RAZORPAY_KEY_ID: ${{ vars.VITE_RAZORPAY_KEY_ID }}
         run: npm run build
 
       - name: Add SPA fallback
