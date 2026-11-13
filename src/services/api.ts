@@ -139,6 +139,13 @@ export const API_BASE = rawApiBase
   ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
   : '/api';
 
+const DEFAULT_FIREBASE_FUNCTIONS_URL = 'https://asia-south1-gau-kripa.cloudfunctions.net';
+export const FIREBASE_FUNCTIONS_URL = String(
+  (import.meta as any).env?.VITE_FIREBASE_FUNCTIONS_URL || DEFAULT_FIREBASE_FUNCTIONS_URL
+)
+  .trim()
+  .replace(/\/+$/, '');
+
 export function normalizePhone(rawPhone: string | undefined | null, fallback = '9876543210'): string {
   const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
   if (!digits) return fallback;
@@ -148,7 +155,7 @@ export function normalizePhone(rawPhone: string | undefined | null, fallback = '
   return digits;
 }
 
-// Safe fetch helper that intercepts HTML 404/405 responses from static hosts (e.g. GitHub Pages)
+// Safe fetch helper that intercepts HTML 404/405 responses from static hosts or undeployed functions
 async function safeFetchJson<T>(
   url: string,
   options?: RequestInit
@@ -171,11 +178,14 @@ async function safeFetchJson<T>(
       }
     }
 
-    // Static host returned HTML (such as 404.html or 405 Not Allowed on GitHub Pages)
+    // Static host or undeployed Cloud Function returned HTML (404 / 405)
+    const isFirebaseFunction = url.includes('cloudfunctions.net');
     return {
       ok: false,
       isHtml: true,
-      error: `Payment backend server is not reachable from this static site (HTTP ${res.status}). Deploy server.ts and configure VITE_API_BASE_URL.`
+      error: isFirebaseFunction
+        ? `Firebase payment service returned HTTP ${res.status}. Ensure Firebase Functions are deployed in asia-south1 for project gau-kripa.`
+        : `Payment backend server is not reachable from this static site (HTTP ${res.status}). Deploy server.ts and configure VITE_API_BASE_URL.`
     };
   } catch (err: any) {
     return { ok: false, error: err?.message || 'Network error connecting to backend server.' };
@@ -484,12 +494,14 @@ export const api = {
     return { id, ...proof, status: 'completed' } as any;
   },
 
-  // Wallet: balances and transaction history
+  // Wallet: balances and transaction history (Firebase Functions asia-south1)
   getWallet: async (phone: string): Promise<WalletInfo> => {
     const cleanPhone = normalizePhone(phone);
 
-    // 1. Try server API
-    const serverRes = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(cleanPhone)}`);
+    // 1. Fetch verified wallet balance from Firebase Function getWallet
+    const serverRes = await safeFetchJson<WalletInfo>(
+      `${FIREBASE_FUNCTIONS_URL}/getWallet?phone=${encodeURIComponent(cleanPhone)}`
+    );
     if (serverRes.ok && serverRes.data) {
       try {
         localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(serverRes.data));
@@ -571,27 +583,25 @@ export const api = {
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount < 50 || numAmount > 100000) {
-      throw new Error('Minimum wallet recharge is ₹50 (up to ₹1,00,000).');
+    if (!Number.isInteger(numAmount) || numAmount < 50 || numAmount > 100000) {
+      throw new Error('Minimum wallet recharge is ₹50 (whole-rupee amount up to ₹1,00,000).');
     }
-    const cleanPhone = normalizePhone(phone);
-    const amountInPaise = Math.round(numAmount * 100);
-    const payload = {
-      phone: cleanPhone,
-      amount: numAmount,
-      amountInPaise,
-      name,
-      email,
-      receipt: `gk_wallet_${Date.now()}`,
-      notes: { phone: cleanPhone, name, purpose: 'GauKripa Sacred Wallet Recharge' }
-    };
+    const cleanPhone = normalizePhone(phone, '');
+    if (cleanPhone.length < 10) {
+      throw new Error('Please add a valid 10-digit mobile number to your profile before recharging.');
+    }
 
-    const res = await safeFetchJson<{ success: boolean; order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-      `${API_BASE}/wallet/create-razorpay-order`,
+    const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
+      `${FIREBASE_FUNCTIONS_URL}/createRazorpayOrder`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          phone: cleanPhone,
+          amount: numAmount,
+          name,
+          email
+        })
       }
     );
 
@@ -601,7 +611,7 @@ export const api = {
     if (res.ok && orderId && keyId) {
       return {
         order_id: orderId,
-        amount: res.data?.amount || amountInPaise,
+        amount: res.data?.amount || numAmount * 100,
         currency: (res.data?.currency || 'INR') as 'INR',
         key_id: keyId
       };
@@ -615,9 +625,13 @@ export const api = {
       throw new Error('Missing Razorpay payment signature details. Verification cannot proceed.');
     }
 
-    const cleanPhone = normalizePhone(payload.phone);
-    const res = await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message: string; balance?: number; wallet?: WalletInfo }>(
-      `${API_BASE}/wallet/verify-razorpay-payment`,
+    const cleanPhone = normalizePhone(payload.phone, '');
+    if (cleanPhone.length < 10) {
+      throw new Error('A valid 10-digit mobile number is required to verify wallet payment.');
+    }
+
+    const res = await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message?: string; balance?: number; wallet?: WalletInfo }>(
+      `${FIREBASE_FUNCTIONS_URL}/verifyRazorpayPayment`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -625,19 +639,29 @@ export const api = {
           order_id: payload.order_id,
           payment_id: payload.payment_id,
           signature: payload.signature,
-          phone: cleanPhone,
-          amount: payload.amount
+          phone: cleanPhone
         })
       }
     );
 
     if (res.ok && res.data?.success && res.data?.verified) {
       const storageKey = `gaukripa_wallet_${cleanPhone}`;
+      let existingTransactions: WalletInfo['transactions'] = [];
+      let existingName = 'Devotee';
+      try {
+        const cached = localStorage.getItem(storageKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.transactions)) existingTransactions = parsed.transactions;
+          if (parsed.name) existingName = parsed.name;
+        }
+      } catch {}
+
       const verifiedWallet: WalletInfo = res.data.wallet || {
         phone: cleanPhone,
-        name: 'Devotee',
+        name: existingName,
         balance: typeof res.data.balance === 'number' ? res.data.balance : 0,
-        transactions: []
+        transactions: existingTransactions
       };
       try {
         localStorage.setItem(storageKey, JSON.stringify(verifiedWallet));

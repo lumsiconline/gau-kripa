@@ -12,8 +12,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
-  cancel-in-progress: true
+  group: github-pages-and-functions
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -33,13 +33,20 @@ jobs:
       - name: Build frontend
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_FIREBASE_FUNCTIONS_URL: ${{ vars.VITE_FIREBASE_FUNCTIONS_URL || 'https://asia-south1-gau-kripa.cloudfunctions.net' }}
           VITE_RAZORPAY_KEY_ID: ${{ vars.VITE_RAZORPAY_KEY_ID }}
         run: npm run build
 
-      - name: Build Firebase Functions (if present)
+      - name: Validate Firebase Functions (if present)
         run: |
           if [ -d "functions" ]; then
-            npm --prefix functions install && (npm --prefix functions run build --if-present || true)
+            if [ -f "functions/package-lock.json" ]; then
+              npm --prefix functions ci
+            else
+              npm --prefix functions install
+            fi
+            node --check functions/index.js
+            npm --prefix functions run build --if-present || true
           fi
 
       - name: Add SPA fallback
@@ -60,3 +67,50 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-functions:
+    name: Deploy Firebase Functions (gau-kripa / asia-south1)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Firebase Functions dependencies
+        run: |
+          if [ -f "functions/package-lock.json" ]; then
+            npm --prefix functions ci
+          else
+            npm --prefix functions install
+          fi
+
+      - name: Validate Firebase Functions source
+        run: node --check functions/index.js
+
+      - name: Verify Firebase service-account secret is configured
+        env:
+          FIREBASE_SA_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GAU_KRIPA }}
+        run: |
+          if [ -z "$FIREBASE_SA_SECRET" ]; then
+            echo "::error::Missing GitHub Actions secret FIREBASE_SERVICE_ACCOUNT_GAU_KRIPA. Add the Firebase service-account JSON for project gau-kripa under Repository Settings -> Secrets and variables -> Actions (or update the secret name in .github/workflows/deploy.yml if your existing secret uses a different name)."
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud / Firebase
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GAU_KRIPA }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Deploy Firebase Functions to gau-kripa (asia-south1)
+        env:
+          GOOGLE_CLOUD_PROJECT: gau-kripa
+        run: |
+          npx --yes firebase-tools@latest deploy --only functions:getWallet,functions:createRazorpayOrder,functions:verifyRazorpayPayment --project gau-kripa --non-interactive --force
