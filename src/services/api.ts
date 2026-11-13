@@ -813,10 +813,10 @@ export const api = {
     }
     await saveSupabaseSession(session);
 
-    type Profile = { full_name: string; email: string; phone: string | null; role: string };
+    type Profile = { full_name: string; email: string; phone: string | null; role: string; astrologer_id: string | null };
     const profiles = await supabaseRest<Profile[]>(
       'app_users',
-      `?select=full_name,email,phone,role&auth_user_id=eq.${encodeURIComponent(session.user.id)}&limit=1`,
+      `?select=full_name,email,phone,role,astrologer_id&auth_user_id=eq.${encodeURIComponent(session.user.id)}&limit=1`,
       session.access_token
     );
     const profile = profiles[0];
@@ -826,6 +826,7 @@ export const api = {
       email,
       role,
       phone: profile?.phone || String(session.user.user_metadata?.phone || credentials.phone || ''),
+      astrologerId: profile?.astrologer_id || undefined,
       isAdmin: role === 'super_admin' || role === 'admin'
     };
     try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
