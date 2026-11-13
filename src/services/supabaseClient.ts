@@ -38,13 +38,37 @@ export function getSupabaseSession(): SupabaseSession | null {
   } catch { return null; }
 }
 
+export async function getValidSupabaseSession(): Promise<SupabaseSession | null> {
+  const current = getSupabaseSession();
+  if (!current) return null;
+  if (!current.expires_at || current.expires_at * 1000 > Date.now() + 60_000) return current;
+  if (!current.refresh_token) {
+    clearSupabaseSession();
+    throw new Error('Your session expired. Please sign in again.');
+  }
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ refresh_token: current.refresh_token })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.access_token) {
+    clearSupabaseSession();
+    throw new Error('Your session expired. Please sign in again.');
+  }
+  await saveSupabaseSession(data as SupabaseSession);
+  return data as SupabaseSession;
+}
+
 export function clearSupabaseSession() {
   try { localStorage.removeItem('gaukripa_supabase_session'); } catch {}
 }
 
 export async function supabaseRest<T>(table: string, query = '', accessToken?: string): Promise<T> {
+  const session = await getValidSupabaseSession();
+  const authToken = session?.access_token || accessToken;
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
-    headers: { ...headers(accessToken), Accept: 'application/json' }
+    headers: { ...headers(authToken), Accept: 'application/json' }
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || data.error || 'Supabase database request failed.');
@@ -52,7 +76,8 @@ export async function supabaseRest<T>(table: string, query = '', accessToken?: s
 }
 
 export async function invokeGauKripaPayments<T>(body: Record<string, unknown>): Promise<T> {
-  const session = getSupabaseSession();
+  const session = await getValidSupabaseSession();
+  if (!session?.access_token) throw new Error('Please sign in before making a payment.');
   const response = await fetch(`${SUPABASE_URL}/functions/v1/gaukripa-payments`, {
     method: 'POST',
     headers: headers(session?.access_token),
@@ -69,7 +94,7 @@ export async function supabaseMutation<T>(
   query: string,
   body?: unknown
 ): Promise<T> {
-  const session = getSupabaseSession();
+  const session = await getValidSupabaseSession();
   if (!session?.access_token) throw new Error('Please sign in with an administrator account.');
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
     method,
@@ -85,7 +110,7 @@ export async function supabaseMutation<T>(
 }
 
 export async function invokeGauKripaChat<T>(body: Record<string, unknown>): Promise<T> {
-  const session = getSupabaseSession();
+  const session = await getValidSupabaseSession();
   if (!session?.access_token) throw new Error('Please sign in to use live chat.');
   const response = await fetch(`${SUPABASE_URL}/functions/v1/gaukripa-chat`, {
     method: 'POST',
@@ -98,7 +123,7 @@ export async function invokeGauKripaChat<T>(body: Record<string, unknown>): Prom
 }
 
 export async function uploadGauKripaMedia(file: File): Promise<string> {
-  const session = getSupabaseSession();
+  const session = await getValidSupabaseSession();
   if (!session?.access_token) throw new Error('Please sign in with an administrator account before uploading media.');
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'upload';
   const path = `admin/${session.user.id}/${Date.now()}-${safeName}`;
