@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, ShieldCheck, Heart, Award, CheckCircle2 } from 'lucide-react';
+import { X, ShieldCheck, Award } from 'lucide-react';
 import { ImageCrop } from './ImageCrop';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface AboutModalProps {
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExploreSevas }) => {
+  const { tr } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -21,10 +23,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
             <span className="text-2xl">🌿</span>
             <div>
               <h3 className="font-playfair text-lg sm:text-xl font-bold text-amber-200">
-                About GauKripa Seva Foundation
+                {tr('गौकृपा परिचय एवं सेवा उद्देश्य', 'About GauKripa Platform')}
               </h3>
               <p className="text-xs text-emerald-100/80">
-                Seva • Shanti • Samriddhi
+                {tr('गौमाता आहार व्यवस्था • वैदिक ज्योतिष • आध्यात्मिक परामर्श', 'Gaumata Feed Management • Vedic Astrology • Spiritual Guidance')}
               </p>
             </div>
           </div>
@@ -44,47 +46,68 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
           </div>
 
           <p>
-            <strong className="text-[#1b4b32] font-semibold">GauKripa</strong> is a sacred initiative dedicated to reviving the ancient Sanatana tradition of daily <em>Go-Seva</em> (cow veneration) and compassionate sustenance for all living beings (Jeev-Jantu).
+            <strong className="text-[#1b4b32] font-semibold">{tr('गौकृपा (GauKripa)', 'GauKripa')}</strong>{' '}
+            {tr(
+              'गौमाता के लिए प्रत्यक्ष आहार व्यवस्था (गौ-आहार प्रबंधन), वैदिक ज्योतिष मार्गदर्शन और आध्यात्मिक परामर्श प्रदान करने वाला एक समर्पित मंच है।',
+              'is a dedicated platform offering transparent Gaumata feed management services, authentic Vedic astrology guidance, and spiritual consultation.'
+            )}
           </p>
 
           <p>
-            In today&apos;s fast-paced urban life, millions of devotees yearn to feed Gaumata, wild birds, and street animals to seek planetary peace and spiritual grace, but lack direct access to genuine Vedic goshalas. GauKripa bridges this sacred gap with <strong>100% transparency</strong>.
+            {tr(
+              'व्यस्त शहरी जीवन में अनेक परिवार घर बैठे प्रमाणित गौशालाओं में गौमाता को ताजा चारा, गुड़-चना या रोटी खिलाने की व्यवस्था करना चाहते हैं और अनुभवी वैदिक आचार्यों से कुंडली व ग्रह-नक्षत्र परामर्श लेना चाहते हैं। गौकृपा 100% पारदर्शिता के साथ यह सेवा आपके नाम व गोत्र संकल्प सहित पूर्ण करता है।',
+              'Busy families often wish to arrange fresh fodder, gud-chana, or rotis for Gaumata at authentic goshalas while seeking Vedic Kundali guidance from experienced Acharyas. GauKripa fulfills these specific feed services transparently with your Gotra Sankalp.'
+            )}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div className="p-3 rounded-xl bg-[#faf2e1] border border-[#ebdcb9] flex items-start gap-2.5">
               <ShieldCheck className="w-5 h-5 text-[#1b4b32] shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-xs font-bold text-[#1b4b32]">Authentic Video Proof</strong>
-                <span className="text-[11px] text-[#6c5d4b]">Devotee name &amp; gotra displayed on wooden placard during seva.</span>
+                <strong className="block text-xs font-bold text-[#1b4b32]">
+                  {tr('आहार वितरण की वीडियो पुष्टि', 'Authentic Distribution Video Proof')}
+                </strong>
+                <span className="text-[11px] text-[#6c5d4b]">
+                  {tr('गौमाता को आहार खिलाते समय यजमान के नाम व गोत्र पट्टिका सहित वीडियो व्हाट्सएप पर भेजा जाता है।', 'Video with devotee name & Gotra board shared directly on WhatsApp.')}
+                </span>
               </div>
             </div>
 
             <div className="p-3 rounded-xl bg-[#faf2e1] border border-[#ebdcb9] flex items-start gap-2.5">
               <Award className="w-5 h-5 text-[#1b4b32] shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-xs font-bold text-[#1b4b32]">Certified Priests</strong>
-                <span className="text-[11px] text-[#6c5d4b]">Vedic Brahmins perform auspicious sankalp rituals daily.</span>
+                <strong className="block text-xs font-bold text-[#1b4b32]">
+                  {tr('अनुभवी वैदिक ज्योतिषाचार्य', 'Experienced Vedic Acharyas')}
+                </strong>
+                <span className="text-[11px] text-[#6c5d4b]">
+                  {tr('प्रेम, विवाह, करियर, जन्म कुंडली एवं ग्रह-नक्षत्र विश्लेषण पर गोपनीय परामर्श।', 'Confidential consultations on love, marriage, career, Kundali & Grah analysis.')}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs text-[#224b33]">
-            <strong>Tax Exemption:</strong> All donations are eligible for tax deduction under Section 80G of the Income Tax Act. Official 80G receipt issued immediately.
+            <strong>{tr('पारदर्शी सेवा गारंटी:', 'Service Transparency Guarantee:')}</strong>{' '}
+            {tr(
+              'प्रत्येक सेवा निर्धारित मात्रा (जैसे 5 किलो चारा ₹251, गुड़-चना ₹151, 4 रोटियाँ ₹51) के अनुसार प्रत्यक्ष आहार प्रबंधन द्वारा पूर्ण की जाती है और तुरंत पुष्टि रसीद प्रदान की जाती है।',
+              'Every booking corresponds to an exact feed quantity arranged directly at our partner goshalas (e.g., 5 kg Fodder ₹251, Gud-Chana ₹151, 4 Rotis ₹51) with instant service receipt & video verification.'
+            )}
           </div>
         </div>
 
         {/* Footer */}
         <div className="p-4 bg-[#f8f1de] border-t border-[#ebdcb9] flex items-center justify-between shrink-0">
-          <span className="text-xs text-[#6e5d48]">Partner Goshalas in Vrindavan, Mathura, Haridwar &amp; Kashi.</span>
+          <span className="text-xs text-[#6e5d48]">
+            {tr('वृन्दावन, मथुरा, हरिद्वार एवं काशी की सहयोगी गौशालाएं।', 'Partner Goshalas in Vrindavan, Mathura, Haridwar & Kashi.')}
+          </span>
           <button
             onClick={() => {
               onClose();
               onExploreSevas();
             }}
-            className="px-5 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs"
+            className="px-5 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs cursor-pointer"
           >
-            Explore Seva Offerings
+            {tr('आहार सेवाएँ देखें', 'Explore Feed Services')}
           </button>
         </div>
 

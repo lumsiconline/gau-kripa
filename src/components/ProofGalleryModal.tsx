@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { X, Play, ShieldCheck, Star, Video, Image, CheckCircle, ExternalLink, Calendar, MapPin } from 'lucide-react';
-import { RECENT_PROOFS, SevaProof } from '../data/sevaData';
+import React, { useState, useEffect } from 'react';
+import { X, Play, Star } from 'lucide-react';
+import { getLocalizedRecentProofs, SevaProof } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ProofGalleryModalProps {
   isOpen: boolean;
@@ -14,38 +15,72 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
   onClose,
   onBookSevaClick,
 }) => {
+  const { lang, tr } = useLanguage();
+  const proofs = getLocalizedRecentProofs(lang);
+
   const [activeTab, setActiveTab] = useState<'proofs' | 'reviews'>('proofs');
-  const [selectedProof, setSelectedProof] = useState<SevaProof>(RECENT_PROOFS[0]);
+  const [selectedProof, setSelectedProof] = useState<SevaProof>(proofs[0]);
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
+
+  useEffect(() => {
+    setSelectedProof(proofs[0]);
+  }, [lang]);
 
   if (!isOpen) return null;
 
-  const reviews = [
-    {
-      name: 'Pooja Agarwal',
-      city: 'Delhi',
-      stars: 5,
-      date: '3 days ago',
-      text: 'Within 2 hours of booking Gau Roti Seva for my mother’s health, I received a 45-second high definition video on WhatsApp showing our family name and gotra written clearly on the wooden board while the cows were being fed. Such pure transparency!',
-      seva: 'Gau Roti Seva (51 Rotis)'
-    },
-    {
-      name: 'Ramanathan K.',
-      city: 'Chennai',
-      stars: 5,
-      date: '1 week ago',
-      text: 'Consulted Acharya Rohan Mehta regarding business hurdles. He recommended Gau Chara Seva and feeding street dogs on Saturdays. The calmness and relief in our home is truly remarkable. Gau Mata ki Kripa!',
-      seva: 'Gau Chara & Street Dogs Seva'
-    },
-    {
-      name: 'Vikas & Shruti Mittal',
-      city: 'Indore',
-      stars: 5,
-      date: '2 weeks ago',
-      text: 'Our monthly sankalp runs smoothly with GauKripa. The Vrindavan goshala priest chants our family gotra during the arati. Best spiritual seva platform in India.',
-      seva: 'Monthly Gau Seva Sankalp'
-    }
-  ];
+  const reviews = lang === 'en'
+    ? [
+        {
+          name: 'Pooja Agarwal',
+          city: 'Delhi',
+          stars: 5,
+          date: '3 days ago',
+          text: 'Within 2 hours of booking fresh roti service for my mother’s wellbeing, I received a clear HD video on WhatsApp showing our family name and Gotra written clearly while the cows were being fed. Complete transparency!',
+          seva: 'Gaumata Fresh Roti Service'
+        },
+        {
+          name: 'Ramanathan K.',
+          city: 'Chennai',
+          stars: 5,
+          date: '1 week ago',
+          text: 'Consulted Acharya Rohan Mehta regarding business hurdles. He suggested Gaumata Fodder service and Kundali remedies. The calmness and clarity we experienced is remarkable.',
+          seva: 'Fodder & Jyotish Guidance'
+        },
+        {
+          name: 'Vikas & Shruti Mittal',
+          city: 'Indore',
+          stars: 5,
+          date: '2 weeks ago',
+          text: 'Our monthly Gau Aahar arrangement runs smoothly with GauKripa. The Vrindavan goshala team sends our Sankalp & distribution video every month.',
+          seva: 'Monthly Gaumata Feed Service'
+        }
+      ]
+    : [
+        {
+          name: 'पूजा अग्रवाल',
+          city: 'नई दिल्ली',
+          stars: 5,
+          date: '3 दिन पहले',
+          text: 'माताजी के स्वास्थ्य लाभ हेतु रोटी व्यवस्था बुक करने के 2 घंटे के भीतर व्हाट्सएप पर स्पष्ट एचडी वीडियो प्राप्त हुआ जिसमें हमारे नाम व गोत्र की तख्ती के साथ गौमाता को रोटी खिलाई जा रही थी। पूर्णतः पारदर्शी व्यवस्था!',
+          seva: 'गौमाता के लिए रोटी व्यवस्था'
+        },
+        {
+          name: 'रामनाथन के.',
+          city: 'चेन्नई',
+          stars: 5,
+          date: '1 सप्ताह पहले',
+          text: 'व्यापारिक बाधाओं के लिए आचार्य रोहन मेहता से ज्योतिष परामर्श लिया। उनके सुझाव से गौ-चारा आहार सेवा करवाई। घर में बहुत सकारात्मक ऊर्जा और मानसिक शांति का अनुभव हुआ।',
+          seva: 'गौ-चारा एवं ज्योतिष मार्गदर्शन'
+        },
+        {
+          name: 'विकास एवं श्रुति मित्तल',
+          city: 'इंदौर',
+          stars: 5,
+          date: '2 सप्ताह पहले',
+          text: 'हमारी मासिक गौ-आहार व्यवस्था गौकृपा के माध्यम से सुचारू रूप से चल रही है। वृंदावन गौशाला से हर माह गोत्र संकल्प एवं आहार वितरण की वीडियो पुष्टि समय पर मिल जाती है।',
+          seva: 'मासिक गौ-आहार व्यवस्था'
+        }
+      ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
@@ -57,10 +92,10 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
             <span className="text-xl">📹</span>
             <div>
               <h3 className="font-playfair text-lg sm:text-xl font-bold text-amber-200">
-                100% Proof &amp; Devotee Reviews
+                {tr('आहार वितरण की वीडियो पुष्टि एवं समीक्षाएं', '100% Video Proof & Customer Reviews')}
               </h3>
               <p className="text-xs text-emerald-100/80">
-                Every single seva is video-recorded with your name placard
+                {tr('प्रत्येक सेवा की वीडियो पुष्टि आपके नाम एवं गोत्र पट्टिका सहित की जाती है', 'Every feed service is video-recorded with your name placard')}
               </p>
             </div>
           </div>
@@ -83,7 +118,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                 : 'bg-white text-[#554737] hover:bg-[#ede0c7]'
             }`}
           >
-            Live Seva Video Proofs ({RECENT_PROOFS.length})
+            {tr(`आहार वितरण वीडियो पुष्टि (${proofs.length})`, `Live Feed Video Proofs (${proofs.length})`)}
           </button>
 
           <button
@@ -94,7 +129,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                 : 'bg-white text-[#554737] hover:bg-[#ede0c7]'
             }`}
           >
-            Verified Devotee Reviews (★ 4.9)
+            {tr('सत्यापित ग्राहक समीक्षाएं (★ 4.9)', 'Verified Customer Reviews (★ 4.9)')}
           </button>
         </div>
 
@@ -108,7 +143,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                 <ImageCrop
                   cropKey="sevaChara"
                   className="w-full h-full object-cover opacity-80"
-                  alt="Live Gaushala Seva Video"
+                  alt={tr('गौशाला आहार वितरण वीडियो', 'Live Gaushala Feed Service Video')}
                 />
 
                 {/* Video Play Overlay */}
@@ -116,7 +151,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                   <div className="flex items-center justify-between text-xs text-white">
                     <span className="bg-[#cc1a1a] text-white px-2 py-0.5 rounded font-bold uppercase text-[10px] flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      Live Feed
+                      {tr('प्रत्यक्ष प्रमाण', 'Live Proof')}
                     </span>
                     <span className="text-amber-200 font-semibold">{selectedProof.goshalaName}</span>
                   </div>
@@ -129,14 +164,18 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                       <Play className="w-7 h-7 fill-slate-950 ml-1" />
                     </button>
                     <p className="text-xs text-white font-medium mt-2 drop-shadow-md">
-                      {isPlayingVideo ? 'Playing Live Puja Blessing Video...' : 'Click to Play Devotee Name Sankalp Video'}
+                      {isPlayingVideo
+                        ? tr('आहार वितरण वीडियो पुष्टि चल रही है...', 'Playing Feed Distribution Video Proof...')
+                        : tr('संकल्प एवं आहार वितरण वीडियो देखने के लिए क्लिक करें', 'Click to Play Sankalp & Feed Distribution Video')}
                     </p>
                   </div>
 
                   {/* Devotee Placard Tag at Bottom */}
                   <div className="bg-black/60 backdrop-blur-md rounded-xl p-2.5 text-xs text-white flex items-center justify-between border border-white/20">
                     <div>
-                      <div className="font-bold text-amber-300">Name Board: {selectedProof.devoteeName}</div>
+                      <div className="font-bold text-amber-300">
+                        {tr('नाम पट्टिका:', 'Name Board:')} {selectedProof.devoteeName}
+                      </div>
                       <div className="text-[11px] text-gray-300">{selectedProof.sevaTitle} • {selectedProof.date}</div>
                     </div>
                     <span className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-mono">
@@ -149,10 +188,10 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
               {/* Proofs List */}
               <div className="space-y-2">
                 <div className="text-xs font-bold text-[#62533f] uppercase tracking-wider">
-                  Recent Seva Completions
+                  {tr('हाल ही में पूर्ण हुई आहार सेवाएं', 'Recent Completed Feed Services')}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {RECENT_PROOFS.map((p) => (
+                  {proofs.map((p) => (
                     <div
                       key={p.id}
                       onClick={() => setSelectedProof(p)}
@@ -199,7 +238,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                   </p>
 
                   <div className="text-[11px] font-semibold text-[#8b6f38] bg-[#fbf6ea] px-2.5 py-1 rounded-md inline-block">
-                    Verified Seva: {r.seva}
+                    {tr('सत्यापित सेवा:', 'Verified Service:')} {r.seva}
                   </div>
                 </div>
               ))}
@@ -210,7 +249,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
         {/* Footer CTA */}
         <div className="p-4 bg-[#f8f1de] border-t border-[#ebdcb9] flex items-center justify-between shrink-0">
           <span className="text-xs text-[#5f503c] font-medium hidden sm:inline">
-            Over 25,000+ happy devotees supported across India &amp; abroad.
+            {tr('देश-विदेश से 25,000+ संतुष्ट यजमान एवं परिवार।', 'Over 25,000+ happy families served across India & abroad.')}
           </span>
           <button
             onClick={() => {
@@ -219,7 +258,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
             }}
             className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>Book Your Seva Now</span>
+            <span>{tr('अभी आहार सेवा बुक करें', 'Arrange Feed Service Now')}</span>
           </button>
         </div>
 

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Star, ArrowRight, ShieldCheck, CheckCircle2, MessageSquare, PhoneCall } from 'lucide-react';
-import { ASTROLOGERS, Astrologer } from '../data/sevaData';
+import { Star, ArrowRight, ShieldCheck, CheckCircle2, MessageSquare } from 'lucide-react';
+import { getLocalizedAstrologers, Astrologer } from '../data/sevaData';
 import { ImageCrop } from './ImageCrop';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface AstrologerSectionProps {
   onConnectAstrologer: (astrologer: Astrologer, mode: 'chat' | 'call') => void;
@@ -12,6 +13,9 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
   onConnectAstrologer,
   onGeneralConnect,
 }) => {
+  const { lang, tr } = useLanguage();
+  const astrologers = getLocalizedAstrologers(lang);
+
   return (
     <section id="astrologers-section" className="py-12 sm:py-16 bg-[#faf5e8] border-b border-[#ebdcb9] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,7 +29,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
             </svg>
 
             <span className="text-xs font-bold uppercase tracking-widest text-[#8a6828] bg-[#fbf2dd] px-3.5 py-1 rounded-full border border-[#ebdcb9]">
-              प्रमाणित वैदिक ज्योतिषाचार्य
+              {tr('प्रमाणित वैदिक ज्योतिषाचार्य', 'Certified Vedic Astrologers')}
             </span>
 
             <svg className="w-8 h-4 text-[#4a6b49] rotate-180" viewBox="0 0 40 20" fill="currentColor">
@@ -35,11 +39,14 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
           </div>
 
           <h2 className="font-playfair text-2xl sm:text-4xl font-black text-[#153e29] leading-tight">
-            अनुभवी ज्योतिषियों से व्यक्तिगत मार्गदर्शन
+            {tr('अनुभवी ज्योतिषियों से व्यक्तिगत मार्गदर्शन', 'Personal Guidance from Experienced Astrologers')}
           </h2>
 
           <p className="text-xs sm:text-base text-[#6b5a45] font-medium leading-relaxed">
-            प्रेम, विवाह, करियर, व्यापार एवं जन्म कुंडली के जटिल प्रश्नों पर वैदिक आचार्यों से सीधे लाइव चैट या कॉल पर बात करें।
+            {tr(
+              'प्रेम, विवाह, करियर, व्यापार एवं जन्म कुंडली के जटिल प्रश्नों पर वैदिक आचार्यों से सीधे लाइव चैट या कॉल पर बात करें।',
+              'Connect via live chat or call with Vedic Acharyas for personal insights on love, marriage, career, business, and Kundali analysis.'
+            )}
           </p>
         </div>
 
@@ -48,7 +55,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
           
           {/* 3 Astrologer Cards */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {ASTROLOGERS.map((astro) => (
+            {astrologers.map((astro) => (
               <div
                 key={astro.id}
                 className="bg-[#fffdf9] rounded-3xl overflow-hidden border border-[#ebdcb9] shadow-sm hover:shadow-lg hover:border-[#d9ba78] transition-all flex flex-col justify-between"
@@ -69,7 +76,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                       </span>
                       <span className="text-[10px] font-black tracking-wider text-emerald-300 uppercase">
-                        उपलब्ध (LIVE)
+                        {tr('उपलब्ध (LIVE)', 'ONLINE (LIVE)')}
                       </span>
                     </div>
 
@@ -102,7 +109,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
 
                     {/* Pricing */}
                     <div className="text-sm font-extrabold text-[#c4821a] pt-1">
-                      ₹{astro.ratePerMin} / मिनट
+                      ₹{astro.ratePerMin} / {tr('मिनट', 'min')}
                     </div>
                   </div>
                 </div>
@@ -114,7 +121,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
                     className="w-full py-2.5 px-3 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
-                    <span>परामर्श शुरू करें</span>
+                    <span>{tr('परामर्श शुरू करें', 'Start Consultation')}</span>
                   </button>
                 </div>
 
@@ -127,29 +134,29 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
             <div className="h-full bg-[#153e29] rounded-3xl p-5 sm:p-6 text-white flex flex-col justify-between shadow-md border border-[#23583c]">
               <div className="space-y-3 sm:space-y-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-200 text-[11px] font-bold border border-amber-300/30">
-                  <span>गौकृपा वैदिक परामर्श</span>
+                  <span>{tr('गौकृपा वैदिक परामर्श', 'GauKripa Vedic Consultation')}</span>
                 </div>
 
                 <h3 className="font-playfair text-xl sm:text-2xl font-bold text-amber-200">
-                  गौकृपा ज्योतिष क्यों चुनें?
+                  {tr('गौकृपा ज्योतिष क्यों चुनें?', 'Why Choose GauKripa Astrology?')}
                 </h3>
 
                 <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm font-medium text-emerald-50">
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>प्रमाणित एवं अनुभवी वैदिक ज्योतिषी</span>
+                    <span>{tr('प्रमाणित एवं अनुभवी वैदिक ज्योतिषी', 'Certified & Experienced Vedic Astrologers')}</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>100% पूर्णतः गोपनीय एवं सुरक्षित परामर्श</span>
+                    <span>{tr('100% पूर्णतः गोपनीय एवं सुरक्षित परामर्श', '100% Private & Confidential Consultation')}</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>पारदर्शी दर (₹20/मिनट, कोई अतिरिक्त शुल्क नहीं)</span>
+                    <span>{tr('पारदर्शी दर (₹20/मिनट, कोई अतिरिक्त शुल्क नहीं)', 'Transparent Rate (₹20/min, No Hidden Charges)')}</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>गौ सेवा कराने वाले भक्तों को 50% विशेष छूट</span>
+                    <span>{tr('गौ सेवा कराने वाले भक्तों को 50% विशेष छूट', '50% Special Discount After Feed Seva Booking')}</span>
                   </li>
                 </ul>
               </div>
@@ -159,7 +166,7 @@ export const AstrologerSection: React.FC<AstrologerSectionProps> = ({
                   onClick={onGeneralConnect}
                   className="w-full py-3 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
                 >
-                  <span>तुरंत ज्योतिषी से जुड़ें</span>
+                  <span>{tr('तुरंत ज्योतिषी से जुड़ें', 'Connect with Astrologer Now')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

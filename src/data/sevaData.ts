@@ -1,3 +1,5 @@
+import type { AppLanguage } from '../i18n/LanguageContext';
+
 export interface SevaItem {
   id: string;
   title: string;
@@ -15,7 +17,7 @@ export interface SevaItem {
   fulfilmentDetails: string;
 }
 
-export const SEVA_ITEMS: SevaItem[] = [
+export const SEVA_ITEMS_HI: SevaItem[] = [
   {
     id: 'gau-chara',
     title: 'गौमाता के लिए चारा व्यवस्था',
@@ -28,7 +30,7 @@ export const SEVA_ITEMS: SevaItem[] = [
     minQty: 1,
     benefit: 'गौमाता को 5 किलो हरा व पौष्टिक चारा उपलब्ध कराने की सेवा। सूर्य ग्रह दोष शांति व यश-कीर्ति वृद्धि।',
     cropKey: 'sevaChara',
-    detailedDescription: 'प्रमाणित गौशाला में गौमाता के लिए 5 किलोग्राम ताजा, पौष्टिक हरा चारा व सुखा चारा आहार व्यवस्था। सेवा उपरांत आपके नाम व गोत्र से आहार वितरण की वीडियो पुष्टि व्हाट्सएप पर भेजी जाती है।',
+    detailedDescription: 'प्रमाणित गौशाला में गौमाता के लिए 5 किलोग्राम ताजा, पौष्टिक हरा चारा व सूखा चारा आहार व्यवस्था। सेवा उपरांत आपके नाम व गोत्र से आहार वितरण की वीडियो पुष्टि व्हाट्सएप पर भेजी जाती है।',
     vedicSignificance: 'शास्त्रों के अनुसार गौमाता को तृप्त आहार कराने से सभी 33 कोटि देवी-देवताओं का आशीर्वाद प्राप्त होता है और सूर्य ग्रह की कृपा से जीवन में तेज और सफलता मिलती है।',
     fulfilmentDetails: 'प्रमाणित गौशाला में 5 किलो ताजे चारे का प्रत्यक्ष आहार प्रबंधन + गोत्र संकल्प + आहार वितरण की वीडियो पुष्टि।'
   },
@@ -114,6 +116,111 @@ export const SEVA_ITEMS: SevaItem[] = [
   }
 ];
 
+export const SEVA_ITEMS_EN: SevaItem[] = [
+  {
+    id: 'gau-chara',
+    title: 'Gaumata Green Fodder Service',
+    planet: 'Surya Grah',
+    planetTag: '☀️ Surya Grah Shanti',
+    tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    priceDisplay: '5 kg ₹251',
+    basePrice: 251,
+    unit: '5 kg',
+    minQty: 1,
+    benefit: 'Direct arrangement of 5 kg fresh & nutritious fodder for Gaumata. Pacifies Surya Dosh and supports confidence & success.',
+    cropKey: 'sevaChara',
+    detailedDescription: 'Provision and direct feeding of 5 kg fresh green fodder & dry feed for cows at verified Vedic goshalas. After service completion, a video confirmation of fodder distribution with your name & Gotra is sent on WhatsApp.',
+    vedicSignificance: 'According to Vedic scriptures, satisfying Gaumata with wholesome fodder brings the grace of all deities and strengthens Surya Grah for leadership and vitality.',
+    fulfilmentDetails: 'Direct 5 kg fresh fodder management at certified goshala + Gotra Sankalp + WhatsApp video distribution confirmation.'
+  },
+  {
+    id: 'gau-gud-chana',
+    title: 'Gaumata Gud-Chana Feed Service',
+    planet: 'Mangal Grah',
+    planetTag: '🪐 Mangal Grah Shanti',
+    tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    priceDisplay: '₹151',
+    basePrice: 151,
+    unit: 'Feed Thali',
+    minQty: 1,
+    benefit: 'Nutrient-rich jaggery & roasted gram feed arrangement. Helps calm Mangal Dosh and brings courage & stability.',
+    cropKey: 'sevaGudChana',
+    detailedDescription: 'Pure mineral jaggery (Gud) and roasted protein-rich gram (Chana) thali arranged for indigenous cows and calves to support their daily health and nutrition.',
+    vedicSignificance: 'Gud-Chana feeding harmonizes fiery Mangal (Mars) influences, eases debt stress, and removes hurdles in property or career matters.',
+    fulfilmentDetails: 'Pure Gud-Chana thali served directly to indigenous cows + WhatsApp video distribution confirmation.'
+  },
+  {
+    id: 'gau-roti',
+    title: 'Gaumata Fresh Roti Service',
+    planet: 'Chandra Grah',
+    planetTag: '🌙 Chandra Grah Shanti',
+    tagColor: 'bg-amber-50 text-amber-900 border-amber-200',
+    priceDisplay: '4 Rotis ₹51',
+    basePrice: 51,
+    unit: '4 Rotis',
+    minQty: 1,
+    benefit: 'Arrangement of 4 freshly prepared wheat rotis for Gaumata. Calms Chandra Dosh and promotes mental peace & family harmony.',
+    cropKey: 'sevaRoti',
+    detailedDescription: '4 fresh whole-wheat rotis lovingly prepared and hand-fed to maternal cows in certified goshalas, fulfilling the daily Vedic Go-Gras tradition.',
+    vedicSignificance: 'Offering fresh rotis to cows strengthens Chandra (Moon), easing anxiety, restlessness, and bringing peace within the household.',
+    fulfilmentDetails: '4 fresh wheat rotis gently fed to cows + WhatsApp video distribution confirmation.'
+  },
+  {
+    id: 'pakshi-dana',
+    title: 'Pakshi Dana Grain Service',
+    planet: 'Budh Grah',
+    planetTag: '🦅 Budh Grah Shanti',
+    tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    priceDisplay: '₹101',
+    basePrice: 101,
+    unit: 'Grain Bowl',
+    minQty: 1,
+    benefit: 'Pearl millet, grains & water bowl arrangement for birds. Harmonizes Budh Grah, clarity of speech & business wisdom.',
+    cropKey: 'sevaPakshi',
+    detailedDescription: 'Morning arrangement of nutritious bajra, broken wheat, sesame seeds, and clean drinking water for birds at sheltered feeding points.',
+    vedicSignificance: 'Mercury (Budh) governs intellect, communication, and trade. Feeding birds sharpens clarity and invites auspicious business opportunities.',
+    fulfilmentDetails: 'Grains and clean water arranged at natural bird feeding shelters.'
+  },
+  {
+    id: 'cheenti-aata',
+    title: 'Cheenti Aata-Kasar Feed Service',
+    planet: 'Rahu-Ketu',
+    planetTag: '🪱 Rahu-Ketu Shanti',
+    tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    priceDisplay: '₹149',
+    basePrice: 149,
+    unit: 'Kasar Pack',
+    minQty: 1,
+    benefit: 'Roasted flour & sweet kasar arranged under sacred Peepal trees. Shields from sudden Rahu-Ketu obstacles.',
+    cropKey: 'sevaCheenti',
+    detailedDescription: 'Wholesome kasar mix of roasted wheat flour, unrefined sugar, and sesame placed gently near ant colonies under holy Peepal and Banyan trees.',
+    vedicSignificance: 'Nourishing tiny living beings resolves deep karmic blocks, calms unknown fears, and stabilizes Rahu-Ketu planetary periods.',
+    fulfilmentDetails: 'Aata-kasar feed placed respectfully beneath sacred Peepal trees.'
+  },
+  {
+    id: 'street-dogs',
+    title: 'Stray Dog Meal Service',
+    planet: 'Ketu Grah',
+    planetTag: '🐕 Ketu Grah Shanti',
+    tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    priceDisplay: '₹199',
+    basePrice: 199,
+    unit: 'Meal Tray',
+    minQty: 1,
+    benefit: 'Freshly cooked wholesome meals for stray dogs. Harmonizes Ketu Dosh and brings spiritual protection.',
+    cropKey: 'sevaDogs',
+    detailedDescription: 'Fresh, hygienic cooked meals prepared with rice, turmeric, rotis, and milk served with care to hungry community dogs.',
+    vedicSignificance: 'Stray dogs are regarded as guardians associated with Lord Bhairava. Serving them protects families from unseen obstacles and balances Ketu.',
+    fulfilmentDetails: 'Freshly cooked meal trays served directly to community dogs.'
+  }
+];
+
+export const SEVA_ITEMS: SevaItem[] = SEVA_ITEMS_HI;
+
+export function getLocalizedSevaItems(lang: AppLanguage): SevaItem[] {
+  return lang === 'en' ? SEVA_ITEMS_EN : SEVA_ITEMS_HI;
+}
+
 export interface Astrologer {
   id: string;
   name: string;
@@ -128,7 +235,7 @@ export interface Astrologer {
   specializations: string[];
 }
 
-export const ASTROLOGERS: Astrologer[] = [
+export const ASTROLOGERS_HI: Astrologer[] = [
   {
     id: 'dr-sophia',
     name: 'डॉ. सोफिया शर्मा',
@@ -170,6 +277,54 @@ export const ASTROLOGERS: Astrologer[] = [
   }
 ];
 
+export const ASTROLOGERS_EN: Astrologer[] = [
+  {
+    id: 'dr-sophia',
+    name: 'Dr. Sophia Sharma',
+    title: 'Senior Vedic Astrologer & Gemstone Expert',
+    experience: '15+ Years Experience',
+    rating: 4.9,
+    reviewsCount: '12k+ Consults',
+    ratePerMin: 20,
+    cropKey: 'astroSophia',
+    languages: ['Hindi', 'English', 'Sanskrit'],
+    bio: 'Certified expert in Vedic astrology, in-depth birth chart reading, marriage yoga analysis, and planetary-nakshatra guidance.',
+    specializations: ['Birth Chart Analysis', 'Marriage Astrology', 'Love & Relationship', 'Gemstones & Vedic Remedies']
+  },
+  {
+    id: 'acharya-rohan',
+    name: 'Acharya Rohan Mehta',
+    title: 'Kashi-Trained Vedic Shastri & Life Guide',
+    experience: '14+ Years Experience',
+    rating: 4.8,
+    reviewsCount: '10k+ Consults',
+    ratePerMin: 20,
+    cropKey: 'astroRohan',
+    languages: ['Hindi', 'Gujarati', 'English'],
+    bio: 'Trained at Kashi Vishwanath Gurukula, specializing in career & business timing, Manglik Dosh, Kaal Sarp Shanti, and household harmony.',
+    specializations: ['Career & Business Guidance', 'Planetary & Nakshatra', 'Mahadasha Analysis', 'Manglik Shanti']
+  },
+  {
+    id: 'maria-kapoor',
+    name: 'Maria Kapoor',
+    title: 'Relationship & Spiritual Counselor',
+    experience: '12+ Years Experience',
+    rating: 4.8,
+    reviewsCount: '8k+ Consults',
+    ratePerMin: 20,
+    cropKey: 'astroMaria',
+    languages: ['Hindi', 'English', 'Punjabi'],
+    bio: 'Dedicated counselor for love, marital harmony, relationship balance, and emotional clarity. Successfully guided over 8,000 families.',
+    specializations: ['Love & Relationship', 'Marriage Astrology', 'Family Harmony', 'Numerology']
+  }
+];
+
+export const ASTROLOGERS: Astrologer[] = ASTROLOGERS_HI;
+
+export function getLocalizedAstrologers(lang: AppLanguage): Astrologer[] {
+  return lang === 'en' ? ASTROLOGERS_EN : ASTROLOGERS_HI;
+}
+
 export interface JyotishCategory {
   id: string;
   title: string;
@@ -181,7 +336,7 @@ export interface JyotishCategory {
   badge: string;
 }
 
-export const JYOTISH_CATEGORIES: JyotishCategory[] = [
+export const JYOTISH_CATEGORIES_HI: JyotishCategory[] = [
   {
     id: 'love-relationship',
     title: 'प्रेम एवं संबंध मार्गदर्शन',
@@ -229,6 +384,60 @@ export const JYOTISH_CATEGORIES: JyotishCategory[] = [
   }
 ];
 
+export const JYOTISH_CATEGORIES_EN: JyotishCategory[] = [
+  {
+    id: 'love-relationship',
+    title: 'Love & Relationship Guidance',
+    subtitle: 'प्रेम एवं संबंध मार्गदर्शन',
+    iconName: 'Heart',
+    description: 'Vedic guidance for harmony in love, mutual understanding, resolving misunderstandings, and emotional balance.',
+    topics: ['Resolving Relationship Hurdles', 'Mutual Understanding', 'Partner Compatibility', 'Emotional Stability'],
+    badge: 'Popular Consult'
+  },
+  {
+    id: 'marriage',
+    title: 'Marriage Astrology Consultation',
+    subtitle: 'विवाह संबंधी ज्योतिष परामर्श',
+    iconName: 'Users',
+    description: 'Kundali matching, Manglik evaluation, reasons for marriage delay, and authentic remedies for marital bliss.',
+    topics: ['Causes of Marriage Delay', 'Accurate Gun Milan', 'Manglik Dosh Analysis', 'Happy Married Life'],
+    badge: 'Essential'
+  },
+  {
+    id: 'career-business',
+    title: 'Career & Business Guidance',
+    subtitle: 'करियर एवं व्यवसाय मार्गदर्शन',
+    iconName: 'Briefcase',
+    description: 'Insights for job promotions, choosing the right industry, business profit analysis, and auspicious investment timing.',
+    topics: ['Job vs Business Choice', 'Promotion & Stability', 'Auspicious Timing', 'Business Remedies'],
+    badge: 'Career Growth'
+  },
+  {
+    id: 'kundali-analysis',
+    title: 'Birth Chart Analysis (Kundali)',
+    subtitle: 'जन्म कुंडली विश्लेषण',
+    iconName: 'Compass',
+    description: 'Comprehensive Vedic analysis of Lagna, Rashi, 12 houses, and ongoing Mahadasha & Antardasha for clear life direction.',
+    topics: ['Lagna & Rashi Report', 'Current Mahadasha', '12 Houses Deep Study', 'Gemstones & Timing'],
+    badge: 'Complete Reading'
+  },
+  {
+    id: 'planetary-nakshatra',
+    title: 'Planetary & Nakshatra Analysis',
+    subtitle: 'ग्रह एवं नक्षत्र विश्लेषण',
+    iconName: 'Sparkles',
+    description: 'Detailed evaluation of Sun, Moon, Mars, Rahu-Ketu, Shani Sade Sati, and birth Nakshatra with Vedic remedies.',
+    topics: ['Shani Sade Sati & Dhaiya', 'Kaal Sarp & Pitra Dosh', 'Nakshatra & Pada Study', 'Simple Grah Shanti'],
+    badge: 'Grah Shanti'
+  }
+];
+
+export const JYOTISH_CATEGORIES: JyotishCategory[] = JYOTISH_CATEGORIES_HI;
+
+export function getLocalizedJyotishCategories(lang: AppLanguage): JyotishCategory[] {
+  return lang === 'en' ? JYOTISH_CATEGORIES_EN : JYOTISH_CATEGORIES_HI;
+}
+
 export interface RemedyCategory {
   id: string;
   title: string;
@@ -241,7 +450,7 @@ export interface RemedyCategory {
   dosha: string;
 }
 
-export const REMEDY_CATEGORIES: RemedyCategory[] = [
+export const REMEDY_CATEGORIES_HI: RemedyCategory[] = [
   {
     id: 'career',
     title: 'करियर व यश वृद्धि',
@@ -284,7 +493,7 @@ export const REMEDY_CATEGORIES: RemedyCategory[] = [
     description: 'व्यापारिक वृद्धि, कर्जों से मुक्ति और माँ लक्ष्मी की कृपा हेतु नियमित गौ-आहार सेवा।',
     recommendedSevaId: 'gau-chara',
     mantra: 'ॐ बृं बृहस्पतये नमः',
-    dosha: 'गुरु चांडाल / दरिद्रता निवारण'
+    dosha: 'गुरु चांडाल / आर्थिक अवरोध'
   },
   {
     id: 'negativity',
@@ -310,6 +519,81 @@ export const REMEDY_CATEGORIES: RemedyCategory[] = [
   }
 ];
 
+export const REMEDY_CATEGORIES_EN: RemedyCategory[] = [
+  {
+    id: 'career',
+    title: 'Career Growth & Respect',
+    subtitle: 'करियर व यश वृद्धि',
+    iconName: 'Briefcase',
+    rulingPlanets: 'Sun (Surya) & Saturn (Shani)',
+    description: 'Gau Aahar feed service to remove workplace hurdles, delayed promotions, and strengthen authority.',
+    recommendedSevaId: 'gau-chara',
+    mantra: 'ॐ घृणि सूर्याय नमः',
+    dosha: 'Surya Dosh / Work Hurdles'
+  },
+  {
+    id: 'love',
+    title: 'Love & Marriage Harmony',
+    subtitle: 'दांपत्य व प्रेम सौहार्द',
+    iconName: 'Heart',
+    rulingPlanets: 'Venus (Shukra) & Mars (Mangal)',
+    description: 'Gud-Chana feed service to ease marriage delays, Manglik influences, and restore harmony in relationships.',
+    recommendedSevaId: 'gau-gud-chana',
+    mantra: 'ॐ शुं शुक्राय नमः',
+    dosha: 'Mangal Dosh / Shukra Affliction'
+  },
+  {
+    id: 'health',
+    title: 'Mental Peace & Wellness',
+    subtitle: 'मानसिक शांति व स्वास्थ्य',
+    iconName: 'Leaf',
+    rulingPlanets: 'Moon (Chandra) & Mahamrityunjaya',
+    description: 'Fresh Roti feeding service to calm anxiety, sleeplessness, emotional stress, and promote overall wellbeing.',
+    recommendedSevaId: 'gau-roti',
+    mantra: 'ॐ सों सोमाय नमः',
+    dosha: 'Chandra Dosh / Mental Stress'
+  },
+  {
+    id: 'finance',
+    title: 'Business & Financial Stability',
+    subtitle: 'व्यापार व आर्थिक समृद्धि',
+    iconName: 'Coins',
+    rulingPlanets: 'Jupiter (Brihaspati) & Mercury',
+    description: 'Regular Gau Aahar service for steady business growth, relief from debt burden, and prosperity.',
+    recommendedSevaId: 'gau-chara',
+    mantra: 'ॐ बृं बृहस्पतये नमः',
+    dosha: 'Financial Blockage'
+  },
+  {
+    id: 'negativity',
+    title: 'Protection from Negative Energy',
+    subtitle: 'नकारात्मक ऊर्जा निवारण',
+    iconName: 'Shield',
+    rulingPlanets: 'Rahu & Ketu',
+    description: 'Stray Dog & Ant feeding service to shield against unknown fears, evil eye, and sudden disruptions.',
+    recommendedSevaId: 'street-dogs',
+    mantra: 'ॐ कें केतवे नमः',
+    dosha: 'Kaal Sarp Dosh / Rahu Mahadasha'
+  },
+  {
+    id: 'family',
+    title: 'Family Peace & Harmony',
+    subtitle: 'पारिवारिक सुख व शांति',
+    iconName: 'Home',
+    rulingPlanets: 'Moon & Jupiter',
+    description: 'Ant aata-kasar feeding service to soothe domestic friction, honor ancestors (Pitra), and restore warmth at home.',
+    recommendedSevaId: 'cheenti-aata',
+    mantra: 'ॐ नमो भगवते वासुदेवाय',
+    dosha: 'Domestic Disharmony / Pitra Dosh'
+  }
+];
+
+export const REMEDY_CATEGORIES: RemedyCategory[] = REMEDY_CATEGORIES_HI;
+
+export function getLocalizedRemedyCategories(lang: AppLanguage): RemedyCategory[] {
+  return lang === 'en' ? REMEDY_CATEGORIES_EN : REMEDY_CATEGORIES_HI;
+}
+
 export interface SevaProof {
   id: string;
   devoteeName: string;
@@ -321,7 +605,7 @@ export interface SevaProof {
   certificateId: string;
 }
 
-export const RECENT_PROOFS: SevaProof[] = [
+export const RECENT_PROOFS_HI: SevaProof[] = [
   {
     id: 'PRF-8941',
     devoteeName: 'राजेश एवं सुनीता शर्मा',
@@ -336,7 +620,7 @@ export const RECENT_PROOFS: SevaProof[] = [
     id: 'PRF-8942',
     devoteeName: 'अनन्या देशमुख',
     location: 'पुणे, महाराष्ट्र',
-    sevaTitle: 'गौमाता के लिए रोटी व्यवस्था (21 रोटियां)',
+    sevaTitle: 'गौमाता के लिए रोटी व्यवस्था (20 रोटियां)',
     date: 'आज, प्रातः 08:30',
     time: 'प्रातः गौ आरती',
     goshalaName: 'गौ प्रेम धाम, मथुरा',
@@ -363,3 +647,52 @@ export const RECENT_PROOFS: SevaProof[] = [
     certificateId: 'GK-SANKALP-9024'
   }
 ];
+
+export const RECENT_PROOFS_EN: SevaProof[] = [
+  {
+    id: 'PRF-8941',
+    devoteeName: 'Rajesh & Sunita Sharma',
+    location: 'Jaipur, Rajasthan',
+    sevaTitle: 'Gaumata Green Fodder Service (25 kg)',
+    date: 'Today, 07:15 AM',
+    time: 'Brahmamuhurta Feed',
+    goshalaName: 'Surabhi Gau Seva Dham, Vrindavan',
+    certificateId: 'GK-SANKALP-9021'
+  },
+  {
+    id: 'PRF-8942',
+    devoteeName: 'Ananya Deshmukh',
+    location: 'Pune, Maharashtra',
+    sevaTitle: 'Gaumata Fresh Roti Service (20 Rotis)',
+    date: 'Today, 08:30 AM',
+    time: 'Morning Gau Aarati',
+    goshalaName: 'Gau Prem Dham, Mathura',
+    certificateId: 'GK-SANKALP-9022'
+  },
+  {
+    id: 'PRF-8943',
+    devoteeName: 'Vikramaditya Singhania',
+    location: 'New Delhi',
+    sevaTitle: 'Gaumata Gud-Chana Feed (5 Thalis)',
+    date: 'Yesterday, 06:45 PM',
+    time: 'Evening Feed',
+    goshalaName: 'Surabhi Gau Seva Dham, Vrindavan',
+    certificateId: 'GK-SANKALP-9023'
+  },
+  {
+    id: 'PRF-8944',
+    devoteeName: 'Meenakshi Iyer',
+    location: 'Bengaluru, Karnataka',
+    sevaTitle: 'Pakshi Dana & Cheenti Aata Service',
+    date: 'Yesterday, 07:00 AM',
+    time: 'Sunrise Feed',
+    goshalaName: 'Anand Tirtha Van, Haridwar',
+    certificateId: 'GK-SANKALP-9024'
+  }
+];
+
+export const RECENT_PROOFS: SevaProof[] = RECENT_PROOFS_HI;
+
+export function getLocalizedRecentProofs(lang: AppLanguage): SevaProof[] {
+  return lang === 'en' ? RECENT_PROOFS_EN : RECENT_PROOFS_HI;
+}
