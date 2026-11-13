@@ -41,6 +41,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     if (typeof window !== 'undefined') {
       try {
+        localStorage.removeItem('gaukripa_registered_users');
         const session = getSupabaseSession();
         if (!session?.access_token) {
           localStorage.removeItem('gaukripa_user');
