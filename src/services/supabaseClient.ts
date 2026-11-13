@@ -83,3 +83,36 @@ export async function supabaseMutation<T>(
   if (!response.ok) throw new Error(data.message || data.details || data.error || 'Supabase update failed. Check administrator permissions.');
   return data as T;
 }
+
+export async function invokeGauKripaChat<T>(body: Record<string, unknown>): Promise<T> {
+  const session = getSupabaseSession();
+  if (!session?.access_token) throw new Error('Please sign in to use live chat.');
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/gaukripa-chat`, {
+    method: 'POST',
+    headers: headers(session.access_token),
+    body: JSON.stringify(body)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Live chat request failed.');
+  return data as T;
+}
+
+export async function uploadGauKripaMedia(file: File): Promise<string> {
+  const session = getSupabaseSession();
+  if (!session?.access_token) throw new Error('Please sign in with an administrator account before uploading media.');
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'upload';
+  const path = `admin/${session.user.id}/${Date.now()}-${safeName}`;
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/gaukripa-media/${path.split('/').map(encodeURIComponent).join('/')}`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || data.error || 'Media upload failed.');
+  return `${SUPABASE_URL}/storage/v1/object/public/gaukripa-media/${path.split('/').map(encodeURIComponent).join('/')}`;
+}
