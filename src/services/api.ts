@@ -1200,61 +1200,29 @@ export const api = {
     password: string;
     phone?: string;
   }): Promise<{ success: boolean; message: string }> => {
-    const trimmedName = (data.name || '').trim();
-    const trimmedEmail = (data.email || '').trim().toLowerCase();
-    const trimmedPass = (data.password || '').trim();
-    const trimmedPhone = normalizePhone(data.phone);
+    const name = (data.name || '').trim();
+    const email = (data.email || '').trim().toLowerCase();
+    const password = (data.password || '').trim();
+    const phone = normalizePhone(data.phone, '');
 
-    if (!trimmedName) throw new Error('Please enter your full name.');
-    if (!trimmedEmail) throw new Error('Please enter your email address.');
-    if (trimmedPass.length < 4) throw new Error('Password must be at least 4 characters long.');
+    if (!name) throw new Error('Please enter your full name.');
+    if (!email) throw new Error('Please enter your email address.');
+    if (password.length < 8) throw new Error('Password must be at least 8 characters long.');
 
-    // 1. Try server registration if full-stack backend exists
-    const serverRes = await safeFetchJson<{ success: boolean; message: string }>(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: trimmedName, email: trimmedEmail, password: trimmedPass, phone: trimmedPhone })
+    const { supabaseAuth } = await import('./supabaseClient');
+    await supabaseAuth('signup', {
+      email,
+      password,
+      data: { full_name: name, phone }
     });
-
-    if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
-      throw new Error(serverRes.error);
-    }
-
-    // 2. Client-side registry fallback (for static hosts like GitHub Pages)
-    let passHash = '';
-    try {
-      const enc = new TextEncoder().encode(trimmedPass);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      passHash = Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-    } catch {
-      passHash = trimmedPass;
-    }
-
-    const existingUsers = getRegisteredUsers();
-    if (existingUsers[trimmedEmail] || trimmedEmail === 'bankush014@gmail.com') {
-      throw new Error('This email is already registered. Please sign in.');
-    }
-
-    existingUsers[trimmedEmail] = {
-      name: trimmedName,
-      email: trimmedEmail,
-      passwordHash: passHash,
-      phone: trimmedPhone,
-      createdAt: new Date().toISOString()
-    };
-    saveRegisteredUsers(existingUsers);
-
-    // Registration does not create or credit a wallet.
 
     return {
       success: true,
-      message: 'Account created successfully! Please sign in with your email and password.'
+      message: 'Account created. If email confirmation is enabled, verify your email before signing in.'
     };
   },
 
-  // Authentication: Role-based member and administrator authentication
+  // Supabase Auth is the only authentication authority; no browser-side password hashes.
   login: async (credentials: { email: string; password: string; phone?: string }): Promise<{
     success: boolean;
     user: {
@@ -1265,94 +1233,34 @@ export const api = {
       isAdmin?: boolean;
     };
   }> => {
-    const trimmedEmail = (credentials.email || '').trim().toLowerCase();
-    const trimmedPass = (credentials.password || '').trim();
+    const email = (credentials.email || '').trim().toLowerCase();
+    const password = (credentials.password || '').trim();
+    if (!email) throw new Error('Please enter your email address.');
+    if (!password) throw new Error('Please enter your password.');
 
-    if (!trimmedEmail) {
-      throw new Error('Please enter your email address.');
+    const { supabaseAuth, saveSupabaseSession, supabaseRest } = await import('./supabaseClient');
+    const session = await supabaseAuth('token?grant_type=password', { email, password });
+    if (!session?.access_token || !session?.user?.id) {
+      throw new Error('Supabase did not return a valid login session.');
     }
-    if (!trimmedPass) {
-      throw new Error('Please enter your password.');
-    }
+    await saveSupabaseSession(session);
 
-    // 1. Try hitting the server API if present (Full-stack dev/server environment)
-    const serverRes = await safeFetchJson<{
-      success: boolean;
-      user: {
-        name: string;
-        email: string;
-        role: 'super_admin' | 'devotee';
-        phone?: string;
-        isAdmin?: boolean;
-      };
-    }>(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials)
-    });
-
-    if (serverRes.ok && serverRes.data?.user) {
-      try { localStorage.setItem('gaukripa_user', JSON.stringify(serverRes.data.user)); } catch {}
-      return serverRes.data;
-    }
-
-    // If server returned a sanitized rejection message
-    if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
-      throw new Error(serverRes.error);
-    }
-
-    // 2. Client-side Authentication fallback (For static hosts like GitHub Pages)
-    // Compute SHA-256 digest so no raw password ever exists in client bundle
-    let passHash = '';
-    try {
-      const enc = new TextEncoder().encode(trimmedPass);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      passHash = Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-    } catch {
-      passHash = trimmedPass;
-    }
-
-    // SHA-256 digest of authorized Super Admin credentials
-    const SECURE_ADMIN_HASH = 'f20a5b4a1228638e06651aa7c17522834328bf543cb8b222ddbc352ad7a855f2';
-
-    if (trimmedEmail === 'bankush014@gmail.com') {
-      if (passHash === SECURE_ADMIN_HASH) {
-        const user = {
-          name: 'Super Admin',
-          email: 'bankush014@gmail.com',
-          role: 'super_admin' as const,
-          phone: credentials.phone || '9876543210',
-          isAdmin: true
-        };
-        try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
-        return { success: true, user };
-      } else {
-        throw new Error('Invalid email or password. Please try again.');
-      }
-    }
-
-    // Check locally registered accounts
-    const registeredUsers = getRegisteredUsers();
-    if (registeredUsers[trimmedEmail]) {
-      if (passHash === registeredUsers[trimmedEmail].passwordHash) {
-        const user = {
-          name: registeredUsers[trimmedEmail].name,
-          email: trimmedEmail,
-          role: 'devotee' as const,
-          phone: registeredUsers[trimmedEmail].phone,
-          isAdmin: false
-        };
-        try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
-        return { success: true, user };
-      } else {
-        throw new Error('Invalid email or password. Please try again.');
-      }
-    }
-
-    throw new Error(
-      'Account not found. Please sign up first, or try again when the login service is online.'
+    type Profile = { full_name: string; email: string; phone: string | null; role: string };
+    const profiles = await supabaseRest<Profile[]>(
+      'app_users',
+      `?select=full_name,email,phone,role&auth_user_id=eq.${encodeURIComponent(session.user.id)}&limit=1`,
+      session.access_token
     );
+    const profile = profiles[0];
+    const role = profile?.role === 'super_admin' || profile?.role === 'admin' ? 'super_admin' : 'devotee';
+    const user = {
+      name: profile?.full_name || String(session.user.user_metadata?.full_name || email.split('@')[0]),
+      email,
+      role,
+      phone: profile?.phone || String(session.user.user_metadata?.phone || credentials.phone || ''),
+      isAdmin: role === 'super_admin'
+    };
+    try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
+    return { success: true, user };
   }
 };
