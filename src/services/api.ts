@@ -136,6 +136,15 @@ import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcas
 
 const API_BASE = '/api';
 
+export function normalizePhone(rawPhone: string | undefined | null, fallback = '9876543210'): string {
+  const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
+  if (!digits) return fallback;
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+  if (digits.length > 10) return digits.slice(-10);
+  return digits;
+}
+
 // Safe fetch helper that intercepts HTML 404 responses from static hosts (e.g. GitHub Pages)
 async function safeFetchJson<T>(
   url: string,
