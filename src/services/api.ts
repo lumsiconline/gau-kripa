@@ -146,54 +146,6 @@ export interface ReviewItem {
 import { SEVA_ITEMS, ASTROLOGERS, SevaItem as DefaultSevaItem, Astrologer as DefaultAstrologer } from '../data/sevaData';
 import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcastChatEvent } from './chatSync';
 
-const rawApiBase = String((import.meta as any).env?.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
-export const API_BASE = rawApiBase
-  ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
-  : '/api';
-
-export function normalizePhone(rawPhone: string | undefined | null, fallback = '9876543210'): string {
-  const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
-  if (!digits) return fallback;
-  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
-  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
-  if (digits.length > 10) return digits.slice(-10);
-  return digits;
-}
-
-// Safe fetch helper that intercepts HTML 404/405 responses from static hosts or undeployed functions
-async function safeFetchJson<T>(
-  url: string,
-  options?: RequestInit
-): Promise<{ ok: boolean; data?: T; error?: string; isHtml?: boolean }> {
-  try {
-    const res = await fetch(url, options);
-    const contentType = res.headers.get('content-type') || '';
-    const text = await res.text();
-    const isJson = contentType.includes('application/json') || (text.trim().startsWith('{') && text.trim().endsWith('}')) || (text.trim().startsWith('[') && text.trim().endsWith(']'));
-
-    if (isJson) {
-      try {
-        const data = JSON.parse(text);
-        if (res.ok) {
-          return { ok: true, data };
-        }
-        return { ok: false, error: data?.error || `Request failed (${res.status})`, data };
-      } catch {
-        return { ok: false, error: 'Malformed JSON response', isHtml: false };
-      }
-    }
-
-    // Static host or undeployed Cloud Function returned HTML (404 / 405)
-    return {
-      ok: false,
-      isHtml: true,
-      error: `Backend endpoint returned HTTP ${res.status}. Use the configured Supabase Edge Functions for hosted production requests.`
-    };
-  } catch (err: any) {
-    return { ok: false, error: err?.message || 'Network error connecting to backend server.' };
-  }
-}
-
 // Initial storage bootstrap helpers for static environments (GitHub Pages, etc.)
 function getStoredServices(): ServiceItem[] {
   try {
@@ -516,27 +468,34 @@ export const api = {
     throw new Error('Use secure Razorpay Checkout to recharge this wallet.');
   },
 
-  checkDiscount: async (
-    phone: string
-  ): Promise<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }> => {
-    const cleanPhone = normalizePhone(phone);
-    const res = await safeFetchJson<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }>(
-      `${API_BASE}/wallet/discount-check/${encodeURIComponent(cleanPhone)}`
-    );
-    if (res.ok && res.data) return res.data;
-
-    // Check if phone has any booking in localStorage
+  checkDiscount: async (phone: string): Promise<{eligible:boolean;ratePerMin:number;standardRate:number;discountedRate:number;rule:string}> => {
+    const cleanPhone = normalizePhone(phone, '');
+    const standardRate = 20;
+    const discountedRate = 10;
     try {
-      const stored = localStorage.getItem('gaukripa_bookings');
-      if (stored) {
-        const bookings: BookingRecord[] = JSON.parse(stored);
-        const hasBooking = bookings.some((b) => normalizePhone(b.phone) === cleanPhone || b.phone.includes(cleanPhone));
-        if (hasBooking) {
-          return { eligible: true, ratePerMin: 10, standardRate: 20, discountedRate: 10, rule: '50% Seva Discount Applied' };
-        }
+      const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+      const session = getSupabaseSession();
+      if (!session?.access_token) return { eligible:false, ratePerMin:standardRate, standardRate, discountedRate, rule:'Sign in to check your seva discount.' };
+      const profiles = await supabaseRest<Array<{id:string;phone:string|null}>>(
+        'app_users', `?select=id,phone&auth_user_id=eq.${encodeURIComponent(session.user.id)}&limit=1`, session.access_token
+      );
+      const profile = profiles[0];
+      if (!profile || (cleanPhone && normalizePhone(profile.phone || '', '') !== cleanPhone)) {
+        return { eligible:false, ratePerMin:standardRate, standardRate, discountedRate, rule:'Phone number does not match your account.' };
       }
-    } catch {}
-    return { eligible: false, ratePerMin: 20, standardRate: 20, discountedRate: 10, rule: 'Standard Consultation Rate' };
+      const [bookings, settingsRows] = await Promise.all([
+        supabaseRest<Array<{id:string}>>('bookings', `?select=id&user_id=eq.${encodeURIComponent(profile.id)}&limit=1`, session.access_token),
+        supabaseRest<Array<{data:AppSettings}>>('app_settings','?select=data&id=eq.global&limit=1',session.access_token)
+      ]);
+      const settings = settingsRows[0]?.data;
+      const eligible = Boolean(settings?.discountEnabled && bookings.length);
+      const normal = Number(settings?.standardRatePerMin || standardRate);
+      const discounted = Number(settings?.discountedRatePerMin || discountedRate);
+      return { eligible, ratePerMin:eligible ? discounted : normal, standardRate:normal, discountedRate:discounted, rule:eligible ? '50% Seva Discount Applied' : 'Standard Consultation Rate' };
+    } catch (error) {
+      console.error('Supabase discount check failed', error);
+      return { eligible:false, ratePerMin:standardRate, standardRate, discountedRate, rule:'Standard Consultation Rate' };
+    }
   },
 
   // Live Chat Workflow — Supabase Edge Function backed, authenticated and persistent.
