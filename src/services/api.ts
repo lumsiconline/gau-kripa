@@ -796,7 +796,7 @@ export const api = {
     user: {
       name: string;
       email: string;
-      role: 'super_admin' | 'devotee';
+      role: 'super_admin' | 'admin' | 'astrologer' | 'devotee';
       phone?: string;
       isAdmin?: boolean;
     };
@@ -820,13 +820,13 @@ export const api = {
       session.access_token
     );
     const profile = profiles[0];
-    const role = profile?.role === 'super_admin' || profile?.role === 'admin' ? 'super_admin' : 'devotee';
+    const role = (['super_admin','admin','astrologer','devotee'].includes(profile?.role || '') ? profile!.role : 'devotee') as 'super_admin' | 'admin' | 'astrologer' | 'devotee';
     const user = {
       name: profile?.full_name || String(session.user.user_metadata?.full_name || email.split('@')[0]),
       email,
       role,
       phone: profile?.phone || String(session.user.user_metadata?.phone || credentials.phone || ''),
-      isAdmin: role === 'super_admin'
+      isAdmin: role === 'super_admin' || role === 'admin'
     };
     try { localStorage.setItem('gaukripa_user', JSON.stringify(user)); } catch {}
     return { success: true, user };
