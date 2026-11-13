@@ -247,6 +247,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     }
   };
 
+  const handleProofVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      showNotification('Please choose an MP4 or WebM video file.');
+      return;
+    }
+    try {
+      const url = await api.uploadMediaFile(file);
+      setVideoUrlInput(url);
+      showNotification('Video proof uploaded to Supabase Storage.');
+    } catch (err: any) {
+      showNotification(err?.message || 'Video upload failed.');
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   // Settings Save
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1467,8 +1485,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   placeholder="https://.../video-proof.mp4"
                   className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                 />
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm"
+                  onChange={handleProofVideoUpload}
+                  className="w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-[#1b4b32] file:px-3 file:py-2 file:text-white"
+                />
                 <span className="text-[10px] text-[#786a55]">
-                  {tr('डिफ़ॉल्ट सत्यापित वृंदावन HD गौ-सेवा वीडियो उपयोग करने हेतु खाली छोड़ें।', 'Leave blank to use default certified Vrindavan HD Gau Puja video proof.')}
+                  {tr('वास्तविक MP4/WebM वीडियो अपलोड करें या सार्वजनिक वीडियो URL डालें।', 'Upload a real MP4/WebM video or paste its public URL. A placeholder video is never used.')}
                 </span>
               </div>
 
