@@ -178,6 +178,22 @@ Deno.serve(async (req: Request) => {
       return json({ session: { ...updated, messages: await loadMessages(row.id) } });
     }
 
+    if (action === "set-availability") {
+      if (!staff) return json({ error: "Astrologer access is required." }, 403);
+      const astroId = String(body.astrologerId || "");
+      if (!astroId) return json({ error: "Astrologer profile ID is required." }, 400);
+      if (profile.role === "astrologer" && astroId !== profile.astrologer_id) return json({ error: "You can only update your assigned astrologer profile." }, 403);
+      const isOnline = Boolean(body.isOnline);
+      const { data: astro, error: astroError } = await supabase.from("astrologers").select("data").eq("id", astroId).maybeSingle();
+      if (astroError) throw astroError;
+      if (!astro) return json({ error: "Astrologer profile not found." }, 404);
+      const updatedData = { ...astro.data, isOnline };
+      const { error: updateError } = await supabase.from("astrologers")
+        .update({ data: updatedData, is_online: isOnline, updated_at: new Date().toISOString() }).eq("id", astroId);
+      if (updateError) throw updateError;
+      return json({ success: true, astrologerId: astroId, isOnline });
+    }
+
     if (action === "history") {
       if (!staff) return json({ error: "Astrologer access is required." }, 403);
       let q = supabase.from("chat_sessions").select("*").order("created_at", { ascending: false }).limit(100);
