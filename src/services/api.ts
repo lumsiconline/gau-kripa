@@ -694,82 +694,39 @@ export const api = {
   },
 
   createReview: async (review: Partial<ReviewItem>): Promise<ReviewItem> => {
-    const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(review)
-    });
-    if (res.ok && res.data?.review) return res.data.review;
-
-    const newRev: ReviewItem = {
-      id: `rev-${Date.now()}`,
+    const newReview: ReviewItem = {
+      id: `rev-${crypto.randomUUID()}`,
       name: review.name || 'Devotee',
       city: review.city || 'India',
       seva: review.seva || 'Gau Seva',
       oneLiner: review.oneLiner || 'Sacred experience with GauKripa.',
-      stars: review.stars || 5,
-      isApproved: true,
+      stars: Math.max(1, Math.min(5, Number(review.stars || 5))),
+      isApproved: false,
       createdAt: new Date().toISOString()
     };
-    const reviews = await api.getReviews();
-    reviews.unshift(newRev);
-    try { localStorage.setItem('gaukripa_reviews', JSON.stringify(reviews)); } catch {}
-    return newRev;
+    const { supabaseMutation } = await import('./supabaseClient');
+    await supabaseMutation('reviews','POST','',[{id:newReview.id,is_approved:false,data:newReview}]);
+    return newReview;
   },
 
   approveReview: async (id: string, isApproved: boolean): Promise<ReviewItem> => {
-    const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews/${id}/approve`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isApproved })
-    });
-    if (res.ok && res.data?.review) return res.data.review;
-
-    const reviews = await api.getReviews();
-    const idx = reviews.findIndex((r) => r.id === id);
-    if (idx !== -1) {
-      reviews[idx].isApproved = isApproved;
-      try { localStorage.setItem('gaukripa_reviews', JSON.stringify(reviews)); } catch {}
-      return reviews[idx];
-    }
-    return { id, isApproved } as any;
+    const { supabaseRest, supabaseMutation } = await import('./supabaseClient');
+    const rows = await supabaseRest<Array<{data:ReviewItem}>>('reviews', `?select=data&id=eq.${encodeURIComponent(id)}&limit=1`);
+    if (!rows[0]) throw new Error('Review not found or admin access denied.');
+    const updated = { ...rows[0].data, isApproved };
+    await supabaseMutation('reviews','PATCH',`?id=eq.${encodeURIComponent(id)}`,{is_approved:isApproved,data:updated});
+    return updated;
   },
 
   deleteReview: async (id: string): Promise<boolean> => {
-    const res = await safeFetchJson<{ success: boolean }>(`${API_BASE}/reviews/${id}`, { method: 'DELETE' });
-    if (res.ok) return true;
-
-    const reviews = (await api.getReviews()).filter((r) => r.id !== id);
-    try { localStorage.setItem('gaukripa_reviews', JSON.stringify(reviews)); } catch {}
+    const { supabaseMutation } = await import('./supabaseClient');
+    await supabaseMutation('reviews','DELETE',`?id=eq.${encodeURIComponent(id)}`);
     return true;
   },
 
-  // Media Upload helper (supports file reader data URLs on static hosts)
   uploadMediaFile: async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const dataUrl = reader.result as string;
-          // Try backend endpoint first
-          const res = await safeFetchJson<{ url: string }>(`${API_BASE}/upload`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dataUrl, fileName: file.name })
-          });
-          if (res.ok && res.data?.url) {
-            resolve(res.data.url);
-          } else {
-            // On static hosts (GitHub Pages), resolve dataUrl directly
-            resolve(dataUrl);
-          }
-        } catch {
-          resolve(reader.result as string);
-        }
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
+    const { uploadGauKripaMedia } = await import('./supabaseClient');
+    return await uploadGauKripaMedia(file);
   },
 
   getDatabaseStatus: async (): Promise<{
