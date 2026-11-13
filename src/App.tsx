@@ -50,7 +50,7 @@ export default function App() {
   });
 
   // Super Admin Check - strictly for bankush014@gmail.com
-  const isSuperAdmin = currentUser?.email?.toLowerCase() === 'bankush014@gmail.com' || currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'super_admin';
 
   // Navigation prompt & action resumption queue
   const [authPromptMessage, setAuthPromptMessage] = useState<string | null>(null);
