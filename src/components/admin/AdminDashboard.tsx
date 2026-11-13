@@ -1169,7 +1169,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   )}
                 </div>
               )}
-       )}
             </>
           )}
 
