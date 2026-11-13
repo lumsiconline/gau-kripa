@@ -550,7 +550,7 @@ export const api = {
     durationSeconds:number; totalCharged:number; astrologerEarned:number; walletBalance:number; status:string;
   }> => {
     const { invokeGauKripaChat } = await import('./supabaseClient');
-    return await invokeGauKripaChat({
+    return await invokeGauKripaChat<{durationSeconds:number;totalCharged:number;astrologerEarned:number;walletBalance:number;status:string}>({
       action:'heartbeat', sessionId
     });
   },
@@ -568,7 +568,7 @@ export const api = {
     analytics:{totalConsultations:number;todayEarnings:number;weeklyEarnings:number;monthlyEarnings:number};
   }> => {
     const { invokeGauKripaChat } = await import('./supabaseClient');
-    return await invokeGauKripaChat({
+    return await invokeGauKripaChat<{sessions:ChatSession[];analytics:{totalConsultations:number;todayEarnings:number;weeklyEarnings:number;monthlyEarnings:number}}>({
       action:'history', astrologerId: astrologerId || 'all'
     });
   },
