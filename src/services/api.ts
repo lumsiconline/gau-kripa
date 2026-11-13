@@ -134,7 +134,10 @@ export interface ReviewItem {
 import { SEVA_ITEMS, ASTROLOGERS, SevaItem as DefaultSevaItem, Astrologer as DefaultAstrologer } from '../data/sevaData';
 import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcastChatEvent } from './chatSync';
 
-const API_BASE = '/api';
+const rawApiBase = String((import.meta as any).env?.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+export const API_BASE = rawApiBase
+  ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
+  : '/api';
 
 export function normalizePhone(rawPhone: string | undefined | null, fallback = '9876543210'): string {
   const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
@@ -145,7 +148,7 @@ export function normalizePhone(rawPhone: string | undefined | null, fallback = '
   return digits;
 }
 
-// Safe fetch helper that intercepts HTML 404 responses from static hosts (e.g. GitHub Pages)
+// Safe fetch helper that intercepts HTML 404/405 responses from static hosts (e.g. GitHub Pages)
 async function safeFetchJson<T>(
   url: string,
   options?: RequestInit
@@ -168,10 +171,14 @@ async function safeFetchJson<T>(
       }
     }
 
-    // Static host returned HTML (such as 404.html on GitHub Pages)
-    return { ok: false, isHtml: true, error: `Static server response (${res.status})` };
+    // Static host returned HTML (such as 404.html or 405 Not Allowed on GitHub Pages)
+    return {
+      ok: false,
+      isHtml: true,
+      error: `Payment backend server is not reachable from this static site (HTTP ${res.status}). Deploy server.ts and configure VITE_API_BASE_URL.`
+    };
   } catch (err: any) {
-    return { ok: false, error: err?.message || 'Network error' };
+    return { ok: false, error: err?.message || 'Network error connecting to backend server.' };
   }
 }
 
@@ -479,15 +486,18 @@ export const api = {
 
   // Wallet: balances and transaction history
   getWallet: async (phone: string): Promise<WalletInfo> => {
-    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
+    const cleanPhone = normalizePhone(phone);
 
     // 1. Try server API
     const serverRes = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(cleanPhone)}`);
     if (serverRes.ok && serverRes.data) {
+      try {
+        localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(serverRes.data));
+      } catch {}
       return serverRes.data;
     }
 
-    // 2. Local fallback / Firestore cache
+    // 2. Read-only cached wallet when offline
     try {
       const raw = localStorage.getItem(`gaukripa_wallet_${cleanPhone}`);
       if (raw) return JSON.parse(raw);
@@ -501,7 +511,7 @@ export const api = {
     };
   },
 
-  // Standard Razorpay Checkout Methods (Cloudflare Worker backend)
+  // Standard Razorpay Checkout Methods (Express Backend LIVE Payments)
   createOrder: async (amountInPaise: number, currency = 'INR', receipt?: string, notes?: Record<string, string>) => {
     if (!amountInPaise || amountInPaise < 100) {
       throw new Error('Minimum order amount must be at least 100 paise (₹1).');
@@ -516,7 +526,6 @@ export const api = {
       notes
     };
 
-    // 1. Call Node.js Express backend endpoint
     const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
       `${API_BASE}/create-order`,
       {
@@ -527,7 +536,7 @@ export const api = {
     );
 
     const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId;
+    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
 
     if (res.ok && orderId && keyId) {
       return {
@@ -538,7 +547,6 @@ export const api = {
       };
     }
     throw new Error(res.error || 'Unable to create Razorpay order. Please check the payment server.');
-
   },
 
   verifyPayment: async (order_id: string, payment_id: string, signature: string) => {
@@ -555,34 +563,31 @@ export const api = {
       }
     );
 
-    if (res.ok && res.data?.success) {
+    if (res.ok && res.data?.success && res.data?.verified) {
       return res.data;
     }
-    if (res.error && !res.isHtml) throw new Error(res.error);
     throw new Error(res.error || 'Payment verification failed. Please contact support before retrying.');
-
   },
 
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount < 50) {
-      throw new Error('Minimum wallet recharge is ₹50.');
+    if (isNaN(numAmount) || numAmount < 50 || numAmount > 100000) {
+      throw new Error('Minimum wallet recharge is ₹50 (up to ₹1,00,000).');
     }
-    const cleanPhone = String(phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
+    const cleanPhone = normalizePhone(phone);
     const amountInPaise = Math.round(numAmount * 100);
     const payload = {
       phone: cleanPhone,
       amount: numAmount,
       amountInPaise,
-      isPaise: true,
       name,
       email,
-      receipt: `gk_rcpt_${Date.now()}`,
+      receipt: `gk_wallet_${Date.now()}`,
       notes: { phone: cleanPhone, name, purpose: 'GauKripa Sacred Wallet Recharge' }
     };
 
     const res = await safeFetchJson<{ success: boolean; order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-      `${API_BASE}/create-order`,
+      `${API_BASE}/wallet/create-razorpay-order`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -591,7 +596,7 @@ export const api = {
     );
 
     const orderId = res.data?.order_id || res.data?.orderId;
-    const keyId = res.data?.key_id || res.data?.keyId;
+    const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
 
     if (res.ok && orderId && keyId) {
       return {
@@ -603,12 +608,16 @@ export const api = {
     }
 
     throw new Error(res.error || 'Razorpay order creation failed. No valid order ID was returned.');
-
   },
 
   verifyWalletPayment: async (payload: { order_id: string; payment_id: string; signature: string; phone: string; amount?: number }) => {
-    const res = await safeFetchJson<{ success: boolean; message: string; balance?: number; wallet?: WalletInfo }>(
-      `${API_BASE}/verify-payment`,
+    if (!payload.order_id || !payload.payment_id || !payload.signature) {
+      throw new Error('Missing Razorpay payment signature details. Verification cannot proceed.');
+    }
+
+    const cleanPhone = normalizePhone(payload.phone);
+    const res = await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message: string; balance?: number; wallet?: WalletInfo }>(
+      `${API_BASE}/wallet/verify-razorpay-payment`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -616,85 +625,29 @@ export const api = {
           order_id: payload.order_id,
           payment_id: payload.payment_id,
           signature: payload.signature,
-          phone: payload.phone,
+          phone: cleanPhone,
           amount: payload.amount
         })
       }
     );
 
-    if (res.ok && res.data?.success) {
-      // If server returned balance, also update local storage cache
-      const cleanPhone = String(payload.phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
+    if (res.ok && res.data?.success && res.data?.verified) {
       const storageKey = `gaukripa_wallet_${cleanPhone}`;
-      let currentWallet: WalletInfo = {
+      const verifiedWallet: WalletInfo = res.data.wallet || {
         phone: cleanPhone,
         name: 'Devotee',
-        balance: res.data.balance || 0,
+        balance: typeof res.data.balance === 'number' ? res.data.balance : 0,
         transactions: []
       };
       try {
-        const raw = localStorage.getItem(storageKey);
-        if (raw) currentWallet = JSON.parse(raw);
-        if (typeof res.data.balance === 'number') currentWallet.balance = res.data.balance;
-        localStorage.setItem(storageKey, JSON.stringify(currentWallet));
+        localStorage.setItem(storageKey, JSON.stringify(verifiedWallet));
       } catch {}
 
       return {
         success: true,
         verified: true,
-        credited: true,
-        balance: currentWallet.balance
-      };
-    }
-
-    // Static hosting fallback (e.g. static GitHub Pages)
-    if (payload.payment_id) {
-      const cleanPhone = String(payload.phone || '').replace(/[^0-9]/g, '').slice(-15) || '9876543210';
-      const storageKey = `gaukripa_wallet_${cleanPhone}`;
-      let currentWallet: WalletInfo = {
-        phone: cleanPhone,
-        name: 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-
-      try {
-        const raw = localStorage.getItem(storageKey);
-        if (raw) currentWallet = JSON.parse(raw);
-      } catch {}
-
-      const existingTx = currentWallet.transactions.find(
-        (tx: any) => tx.id === `tx-${payload.payment_id}` || tx.paymentId === payload.payment_id
-      );
-
-      if (existingTx) {
-        return {
-          success: true,
-          verified: true,
-          credited: false,
-          balance: currentWallet.balance
-        };
-      }
-
-      const creditAmount = Number(payload.amount) || 50;
-      currentWallet.balance = Number((currentWallet.balance + creditAmount).toFixed(2));
-      currentWallet.transactions.unshift({
-        id: `tx-${payload.payment_id}`,
-        type: 'credit',
-        amount: creditAmount,
-        description: `Razorpay Wallet Recharge (+₹${creditAmount})`,
-        date: new Date().toISOString()
-      });
-
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(currentWallet));
-      } catch {}
-
-      return {
-        success: true,
-        verified: true,
-        credited: true,
-        balance: currentWallet.balance
+        credited: res.data.credited !== false,
+        balance: verifiedWallet.balance
       };
     }
 
@@ -708,8 +661,9 @@ export const api = {
   checkDiscount: async (
     phone: string
   ): Promise<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }> => {
+    const cleanPhone = normalizePhone(phone);
     const res = await safeFetchJson<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }>(
-      `${API_BASE}/wallet/discount-check/${encodeURIComponent(phone)}`
+      `${API_BASE}/wallet/discount-check/${encodeURIComponent(cleanPhone)}`
     );
     if (res.ok && res.data) return res.data;
 
@@ -718,7 +672,7 @@ export const api = {
       const stored = localStorage.getItem('gaukripa_bookings');
       if (stored) {
         const bookings: BookingRecord[] = JSON.parse(stored);
-        const hasBooking = bookings.some((b) => b.phone.includes(phone));
+        const hasBooking = bookings.some((b) => normalizePhone(b.phone) === cleanPhone || b.phone.includes(cleanPhone));
         if (hasBooking) {
           return { eligible: true, ratePerMin: 10, standardRate: 20, discountedRate: 10, rule: '50% Seva Discount Applied' };
         }
@@ -1225,7 +1179,7 @@ export const api = {
     const trimmedName = (data.name || '').trim();
     const trimmedEmail = (data.email || '').trim().toLowerCase();
     const trimmedPass = (data.password || '').trim();
-    const trimmedPhone = (data.phone || '').trim() || '9876543210';
+    const trimmedPhone = normalizePhone(data.phone);
 
     if (!trimmedName) throw new Error('Please enter your full name.');
     if (!trimmedEmail) throw new Error('Please enter your email address.');

@@ -30,6 +30,75 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+  // CORS middleware for hosted frontend (e.g. https://gaukripa.site) calling deployed Express API
+  const configuredOrigins = (process.env.ALLOWED_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedDefaults = [
+      'https://gaukripa.site',
+      'https://www.gaukripa.site',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173'
+    ];
+    const isAllowedOrigin =
+      !origin ||
+      allowedDefaults.includes(origin) ||
+      configuredOrigins.includes(origin) ||
+      /^https:\/\/[a-z0-9-]+\.run\.app$/i.test(origin) ||
+      /^https:\/\/([a-z0-9-]+\.)?github\.io$/i.test(origin);
+
+    if (origin && isAllowedOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    }
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    return next();
+  });
+
+  // Consistent phone normalization (+91 / 91 / 0 / 10-digit)
+  const normalizePhone = (rawPhone: unknown, fallback = '9876543210'): string => {
+    const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
+    if (!digits) return fallback;
+    if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+    if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+    if (digits.length > 10) return digits.slice(-10);
+    return digits;
+  };
+
+  // Resolve existing wallet without losing legacy keys
+  const getOrInitWallet = (db: ReturnType<typeof readDb>, rawPhone: unknown, name = 'Devotee') => {
+    const rawStr = String(rawPhone || '').trim();
+    const clean = normalizePhone(rawPhone);
+    const candidates = Array.from(new Set([clean, rawStr, `91${clean}`, `+91${clean}`].filter(Boolean)));
+    for (const key of candidates) {
+      if (db.wallets[key]) {
+        return { key, wallet: db.wallets[key] };
+      }
+    }
+    const created = {
+      phone: clean,
+      name: name || 'Devotee',
+      balance: 0,
+      transactions: []
+    };
+    db.wallets[clean] = created;
+    return { key: clean, wallet: created };
+  };
+
+  // Track server-created Razorpay order amounts to prevent client-side amount tampering on verify
+  const orderAmountInPaiseCache = new Map<string, number>();
+
   // Ensure public/uploads exists
   const uploadsDir = path.resolve(process.cwd(), 'public/uploads');
   if (!fs.existsSync(uploadsDir)) {
@@ -67,7 +136,7 @@ async function startServer() {
     const cleanEmail = String(email).trim().toLowerCase();
     const cleanPass = String(password).trim();
     const cleanName = String(name).trim();
-    const cleanPhone = String(phone || '').trim() || '9876543210';
+    const cleanPhone = normalizePhone(phone);
 
     if (cleanPass.length < 4) {
       return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
@@ -90,15 +159,8 @@ async function startServer() {
     };
 
     // Ensure wallet exists for new devotee with actual balance (0 default)
-    if (!db.wallets[cleanPhone]) {
-      db.wallets[cleanPhone] = {
-        phone: cleanPhone,
-        name: cleanName,
-        balance: 0,
-        transactions: []
-      };
-      syncWallet(db.wallets[cleanPhone]).catch(console.error);
-    }
+    const { wallet } = getOrInitWallet(db, cleanPhone, cleanName);
+    syncWallet(wallet).catch(console.error);
 
     writeDb(db);
     return res.json({ success: true, message: 'Account registered successfully. Please log in with your email and password.' });
@@ -292,18 +354,20 @@ async function startServer() {
     const db = readDb();
     const phone = req.query.phone as string;
     if (phone) {
-      return res.json(db.bookings.filter((b) => b.phone === phone));
+      const clean = normalizePhone(phone);
+      return res.json(db.bookings.filter((b) => normalizePhone(b.phone) === clean || b.phone === phone));
     }
     res.json(db.bookings);
   });
 
   app.post('/api/bookings', (req, res) => {
     const db = readDb();
+    const cleanPhone = normalizePhone(req.body.phone);
     const newBooking: DbBooking = {
       id: `b-${Date.now()}`,
       bookingId: `GK-${Math.floor(100000 + Math.random() * 900000)}`,
       devoteeName: req.body.devoteeName || 'Devotee',
-      phone: req.body.phone || '9876543210',
+      phone: cleanPhone,
       email: req.body.email || '',
       gotra: req.body.gotra || 'Kashyap',
       sevaId: req.body.sevaId || 'gau-chara',
@@ -324,18 +388,10 @@ async function startServer() {
     db.bookings.unshift(newBooking);
 
     // Ensure wallet exists for devotee (real balance only)
-    const p = newBooking.phone;
-    if (!db.wallets[p]) {
-      db.wallets[p] = {
-        phone: p,
-        name: newBooking.devoteeName,
-        balance: 0,
-        transactions: []
-      };
-    }
+    const { wallet } = getOrInitWallet(db, cleanPhone, newBooking.devoteeName);
     writeDb(db);
     syncBooking(newBooking).catch(console.error);
-    if (db.wallets[p]) syncWallet(db.wallets[p]).catch(console.error);
+    syncWallet(wallet).catch(console.error);
     res.json({ success: true, booking: newBooking });
   });
 
@@ -375,16 +431,14 @@ async function startServer() {
   // ==========================================
   app.get('/api/wallet/:phone', (req, res) => {
     const db = readDb();
-    const phone = req.params.phone;
-    let wallet = db.wallets[phone];
-    if (!wallet) {
-      wallet = {
-        phone,
-        name: 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-      db.wallets[phone] = wallet;
+    const hadExisting = Boolean(
+      db.wallets[req.params.phone] ||
+      db.wallets[normalizePhone(req.params.phone)] ||
+      db.wallets[`91${normalizePhone(req.params.phone)}`] ||
+      db.wallets[`+91${normalizePhone(req.params.phone)}`]
+    );
+    const { wallet } = getOrInitWallet(db, req.params.phone);
+    if (!hadExisting) {
       writeDb(db);
     }
     res.json(wallet);
@@ -399,47 +453,57 @@ async function startServer() {
   const handleCreateOrder = async (req: express.Request, res: express.Response) => {
     try {
       const { currency = 'INR', receipt, notes, phone, name } = req.body;
-      let rawAmount = req.body.amount;
+      const rawAmount = req.body.amount;
+      const rawAmountInPaise = req.body.amountInPaise;
+      const explicitIsPaise = req.body.isPaise;
 
-      if (rawAmount === undefined || rawAmount === null || rawAmount === '') {
+      if (
+        (rawAmount === undefined || rawAmount === null || rawAmount === '') &&
+        (rawAmountInPaise === undefined || rawAmountInPaise === null || rawAmountInPaise === '')
+      ) {
         return res.status(400).json({ error: 'Amount is required.' });
       }
 
-      let numAmount = Number(rawAmount);
-      if (isNaN(numAmount) || numAmount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount provided.' });
-      }
-
-      // If calling from standard /api/create-order, amount is in paise (minimum 100 paise = ₹1)
-      // If calling from wallet recharge (/api/wallet/...), amount is in rupees (minimum ₹50 = 5000 paise)
       const isWalletRoute = req.path.includes('/wallet');
       let amountInPaise: number;
 
       if (isWalletRoute) {
-        if (numAmount < 50) {
-          return res.status(400).json({ error: 'Minimum wallet recharge amount is ₹50.' });
+        const rupeeAmount =
+          rawAmount !== undefined && rawAmount !== null && rawAmount !== ''
+            ? Number(rawAmount)
+            : Number(rawAmountInPaise) / 100;
+        if (isNaN(rupeeAmount) || rupeeAmount < 50 || rupeeAmount > 100000) {
+          return res.status(400).json({ error: 'Minimum wallet recharge amount is ₹50 (up to ₹1,00,000).' });
         }
-        amountInPaise = Math.round(numAmount * 100);
+        amountInPaise = Math.round(rupeeAmount * 100);
+      } else if (rawAmountInPaise !== undefined && rawAmountInPaise !== null && rawAmountInPaise !== '') {
+        amountInPaise = Math.round(Number(rawAmountInPaise));
+        if (isNaN(amountInPaise) || amountInPaise < 100) {
+          return res.status(400).json({ error: 'Minimum amount must be at least 100 paise (₹1).' });
+        }
       } else {
-        // Standard create-order: validate amount >= 100 paise
-        if (numAmount < 100) {
+        const numAmount = Number(rawAmount);
+        if (isNaN(numAmount) || numAmount <= 0) {
+          return res.status(400).json({ error: 'Invalid amount provided.' });
+        }
+        amountInPaise = explicitIsPaise === false ? Math.round(numAmount * 100) : Math.round(numAmount);
+        if (amountInPaise < 100) {
           return res.status(400).json({ error: 'Minimum amount must be at least 100 paise.' });
         }
-        amountInPaise = Math.round(numAmount);
       }
 
       const keyId = process.env.RAZORPAY_KEY_ID;
-
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
       if (!keyId || !keySecret) {
         return res.status(500).json({
-          error: 'Razorpay LIVE credentials (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET) are not configured in environment.'
+          error: 'Razorpay LIVE credentials (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET) are not configured in backend environment.'
         });
       }
 
       const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
       const orderReceipt = receipt || `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      const cleanPhone = phone ? normalizePhone(phone) : '';
 
       try {
         const order = await razorpay.orders.create({
@@ -448,10 +512,12 @@ async function startServer() {
           receipt: orderReceipt,
           notes: notes || {
             purpose: isWalletRoute ? 'GauKripa Sacred Wallet Recharge' : 'GauKripa Payment',
-            phone: phone || '',
+            phone: cleanPhone,
             devoteeName: name || 'Devotee'
           }
         });
+
+        orderAmountInPaiseCache.set(order.id, Number(order.amount));
 
         return res.json({
           order_id: order.id,
@@ -539,21 +605,16 @@ async function startServer() {
 
       // Signature is valid! If phone is provided, credit wallet
       if (phone) {
-        const cleanPhone = String(phone).trim();
-        const numAmount = Number(amount) || 50;
         const db = readDb();
+        const { wallet } = getOrInitWallet(db, phone, name || 'Devotee');
 
-        if (!db.wallets[cleanPhone]) {
-          db.wallets[cleanPhone] = {
-            phone: cleanPhone,
-            name: name || 'Devotee',
-            balance: 0,
-            transactions: []
-          };
-        }
+        const cachedPaise = orderAmountInPaiseCache.get(String(order_id));
+        const creditAmount = cachedPaise
+          ? Number((cachedPaise / 100).toFixed(2))
+          : Number(amount) || 50;
 
         // Prevent duplicate credits: check if this paymentId was already credited
-        const existingTx = db.wallets[cleanPhone].transactions.find(
+        const existingTx = wallet.transactions.find(
           (tx: any) => tx.id === `tx-${payment_id}` || tx.paymentId === payment_id
         );
 
@@ -563,33 +624,33 @@ async function startServer() {
             verified: true,
             credited: false,
             message: 'Payment verified. Wallet was already credited.',
-            balance: db.wallets[cleanPhone].balance,
-            wallet: db.wallets[cleanPhone]
+            balance: wallet.balance,
+            wallet
           });
         }
 
         // Credit wallet
-        db.wallets[cleanPhone].balance = Number((db.wallets[cleanPhone].balance + numAmount).toFixed(2));
-        db.wallets[cleanPhone].transactions.unshift({
+        wallet.balance = Number((wallet.balance + creditAmount).toFixed(2));
+        wallet.transactions.unshift({
           id: `tx-${payment_id}`,
           paymentId: payment_id,
           orderId: order_id,
           type: 'credit',
-          amount: numAmount,
-          description: `Razorpay Wallet Recharge (+₹${numAmount})`,
+          amount: creditAmount,
+          description: `Razorpay Wallet Recharge (+₹${creditAmount})`,
           date: new Date().toISOString()
         });
 
         writeDb(db);
-        syncWallet(db.wallets[cleanPhone]).catch(console.error);
+        syncWallet(wallet).catch(console.error);
 
         return res.json({
           success: true,
           verified: true,
           credited: true,
-          message: `Payment verified! Successfully recharged ₹${numAmount} to your wallet.`,
-          balance: db.wallets[cleanPhone].balance,
-          wallet: db.wallets[cleanPhone]
+          message: `Payment verified! Successfully recharged ₹${creditAmount} to your wallet.`,
+          balance: wallet.balance,
+          wallet
         });
       }
 
@@ -611,40 +672,20 @@ async function startServer() {
   app.post('/api/verify-payment', handleVerifyPayment);
   app.post('/api/wallet/verify-razorpay-payment', handleVerifyPayment);
 
-  app.post('/api/wallet/topup', (req, res) => {
-    const db = readDb();
-    const { phone, amount, name } = req.body;
-    const addAmount = Number(amount);
-    if (!phone || isNaN(addAmount) || addAmount < 50) {
-      return res.status(400).json({ error: 'Minimum top-up amount is ₹50.' });
-    }
-    if (!db.wallets[phone]) {
-      db.wallets[phone] = {
-        phone,
-        name: name || 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-    }
-    db.wallets[phone].balance = Number((db.wallets[phone].balance + addAmount).toFixed(2));
-    db.wallets[phone].transactions.unshift({
-      id: `tx-${Date.now()}`,
-      type: 'credit',
-      amount: addAmount,
-      description: `Wallet Recharged (+₹${addAmount})`,
-      date: new Date().toISOString()
+  app.post('/api/wallet/topup', (_req, res) => {
+    return res.status(403).json({
+      error: 'Direct wallet credit is disabled. Complete Razorpay Checkout via /api/wallet/create-razorpay-order and /api/wallet/verify-razorpay-payment.'
     });
-    writeDb(db);
-    syncWallet(db.wallets[phone]).catch(console.error);
-    res.json({ success: true, balance: db.wallets[phone].balance, wallet: db.wallets[phone] });
   });
 
   app.get('/api/wallet/discount-check/:phone', (req, res) => {
     const db = readDb();
-    const phone = req.params.phone;
+    const cleanPhone = normalizePhone(req.params.phone);
     // Check if customer has any completed or confirmed booking
     const hasBooking = db.bookings.some(
-      (b) => b.phone === phone && (b.status === 'completed' || b.status === 'confirmed')
+      (b) =>
+        (normalizePhone(b.phone) === cleanPhone || b.phone === req.params.phone) &&
+        (b.status === 'completed' || b.status === 'confirmed')
     );
     const eligible = db.settings.discountEnabled && hasBooking;
     const ratePerMin = eligible ? db.settings.discountedRatePerMin : db.settings.standardRatePerMin;
@@ -674,15 +715,10 @@ async function startServer() {
       return res.status(404).json({ error: 'Astrologer not found' });
     }
 
+    const cleanCustomerPhone = normalizePhone(customerPhone);
+
     // Ensure wallet exists for customer (real balance)
-    if (!db.wallets[customerPhone]) {
-      db.wallets[customerPhone] = {
-        phone: customerPhone,
-        name: customerName || 'Devotee',
-        balance: 0,
-        transactions: []
-      };
-    }
+    getOrInitWallet(db, cleanCustomerPhone, customerName || 'Devotee');
 
     const sessionId = `CHAT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -774,7 +810,7 @@ async function startServer() {
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
-    const customerWallet = db.wallets[session.customerPhone];
+    const { wallet: customerWallet } = getOrInitWallet(db, session.customerPhone, session.customerName || 'Devotee');
     res.json({ session, customerWalletBalance: customerWallet?.balance ?? 0 });
   });
 
@@ -818,7 +854,7 @@ async function startServer() {
     const targetCharge = billedMinutes * session.ratePerMin;
     const diff = targetCharge - session.totalCharged;
 
-    const wallet = db.wallets[session.customerPhone];
+    const { wallet } = getOrInitWallet(db, session.customerPhone, session.customerName || 'Devotee');
 
     if (diff > 0 && wallet) {
       if (wallet.balance >= diff) {
@@ -886,7 +922,7 @@ async function startServer() {
       id: `sys-${Date.now()}`,
       sender: 'astrologer',
       senderName: 'System',
-      text: `Consultation concluded. Total Duration: ${Math.floor(session.durationSeconds / 60)} min ${session.durationSeconds % 60} sec. Total Dakshina: ₹${session.totalCharged}. Jai Gaumata!`,
+      text: `Consultation concluded. Total Duration: ${Math.floor(session.durationSeconds / 60)} min ${session.durationSeconds % 60} sec. Total Service Fee: ₹${session.totalCharged}. Jai Gaumata!`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
 
