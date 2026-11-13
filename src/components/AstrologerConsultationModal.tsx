@@ -119,7 +119,6 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     if (!isOpen) return;
 
     setMode(initialMode === 'call' ? 'chat' : initialMode);
-    if (initialMode === 'call') setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'));
     setChatStatus('idle');
     setFormStep(0);
     setBirthDetails({
@@ -132,7 +131,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     setTimePeriod('AM');
     setSession(null);
     setMessages([]);
-    setErrorMessage(null);
+    setErrorMessage(initialMode === 'call' ? tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.') : null);
     setConcern(initialConcern || tr('वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन', 'Vedic Astrology & Grah Shanti Guidance'));
 
     // Fetch user wallet
