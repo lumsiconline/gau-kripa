@@ -164,7 +164,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         name: name.trim(),
         email: email.trim(),
         password: password.trim(),
-        phone: phone.trim() || '9876543210'
+        phone: phone.trim()
       });
 
       if (res.success) {
@@ -187,7 +187,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleWalletRecharge = async () => {
     const amount = customTopup.trim() ? Number(customTopup) : topupAmount;
-    const userPhone = currentUser?.phone || '9876543210';
+    const userPhone = currentUser?.phone || '';
     const cleanPhone = normalizePhone(userPhone, '');
     if (!Number.isInteger(amount) || amount < 50 || amount > 100000) {
       setErrorMsg(tr('न्यूनतम वॉलेट रिचार्ज ₹50 है। कृपया सही राशि दर्ज करें।', 'Minimum wallet recharge is ₹50. Enter a whole-rupee amount.'));
