@@ -212,28 +212,6 @@ function getStoredAstrologers(): AstrologerItem[] {
   return defaults;
 }
 
-export interface RegisteredUserRecord {
-  name: string;
-  email: string;
-  passwordHash: string;
-  phone: string;
-  createdAt: string;
-}
-
-function getRegisteredUsers(): Record<string, RegisteredUserRecord> {
-  try {
-    const raw = localStorage.getItem('gaukripa_registered_users');
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return {};
-}
-
-function saveRegisteredUsers(users: Record<string, RegisteredUserRecord>) {
-  try {
-    localStorage.setItem('gaukripa_registered_users', JSON.stringify(users));
-  } catch {}
-}
-
 export const api = {
   // Services
   getServices: async (all = false): Promise<ServiceItem[]> => {
