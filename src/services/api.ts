@@ -139,13 +139,6 @@ export const API_BASE = rawApiBase
   ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
   : '/api';
 
-const DEFAULT_FIREBASE_FUNCTIONS_URL = 'https://asia-south1-gau-kripa.cloudfunctions.net';
-export const FIREBASE_FUNCTIONS_URL = String(
-  (import.meta as any).env?.VITE_FIREBASE_FUNCTIONS_URL || DEFAULT_FIREBASE_FUNCTIONS_URL
-)
-  .trim()
-  .replace(/\/+$/, '');
-
 export function normalizePhone(rawPhone: string | undefined | null, fallback = '9876543210'): string {
   const digits = String(rawPhone || '').replace(/[^0-9]/g, '');
   if (!digits) return fallback;
@@ -179,13 +172,10 @@ async function safeFetchJson<T>(
     }
 
     // Static host or undeployed Cloud Function returned HTML (404 / 405)
-    const isFirebaseFunction = url.includes('cloudfunctions.net');
     return {
       ok: false,
       isHtml: true,
-      error: isFirebaseFunction
-        ? `Firebase payment service returned HTTP ${res.status}. Ensure Firebase Functions are deployed in asia-south1 for project gau-kripa.`
-        : `Payment backend server is not reachable from this static site (HTTP ${res.status}). Deploy server.ts and configure VITE_API_BASE_URL.`
+      error: `Backend endpoint returned HTTP ${res.status}. Use the configured Supabase Edge Functions for hosted production requests.`
     };
   } catch (err: any) {
     return { ok: false, error: err?.message || 'Network error connecting to backend server.' };
@@ -454,7 +444,7 @@ export const api = {
     return updated;
   },
 
-  // Wallet: balances and transaction history (Firebase Functions asia-south1)
+  // Wallet: balances and transaction history (Supabase Edge Function)
   getWallet: async (phone: string): Promise<WalletInfo> => {
     const cleanPhone = normalizePhone(phone, '');
     if (cleanPhone.length !== 10) throw new Error('Please sign in with a valid mobile number.');
