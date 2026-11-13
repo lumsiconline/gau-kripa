@@ -247,12 +247,19 @@ function saveRegisteredUsers(users: Record<string, RegisteredUserRecord>) {
 export const api = {
   // Services
   getServices: async (all = false): Promise<ServiceItem[]> => {
-    const res = await safeFetchJson<ServiceItem[]>(`${API_BASE}/services${all ? '?all=true' : ''}`);
-    if (res.ok && Array.isArray(res.data)) {
-      return res.data;
+    try {
+      const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+      const session = getSupabaseSession();
+      const filters = all && session?.access_token ? '' : '&is_active=eq.true';
+      const rows = await supabaseRest<Array<{data: ServiceItem; is_active: boolean}>>(
+        'services', `?select=data,is_active&order=created_at.asc${filters}`, session?.access_token
+      );
+      return rows.map((row) => ({ ...row.data, isActive: row.is_active }));
+    } catch (error) {
+      console.error('Supabase services read failed', error);
+      const services = getStoredServices();
+      return all ? services : services.filter((item) => item.isActive);
     }
-    const services = getStoredServices();
-    return all ? services : services.filter((s) => s.isActive);
   },
 
   createService: async (service: Partial<ServiceItem>): Promise<ServiceItem> => {
@@ -316,9 +323,17 @@ export const api = {
 
   // Astrologers
   getAstrologers: async (): Promise<AstrologerItem[]> => {
-    const res = await safeFetchJson<AstrologerItem[]>(`${API_BASE}/astrologers`);
-    if (res.ok && Array.isArray(res.data)) return res.data;
-    return getStoredAstrologers();
+    try {
+      const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+      const session = getSupabaseSession();
+      const rows = await supabaseRest<Array<{data: AstrologerItem; is_online: boolean}>>(
+        'astrologers', '?select=data,is_online&order=created_at.asc', session?.access_token
+      );
+      return rows.map((row) => ({ ...row.data, isOnline: row.is_online }));
+    } catch (error) {
+      console.error('Supabase astrologers read failed', error);
+      return getStoredAstrologers();
+    }
   },
 
   createAstrologer: async (astro: Partial<AstrologerItem>): Promise<AstrologerItem> => {
@@ -964,14 +979,20 @@ export const api = {
 
   // Settings
   getSettings: async (): Promise<AppSettings> => {
-    const res = await safeFetchJson<AppSettings>(`${API_BASE}/settings`);
-    if (res.ok && res.data) return res.data;
-
+    try {
+      const { supabaseRest, getSupabaseSession } = await import('./supabaseClient');
+      const session = getSupabaseSession();
+      const rows = await supabaseRest<Array<{data: AppSettings}>>(
+        'app_settings', '?select=data&id=eq.global&limit=1', session?.access_token
+      );
+      if (rows[0]?.data) return rows[0].data;
+    } catch (error) {
+      console.error('Supabase settings read failed', error);
+    }
     try {
       const stored = localStorage.getItem('gaukripa_settings');
       if (stored) return JSON.parse(stored);
     } catch {}
-
     return {
       standardRatePerMin: 20,
       discountedRatePerMin: 10,
@@ -999,18 +1020,20 @@ export const api = {
 
   // Reviews
   getReviews: async (): Promise<ReviewItem[]> => {
-    const res = await safeFetchJson<ReviewItem[]>(`${API_BASE}/reviews`);
-    if (res.ok && Array.isArray(res.data)) return res.data;
-
     try {
-      const stored = localStorage.getItem('gaukripa_reviews');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return [
-      { id: 'rev-1', name: 'Rohit Sharma', city: 'Delhi NCR', seva: 'Gau Chara Seva', oneLiner: 'WhatsApp pe 2 ghante me video proof mil gaya, bahut shanti mili!', stars: 5, isApproved: true, createdAt: new Date().toISOString() },
-      { id: 'rev-2', name: 'Ananya Verma', city: 'Mumbai', seva: 'Gau Roti Seva', oneLiner: 'Puja ki video dekh ke sach me pura mann prasann ho gaya.', stars: 5, isApproved: true, createdAt: new Date().toISOString() },
-      { id: 'rev-3', name: 'Vikram Singhania', city: 'Varanasi', seva: 'Gud-Chana Seva', oneLiner: 'Pandit ji ne gotra ke sath sankalp padha, 100% genuine trust hai.', stars: 5, isApproved: true, createdAt: new Date().toISOString() }
-    ];
+      const { supabaseRest } = await import('./supabaseClient');
+      const rows = await supabaseRest<Array<{data: ReviewItem}>>(
+        'reviews', '?select=data&is_approved=eq.true&order=created_at.desc'
+      );
+      return rows.map((row) => ({ ...row.data, isApproved: true }));
+    } catch (error) {
+      console.error('Supabase reviews read failed', error);
+      try {
+        const stored = localStorage.getItem('gaukripa_reviews');
+        if (stored) return JSON.parse(stored);
+      } catch {}
+      return [];
+    }
   },
 
   createReview: async (review: Partial<ReviewItem>): Promise<ReviewItem> => {
