@@ -295,15 +295,11 @@ export const api = {
   },
 
   setAstrologerAvailability: async (id: string, isOnline: boolean): Promise<boolean> => {
-    const current = (await api.getAstrologers()).find((item) => item.id === id);
-    if (!current) throw new Error('Astrologer was not found.');
-    const updated = { ...current, isOnline };
-    const { supabaseMutation } = await import('./supabaseClient');
-    await supabaseMutation(
-      'astrologers', 'PATCH', `?id=eq.${encodeURIComponent(id)}`,
-      { data: updated, is_online: isOnline, updated_at: new Date().toISOString() }
-    );
-    return isOnline;
+    const { invokeGauKripaChat } = await import('./supabaseClient');
+    const result = await invokeGauKripaChat<{success:boolean;isOnline:boolean}>({
+      action:'set-availability', astrologerId:id, isOnline
+    });
+    return Boolean(result.success && result.isOnline === isOnline);
   },
 
   // Bookings
