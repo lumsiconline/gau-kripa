@@ -22,6 +22,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 export interface AuthUser {
   name: string;
   phone?: string;
+  astrologerId?: string;
   email: string;
   role?: 'super_admin' | 'admin' | 'astrologer' | 'devotee';
   isAdmin?: boolean;
