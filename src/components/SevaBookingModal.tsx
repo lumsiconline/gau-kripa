@@ -841,7 +841,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
               <div className="pt-2 border-t border-[#ebdcb9] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-[#6d5f4c]">
                 <span>
-                  {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर भेजी जाएगी:', 'Video distribution proof will be sent on WhatsApp:')}{' '}
+                  {tr('आहार वितरण की वीडियो पुष्टि आपकी बुकिंग में उपलब्ध होगी:', 'Video distribution proof will be added to your booking record:')}{' '}
                   <strong className="text-[#1b4b32]">+91 {bookingReceipt?.phone}</strong>
                 </span>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1">
