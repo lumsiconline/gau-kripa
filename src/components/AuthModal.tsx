@@ -16,6 +16,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { api, normalizePhone, WalletInfo, BookingRecord } from '../services/api';
+import { clearSupabaseSession } from '../services/supabaseClient';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export interface AuthUser {
@@ -148,8 +149,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMsg(tr('कृपया अपना ईमेल पता दर्ज करें।', 'Please enter your email address.'));
       return;
     }
-    if (password.length < 4) {
-      setErrorMsg(tr('पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।', 'Password must be at least 4 characters long.'));
+    if (password.length < 8) {
+      setErrorMsg(tr('पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।', 'Password must be at least 8 characters long.'));
       return;
     }
     if (password !== confirmPassword) {
@@ -561,6 +562,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
+                    clearSupabaseSession();
                     onLogout();
                     onClose();
                   }}
