@@ -8,7 +8,7 @@ import Razorpay from 'razorpay';
 import { createServer as createViteServer } from 'vite';
 import { readDb, writeDb, DbChatMessage, DbChatSession, DbBooking, DbService, DbAstrologer } from './src/server/db';
 import {
-  initFirestoreDatabase,
+  initSupabaseData,
   syncService,
   deleteService,
   syncAstrologer,
@@ -18,8 +18,8 @@ import {
   syncReview,
   deleteReview,
   syncSettings,
-  getFirestoreStats
-} from './src/server/firestoreSync';
+  getSupabaseStats
+} from './src/server/dataSync';
 
 async function startServer() {
   const app = express();
@@ -108,9 +108,9 @@ async function startServer() {
   // Serve uploads statically
   app.use('/uploads', express.static(uploadsDir));
 
-  // Initialize DB and sync with Firestore
+  // Initialize local development cache; production site data is served by Supabase
   const initialDb = readDb();
-  initFirestoreDatabase(initialDb).catch(console.error);
+  initSupabaseData(initialDb).catch(console.error);
 
   // ==========================================
   // API: HEALTH CHECK & DATABASE STATUS
@@ -120,7 +120,7 @@ async function startServer() {
   });
 
   app.get('/api/database/status', async (req, res) => {
-    const stats = await getFirestoreStats();
+    const stats = await getSupabaseStats();
     res.json(stats);
   });
 
