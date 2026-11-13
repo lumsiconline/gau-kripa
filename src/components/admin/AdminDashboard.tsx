@@ -1108,16 +1108,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           >
                             {r.isApproved ? tr('स्वीकृत एवं दृश्यमान', 'Approved & Visible') : tr('समीक्षा लंबित', 'Pending Review')}
                           </span>
-                          <button
-                            onClick={async () => {
-                              await api.deleteReview(r.id);
-                              showNotification(tr('समीक्षा हटा दी गई', 'Review deleted'));
-                              await loadAllData();
-                            }}
-                            className="text-red-700 text-xs font-bold hover:underline cursor-pointer"
-                          >
-                            {tr('हटाएं', 'Delete')}
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await api.approveReview(r.id, !r.isApproved);
+                                  showNotification(r.isApproved ? 'Review hidden.' : 'Review approved and published.');
+                                  await loadAllData();
+                                } catch (err: any) {
+                                  showNotification(err?.message || 'Review update failed.');
+                                }
+                              }}
+                              className="text-emerald-800 text-xs font-bold hover:underline cursor-pointer"
+                            >
+                              {r.isApproved ? tr('छिपाएं', 'Hide') : tr('स्वीकृत करें', 'Approve')}
+                            </button>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await api.deleteReview(r.id);
+                                  showNotification(tr('समीक्षा हटा दी गई', 'Review deleted'));
+                                  await loadAllData();
+                                } catch (err: any) {
+                                  showNotification(err?.message || 'Review deletion failed.');
+                                }
+                              }}
+                              className="text-red-700 text-xs font-bold hover:underline cursor-pointer"
+                            >
+                              {tr('हटाएं', 'Delete')}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
