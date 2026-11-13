@@ -215,9 +215,9 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
             };
 
+            await api.createBooking({ ...receipt, sevaId: displaySeva.id });
             setBookingReceipt(receipt);
             setIsCompleted(true);
-            await api.createBooking({ ...receipt, sevaId: displaySeva.id });
             if (onBookingSuccess) onBookingSuccess(receipt);
           } catch (verifyErr: any) {
             setPaymentError(verifyErr?.message || tr('भुगतान हस्ताक्षर सत्यापन असफल रहा।', 'Payment signature verification failed.'));
