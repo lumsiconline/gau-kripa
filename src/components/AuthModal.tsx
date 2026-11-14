@@ -189,15 +189,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       });
 
       if (res.success) {
-        setSuccessMsg(
-          tr(
-            'खाता सफलतापूर्वक बन गया! कृपया अपने ईमेल और पासवर्ड से लॉगिन करें।',
-            'Account safaltapoorvak ban gaya! Kripaya apne email aur password se login karein.'
-          )
-        );
-        setAuthMode('login');
-        setPassword('');
-        setConfirmPassword('');
+        // Sign in immediately after signup. This succeeds when Supabase email
+        // confirmation is disabled in the project Auth settings.
+        const loginRes = await api.login({
+          email: email.trim(),
+          password: password,
+          phone: phone.trim()
+        });
+
+        if (loginRes.success && loginRes.user) {
+          setSuccessMsg(
+            tr(
+              'खाता सफलतापूर्वक बन गया! GauKripa mein aapka swagat hai. 🙏',
+              'Account successfully created! GauKripa mein aapka swagat hai. 🙏'
+            )
+          );
+          onLogin(loginRes.user);
+          onClose();
+        } else {
+          throw new Error('Account created, but automatic sign-in did not complete. Please sign in.');
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message || tr('खाता बनाने में समस्या आई। कृपया पुनः प्रयास करें।', 'Account banane mein samasya aayi. Kripaya dobara koshish karein.'));
