@@ -16,7 +16,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { api, normalizePhone, WalletInfo, BookingRecord } from '../services/api';
-import { clearSupabaseSession } from '../services/supabaseClient';
+import { clearSupabaseSession, getValidSupabaseSession } from '../services/supabaseClient';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export interface AuthUser {
@@ -73,10 +73,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState<string | null>(null);
   const [recentBookings, setRecentBookings] = useState<BookingRecord[]>([]);
+  const [sessionNeedsRefresh, setSessionNeedsRefresh] = useState(false);
 
-  // Load wallet and bookings when user is logged in
+  // Load wallet, Supabase session status, and bookings when user is logged in
   useEffect(() => {
     if (currentUser && isOpen) {
+      let active = true;
+      getValidSupabaseSession()
+        .then((session) => {
+          if (active) setSessionNeedsRefresh(!session?.access_token);
+        })
+        .catch(() => {
+          if (active) setSessionNeedsRefresh(true);
+        });
+
       const userPhone = currentUser.phone || '';
       const digits = userPhone.replace(/\D/g, '');
       const cleanPhone = normalizePhone(userPhone, '');
@@ -93,6 +103,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         );
         setRecentBookings(userMatches.slice(0, 3));
       }).catch(console.error);
+
+      return () => {
+        active = false;
+      };
+    } else {
+      setSessionNeedsRefresh(false);
     }
   }, [currentUser, isOpen]);
 
@@ -286,7 +302,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setTopupLoading(false);
       checkout.open();
     } catch (error: any) {
-      setErrorMsg(error.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Unable to start Razorpay wallet recharge.'));
+      const msg = error?.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Unable to start Razorpay wallet recharge.');
+      if (msg.toLowerCase().includes('session') || msg.toLowerCase().includes('sign in')) {
+        setSessionNeedsRefresh(true);
+      }
+      setErrorMsg(msg);
       setTopupLoading(false);
     }
   };
@@ -443,6 +463,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       {tr('न्यूनतम रिचार्ज ₹50। अधिकतम ₹1,00,000 तक।', 'Minimum recharge ₹50. Custom amount up to ₹1,00,000.')}
                     </p>
                   </div>
+                  {sessionNeedsRefresh && (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-900 space-y-2">
+                      <p className="font-semibold">
+                        {tr(
+                          'सुरक्षित लाइव भुगतान सर्वर से जुड़ने के लिए कृपया एक बार पुनः साइन इन करें।',
+                          'To connect with the live Razorpay payment server, please sign in again once.'
+                        )}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const savedEmail = currentUser?.email || '';
+                          clearSupabaseSession();
+                          onLogout();
+                          setEmail(savedEmail);
+                          setPassword('');
+                          setAuthMode('login');
+                          setErrorMsg(null);
+                          setTopupSuccess(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 font-bold text-xs cursor-pointer"
+                      >
+                        {tr('पुनः साइन इन करें', 'Sign In Again')}
+                      </button>
+                    </div>
+                  )}
                   {topupSuccess && <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0" />{topupSuccess}</div>}
                   {errorMsg && <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800">{errorMsg}</div>}
                   <button type="button" onClick={handleWalletRecharge} disabled={topupLoading || (!customTopup.trim() && topupAmount < 50)}
@@ -773,7 +819,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder={tr('न्यूनतम 4 अक्षर', 'Min 4 characters')}
+                        placeholder={tr('न्यूनतम 8 अक्षर', 'Min 8 characters')}
                         className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                       />
                     </div>

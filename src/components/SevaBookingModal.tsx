@@ -48,7 +48,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
   const [bookingReceipt, setBookingReceipt] = useState<any>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // Sync selectedSeva whenever a different seva is clicked and modal opens
+  // Sync selectedSeva and logged-in user info whenever a different seva is clicked and modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedSeva(initialSeva);
@@ -58,6 +58,15 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
       setIsCompleted(false);
       setIsProcessing(false);
       setPaymentError(null);
+      try {
+        const storedUser = localStorage.getItem('gaukripa_user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed?.name) setDevoteeName(parsed.name);
+          const clean = normalizePhone(parsed?.phone, '');
+          if (clean.length === 10) setPhone(clean);
+        }
+      } catch {}
     }
   }, [initialSeva, isOpen]);
 

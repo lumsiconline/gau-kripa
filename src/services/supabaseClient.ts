@@ -1,5 +1,4 @@
-const SUPABASE_URL = 'https://nwvsesrnhuhcihftagcp.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-tePuMa2rXckjabvey4hWA_dFkB0bJx';
+import { SUPABASE_URL, SUPABASE_ANON_KEY as SUPABASE_PUBLISHABLE_KEY, supabase } from '../lib/supabase';
 
 export type SupabaseSession = {
   access_token: string;
@@ -39,7 +38,25 @@ export function getSupabaseSession(): SupabaseSession | null {
 }
 
 export async function getValidSupabaseSession(): Promise<SupabaseSession | null> {
-  const current = getSupabaseSession();
+  let current = getSupabaseSession();
+  if (!current && supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.access_token) {
+        current = {
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+          expires_at: data.session.expires_at,
+          user: {
+            id: data.session.user.id,
+            email: data.session.user.email,
+            user_metadata: data.session.user.user_metadata
+          }
+        };
+        await saveSupabaseSession(current);
+      }
+    } catch {}
+  }
   if (!current) return null;
   if (!current.expires_at || current.expires_at * 1000 > Date.now() + 60_000) return current;
   if (!current.refresh_token) {
@@ -65,7 +82,8 @@ export function clearSupabaseSession() {
 }
 
 export async function supabaseRest<T>(table: string, query = '', accessToken?: string): Promise<T> {
-  const session = await getValidSupabaseSession();
+  let session: SupabaseSession | null = null;
+  try { session = await getValidSupabaseSession(); } catch {}
   const authToken = session?.access_token || accessToken;
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
     headers: { ...headers(authToken), Accept: 'application/json' }
@@ -77,14 +95,14 @@ export async function supabaseRest<T>(table: string, query = '', accessToken?: s
 
 export async function invokeGauKripaPayments<T>(body: Record<string, unknown>): Promise<T> {
   const session = await getValidSupabaseSession();
-  if (!session?.access_token) throw new Error('Please sign in before making a payment.');
+  if (!session?.access_token) throw new Error('Your session has expired. Please Log Out and Sign In again to continue.');
   const response = await fetch(`${SUPABASE_URL}/functions/v1/gaukripa-payments`, {
     method: 'POST',
-    headers: headers(session?.access_token),
+    headers: headers(session.access_token),
     body: JSON.stringify(body)
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Secure payment request failed.');
+  if (!response.ok) throw new Error(data.error || data.message || `Secure payment request failed (HTTP ${response.status}).`);
   return data as T;
 }
 
@@ -118,7 +136,7 @@ export async function invokeGauKripaChat<T>(body: Record<string, unknown>): Prom
     body: JSON.stringify(body)
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Live chat request failed.');
+  if (!response.ok) throw new Error(data.error || data.message || `Live chat request failed (HTTP ${response.status}).`);
   return data as T;
 }
 

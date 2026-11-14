@@ -4,10 +4,20 @@ import { saveLocalSession, getLocalSession, getAstrologerActiveSession, broadcas
 import {
   supabase,
   isSupabaseConfigured,
-  SUPABASE_FUNCTIONS_URL,
-  SUPABASE_ANON_KEY,
   getSupabaseProjectRef
 } from '../lib/supabase';
+import {
+  supabaseAuth,
+  supabaseRest,
+  supabaseMutation,
+  saveSupabaseSession,
+  getValidSupabaseSession,
+  clearSupabaseSession,
+  invokeGauKripaPayments,
+  invokeGauKripaChat,
+  uploadGauKripaMedia,
+  SupabaseSession
+} from './supabaseClient';
 
 export interface ServiceItem {
   id: string;
@@ -202,45 +212,37 @@ async function safeFetchJson<T>(
   }
 }
 
-async function getSupabaseFunctionHeaders(extraHeaders?: Record<string, string>): Promise<Record<string, string>> {
-  let token = SUPABASE_ANON_KEY;
-  if (supabase) {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.access_token) {
-        token = data.session.access_token;
-      }
-    } catch {}
+async function getActiveSessionSafe(): Promise<SupabaseSession | null> {
+  try {
+    return await getValidSupabaseSession();
+  } catch {
+    return null;
   }
-  return {
-    apikey: SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${token}`,
-    ...(extraHeaders || {})
-  };
 }
 
-async function invokeSupabaseFunction<T>(
-  functionName: string,
-  options: { method?: 'GET' | 'POST'; query?: Record<string, string>; body?: unknown } = {}
-): Promise<{ ok: boolean; data?: T; error?: string }> {
-  if (!isSupabaseConfigured || !SUPABASE_FUNCTIONS_URL) {
-    return { ok: false, error: 'Supabase is not configured.' };
-  }
-  const method = options.method || 'POST';
-  const queryStr = options.query ? `?${new URLSearchParams(options.query).toString()}` : '';
-  const url = `${SUPABASE_FUNCTIONS_URL}/${functionName}${queryStr}`;
-  const headers = await getSupabaseFunctionHeaders(
-    method === 'POST' ? { 'Content-Type': 'application/json' } : undefined
-  );
-  return safeFetchJson<T>(url, {
-    method,
-    headers,
-    body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined
-  });
+function getStoredUserPhone(): string {
+  try {
+    const raw = localStorage.getItem('gaukripa_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return normalizePhone(parsed?.phone, '');
+    }
+  } catch {}
+  return '';
 }
 
-// Row <-> App Mappers for Supabase PostgreSQL tables
-function mapServiceRow(row: any): ServiceItem {
+function unwrapRow(row: any): any {
+  if (!row || typeof row !== 'object') return row;
+  if (row.data && typeof row.data === 'object' && !Array.isArray(row.data)) {
+    const { data, ...topLevel } = row;
+    return { ...data, ...topLevel };
+  }
+  return row;
+}
+
+// Row <-> App Mappers for Supabase PostgreSQL tables (supports both JSONB data column and flat columns)
+function mapServiceRow(raw: any): ServiceItem {
+  const row = unwrapRow(raw) || {};
   return {
     id: row.id,
     title: row.title,
@@ -261,7 +263,8 @@ function mapServiceRow(row: any): ServiceItem {
   };
 }
 
-function mapAstrologerRow(row: any): AstrologerItem {
+function mapAstrologerRow(raw: any): AstrologerItem {
+  const row = unwrapRow(raw) || {};
   return {
     id: row.id,
     name: row.name,
@@ -281,7 +284,8 @@ function mapAstrologerRow(row: any): AstrologerItem {
   };
 }
 
-function mapBookingRow(row: any): BookingRecord {
+function mapBookingRow(raw: any): BookingRecord {
+  const row = unwrapRow(raw) || {};
   return {
     id: row.id,
     bookingId: row.booking_id ?? row.bookingId,
@@ -310,7 +314,8 @@ function mapBookingRow(row: any): BookingRecord {
   };
 }
 
-function mapChatSessionRow(row: any): ChatSession {
+function mapChatSessionRow(raw: any): ChatSession {
+  const row = unwrapRow(raw) || {};
   return {
     id: row.id,
     astrologerId: row.astrologer_id ?? row.astrologerId,
@@ -336,7 +341,8 @@ function mapChatSessionRow(row: any): ChatSession {
   };
 }
 
-function mapSettingsRow(row: any): AppSettings {
+function mapSettingsRow(raw: any): AppSettings {
+  const row = unwrapRow(raw) || {};
   return {
     standardRatePerMin: Number(row.standard_rate_per_min ?? row.standardRatePerMin ?? 20),
     discountedRatePerMin: Number(row.discounted_rate_per_min ?? row.discountedRatePerMin ?? 10),
@@ -351,7 +357,8 @@ function mapSettingsRow(row: any): AppSettings {
   };
 }
 
-function mapReviewRow(row: any): ReviewItem {
+function mapReviewRow(raw: any): ReviewItem {
+  const row = unwrapRow(raw) || {};
   return {
     id: row.id,
     name: row.name,
@@ -469,22 +476,23 @@ function saveRegisteredUsers(users: Record<string, RegisteredUserRecord>) {
 export const api = {
   // Services
   getServices: async (all = false): Promise<ServiceItem[]> => {
-    if (supabase) {
-      let query = supabase.from('services').select('*');
-      if (!all) query = query.eq('is_active', true);
-      const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const mapped = applyServiceOverrides(data.map(mapServiceRow));
-        if (all) {
-          saveStoredServices(mapped);
-        } else {
-          const cached = getStoredServices();
-          const mapById = new Map(cached.map((c) => [c.id, c]));
-          for (const m of mapped) mapById.set(m.id, m);
-          saveStoredServices(Array.from(mapById.values()));
+    if (isSupabaseConfigured) {
+      try {
+        const query = all ? '?select=*' : '?is_active=eq.true&select=*';
+        const data = await supabaseRest<any[]>('services', query);
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = applyServiceOverrides(data.map(mapServiceRow));
+          if (all) {
+            saveStoredServices(mapped);
+          } else {
+            const cached = getStoredServices();
+            const mapById = new Map(cached.map((c) => [c.id, c]));
+            for (const m of mapped) mapById.set(m.id, m);
+            saveStoredServices(Array.from(mapById.values()));
+          }
+          return all ? mapped : mapped.filter((s) => s.isActive);
         }
-        return all ? mapped : mapped.filter((s) => s.isActive);
-      }
+      } catch {}
     }
 
     const res = await safeFetchJson<ServiceItem[]>(`${API_BASE}/services${all ? '?all=true' : ''}`);
@@ -525,39 +533,18 @@ export const api = {
     };
 
     let created = newService;
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('services')
-        .upsert({
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseMutation<any[]>('services', 'POST', '', {
           id: newService.id,
-          title: newService.title,
-          planet: newService.planet,
-          planet_tag: newService.planetTag,
-          tag_color: newService.tagColor,
-          price_display: newService.priceDisplay,
-          base_price: newService.basePrice,
-          unit: newService.unit,
-          min_qty: newService.minQty,
-          benefit: newService.benefit,
-          crop_key: newService.cropKey,
-          custom_image_url: newService.customImageUrl || null,
-          detailed_description: newService.detailedDescription,
-          vedic_significance: newService.vedicSignificance,
           is_active: newService.isActive,
-          category: newService.category
-        })
-        .select()
-        .single();
-      if (!error && data) {
-        created = mapServiceRow(data);
-      } else {
-        const res = await safeFetchJson<{ service: ServiceItem }>(`${API_BASE}/services`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newService)
+          data: newService,
+          updated_at: new Date().toISOString()
         });
-        if (res.ok && res.data?.service) created = res.data.service;
-      }
+        if (Array.isArray(rows) && rows[0]) {
+          created = mapServiceRow(rows[0]);
+        }
+      } catch {}
     } else {
       const res = await safeFetchJson<{ service: ServiceItem }>(`${API_BASE}/services`, {
         method: 'POST',
@@ -578,32 +565,38 @@ export const api = {
     let updated: ServiceItem | null = null;
     let persistedRemotely = false;
 
-    if (supabase) {
-      const patch: Record<string, unknown> = {};
-      if (service.title !== undefined) patch.title = service.title;
-      if (service.planet !== undefined) patch.planet = service.planet;
-      if (service.planetTag !== undefined) patch.planet_tag = service.planetTag;
-      if (service.tagColor !== undefined) patch.tag_color = service.tagColor;
-      if (service.priceDisplay !== undefined) patch.price_display = service.priceDisplay;
-      if (service.basePrice !== undefined) patch.base_price = service.basePrice;
-      if (service.unit !== undefined) patch.unit = service.unit;
-      if (service.minQty !== undefined) patch.min_qty = service.minQty;
-      if (service.benefit !== undefined) patch.benefit = service.benefit;
-      if (service.cropKey !== undefined) patch.crop_key = service.cropKey;
-      if (service.customImageUrl !== undefined) patch.custom_image_url = service.customImageUrl || null;
-      if (service.detailedDescription !== undefined) patch.detailed_description = service.detailedDescription;
-      if (service.vedicSignificance !== undefined) patch.vedic_significance = service.vedicSignificance;
-      if (service.isActive !== undefined) patch.is_active = service.isActive;
-      if (service.category !== undefined) patch.category = service.category;
+    const existingList = getStoredServices();
+    const existingLocal = existingList.find((s) => s.id === id);
 
-      const { data, error } = await supabase.from('services').update(patch).eq('id', id).select().single();
-      if (!error && data) {
-        updated = mapServiceRow(data);
-        persistedRemotely = true;
-      }
+    if (isSupabaseConfigured) {
+      try {
+        const remoteRows = await supabaseRest<any[]>('services', `?id=eq.${encodeURIComponent(id)}&select=*`).catch(() => []);
+        const remoteItem = remoteRows?.[0] ? mapServiceRow(remoteRows[0]) : existingLocal;
+        const merged: ServiceItem = { ...(remoteItem || { id }), ...service, id } as ServiceItem;
+        const patched = await supabaseMutation<any[]>('services', 'PATCH', `?id=eq.${encodeURIComponent(id)}`, {
+          is_active: merged.isActive !== false,
+          data: merged,
+          updated_at: new Date().toISOString()
+        });
+        if (Array.isArray(patched) && patched[0]) {
+          updated = mapServiceRow(patched[0]);
+          persistedRemotely = true;
+        } else {
+          const inserted = await supabaseMutation<any[]>('services', 'POST', '', {
+            id,
+            is_active: merged.isActive !== false,
+            data: merged,
+            updated_at: new Date().toISOString()
+          });
+          if (Array.isArray(inserted) && inserted[0]) {
+            updated = mapServiceRow(inserted[0]);
+            persistedRemotely = true;
+          }
+        }
+      } catch {}
     }
 
-    if (!updated) {
+    if (!updated && !isSupabaseConfigured) {
       const res = await safeFetchJson<{ service: ServiceItem }>(`${API_BASE}/services/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -642,11 +635,13 @@ export const api = {
   },
 
   deleteService: async (id: string): Promise<boolean> => {
-    if (supabase) {
-      await supabase.from('services').delete().eq('id', id);
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseMutation('services', 'DELETE', `?id=eq.${encodeURIComponent(id)}`);
+      } catch {}
+    } else {
+      await safeFetchJson<{ success: boolean }>(`${API_BASE}/services/${id}`, { method: 'DELETE' });
     }
-
-    await safeFetchJson<{ success: boolean }>(`${API_BASE}/services/${id}`, { method: 'DELETE' });
 
     const services = getStoredServices().filter((s) => s.id !== id);
     saveStoredServices(services);
@@ -656,19 +651,39 @@ export const api = {
 
   // Astrologers
   getAstrologers: async (): Promise<AstrologerItem[]> => {
-    if (supabase) {
-      const { data, error } = await supabase.from('astrologers').select('*');
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const mapped = data.map(mapAstrologerRow);
-        saveStoredAstrologers(mapped);
-        return mapped;
-      }
-    }
+    const LEGACY_IDS = new Set(['dr-sophia', 'acharya-rohan', 'maria-kapoor']);
+    const defaults: AstrologerItem[] = ASTROLOGERS.map((a, idx) => ({
+      ...a,
+      isOnline: true,
+      totalConsultations: idx === 0 ? 5239 : 7648,
+      totalEarnings: idx === 0 ? 104780 : 152960
+    }));
 
-    const res = await safeFetchJson<AstrologerItem[]>(`${API_BASE}/astrologers`);
-    if (res.ok && Array.isArray(res.data)) {
-      saveStoredAstrologers(res.data);
-      return res.data;
+    if (isSupabaseConfigured) {
+      try {
+        const data = await supabaseRest<any[]>('astrologers', '?select=*');
+        if (Array.isArray(data) && data.length > 0) {
+          const nonLegacy = data.map(mapAstrologerRow).filter((a) => !LEGACY_IDS.has(a.id));
+          if (nonLegacy.length > 0) {
+            const byId = new Map(nonLegacy.map((a) => [a.id, a]));
+            for (const def of defaults) {
+              if (!byId.has(def.id)) byId.set(def.id, def);
+            }
+            const merged = Array.from(byId.values());
+            saveStoredAstrologers(merged);
+            return merged;
+          }
+        }
+      } catch {}
+    } else {
+      const res = await safeFetchJson<AstrologerItem[]>(`${API_BASE}/astrologers`);
+      if (res.ok && Array.isArray(res.data)) {
+        const nonLegacy = res.data.filter((a) => !LEGACY_IDS.has(a.id));
+        if (nonLegacy.length > 0) {
+          saveStoredAstrologers(nonLegacy);
+          return nonLegacy;
+        }
+      }
     }
     return getStoredAstrologers();
   },
@@ -693,38 +708,18 @@ export const api = {
     };
 
     let created = newAstro;
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('astrologers')
-        .upsert({
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseMutation<any[]>('astrologers', 'POST', '', {
           id: newAstro.id,
-          name: newAstro.name,
-          title: newAstro.title,
-          experience: newAstro.experience,
-          rating: newAstro.rating,
-          reviews_count: newAstro.reviewsCount,
-          rate_per_min: newAstro.ratePerMin,
-          crop_key: newAstro.cropKey,
-          custom_image_url: newAstro.customImageUrl || null,
-          languages: newAstro.languages,
-          bio: newAstro.bio,
-          specializations: newAstro.specializations,
           is_online: newAstro.isOnline,
-          total_consultations: newAstro.totalConsultations,
-          total_earnings: newAstro.totalEarnings
-        })
-        .select()
-        .single();
-      if (!error && data) {
-        created = mapAstrologerRow(data);
-      } else {
-        const res = await safeFetchJson<{ astrologer: AstrologerItem }>(`${API_BASE}/astrologers`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newAstro)
+          data: newAstro,
+          updated_at: new Date().toISOString()
         });
-        if (res.ok && res.data?.astrologer) created = res.data.astrologer;
-      }
+        if (Array.isArray(rows) && rows[0]) {
+          created = mapAstrologerRow(rows[0]);
+        }
+      } catch {}
     } else {
       const res = await safeFetchJson<{ astrologer: AstrologerItem }>(`${API_BASE}/astrologers`, {
         method: 'POST',
@@ -743,28 +738,33 @@ export const api = {
 
   updateAstrologer: async (id: string, astro: Partial<AstrologerItem>): Promise<AstrologerItem> => {
     let updated: AstrologerItem | null = null;
-    if (supabase) {
-      const patch: Record<string, unknown> = {};
-      if (astro.name !== undefined) patch.name = astro.name;
-      if (astro.title !== undefined) patch.title = astro.title;
-      if (astro.experience !== undefined) patch.experience = astro.experience;
-      if (astro.rating !== undefined) patch.rating = astro.rating;
-      if (astro.reviewsCount !== undefined) patch.reviews_count = astro.reviewsCount;
-      if (astro.ratePerMin !== undefined) patch.rate_per_min = astro.ratePerMin;
-      if (astro.cropKey !== undefined) patch.crop_key = astro.cropKey;
-      if (astro.customImageUrl !== undefined) patch.custom_image_url = astro.customImageUrl || null;
-      if (astro.languages !== undefined) patch.languages = astro.languages;
-      if (astro.bio !== undefined) patch.bio = astro.bio;
-      if (astro.specializations !== undefined) patch.specializations = astro.specializations;
-      if (astro.isOnline !== undefined) patch.is_online = astro.isOnline;
+    const existingLocal = getStoredAstrologers().find((a) => a.id === id);
 
-      const { data, error } = await supabase.from('astrologers').update(patch).eq('id', id).select().single();
-      if (!error && data) {
-        updated = mapAstrologerRow(data);
-      }
-    }
-
-    if (!updated) {
+    if (isSupabaseConfigured) {
+      try {
+        const remoteRows = await supabaseRest<any[]>('astrologers', `?id=eq.${encodeURIComponent(id)}&select=*`).catch(() => []);
+        const base = remoteRows?.[0] ? mapAstrologerRow(remoteRows[0]) : existingLocal;
+        const merged = { ...(base || { id }), ...astro, id } as AstrologerItem;
+        const patched = await supabaseMutation<any[]>('astrologers', 'PATCH', `?id=eq.${encodeURIComponent(id)}`, {
+          is_online: merged.isOnline !== false,
+          data: merged,
+          updated_at: new Date().toISOString()
+        });
+        if (Array.isArray(patched) && patched[0]) {
+          updated = mapAstrologerRow(patched[0]);
+        } else {
+          const inserted = await supabaseMutation<any[]>('astrologers', 'POST', '', {
+            id,
+            is_online: merged.isOnline !== false,
+            data: merged,
+            updated_at: new Date().toISOString()
+          });
+          if (Array.isArray(inserted) && inserted[0]) {
+            updated = mapAstrologerRow(inserted[0]);
+          }
+        }
+      } catch {}
+    } else {
       const res = await safeFetchJson<{ astrologer: AstrologerItem }>(`${API_BASE}/astrologers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -794,15 +794,19 @@ export const api = {
   },
 
   setAstrologerAvailability: async (id: string, isOnline: boolean): Promise<boolean> => {
-    if (supabase) {
-      await supabase.from('astrologers').update({ is_online: isOnline }).eq('id', id);
+    if (isSupabaseConfigured) {
+      try {
+        await invokeGauKripaChat({ action: 'set-availability', astrologerId: id, isOnline });
+      } catch {
+        await api.updateAstrologer(id, { isOnline });
+      }
+    } else {
+      await safeFetchJson<{ isOnline: boolean }>(`${API_BASE}/astrologers/${id}/availability`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOnline })
+      });
     }
-
-    await safeFetchJson<{ isOnline: boolean }>(`${API_BASE}/astrologers/${id}/availability`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isOnline })
-    });
 
     const astros = getStoredAstrologers();
     const idx = astros.findIndex((a) => a.id === id);
@@ -816,20 +820,22 @@ export const api = {
 
   // Bookings
   getBookings: async (phone?: string): Promise<BookingRecord[]> => {
-    if (supabase) {
-      let query = supabase.from('bookings').select('*').order('created_at', { ascending: false });
-      if (phone) {
-        query = query.eq('phone', normalizePhone(phone));
-      }
-      const { data, error } = await query;
-      if (!error && Array.isArray(data)) {
-        return data.map(mapBookingRow);
-      }
+    if (isSupabaseConfigured) {
+      try {
+        const clean = phone ? normalizePhone(phone, '') : '';
+        const query = clean
+          ? `?phone=eq.${encodeURIComponent(clean)}&order=created_at.desc&select=*`
+          : '?order=created_at.desc&select=*';
+        const data = await supabaseRest<any[]>('bookings', query);
+        if (Array.isArray(data)) {
+          return data.map(mapBookingRow);
+        }
+      } catch {}
+    } else {
+      const url = phone ? `${API_BASE}/bookings?phone=${encodeURIComponent(phone)}` : `${API_BASE}/bookings`;
+      const res = await safeFetchJson<BookingRecord[]>(url);
+      if (res.ok && Array.isArray(res.data)) return res.data;
     }
-
-    const url = phone ? `${API_BASE}/bookings?phone=${encodeURIComponent(phone)}` : `${API_BASE}/bookings`;
-    const res = await safeFetchJson<BookingRecord[]>(url);
-    if (res.ok && Array.isArray(res.data)) return res.data;
 
     try {
       const stored = localStorage.getItem('gaukripa_bookings');
@@ -842,9 +848,9 @@ export const api = {
     return [];
   },
 
-  createBooking: async (booking: Partial<BookingRecord>): Promise<BookingRecord> => {
+  createBooking: async (booking: Partial<BookingRecord> & { orderId?: string; paymentId?: string }): Promise<BookingRecord> => {
     const cleanPhone = normalizePhone(booking.phone);
-    const newBooking: BookingRecord = {
+    const newBooking: BookingRecord & { orderId?: string; paymentId?: string } = {
       id: booking.id || `bkg-${Date.now()}`,
       bookingId: booking.bookingId || `GK-${Math.floor(100000 + Math.random() * 900000)}`,
       devoteeName: booking.devoteeName || 'Devotee',
@@ -864,73 +870,65 @@ export const api = {
       familyMembers: booking.familyMembers || [],
       sankalpWish: booking.sankalpWish,
       goshala: booking.goshala || 'Surabhi Seva Dham, Vrindavan',
+      orderId: booking.orderId,
+      paymentId: booking.paymentId,
       createdAt: new Date().toISOString()
     };
 
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('bookings')
-        .insert({
-          id: newBooking.id,
-          booking_id: newBooking.bookingId,
-          devotee_name: newBooking.devoteeName,
-          phone: newBooking.phone,
-          email: newBooking.email || '',
-          gotra: newBooking.gotra,
-          seva_id: newBooking.sevaId,
-          seva_title: newBooking.sevaTitle,
-          quantity: newBooking.quantity,
-          duration: newBooking.duration,
-          occasion: newBooking.occasion,
-          amount: newBooking.amount,
-          base_amount: newBooking.baseAmount,
-          extra_fee: newBooking.extraFee,
-          status: newBooking.status,
-          date: newBooking.date,
-          family_members: newBooking.familyMembers,
-          sankalp_wish: newBooking.sankalpWish || '',
-          goshala: newBooking.goshala,
-          created_at: newBooking.createdAt
-        })
-        .select()
-        .single();
-      if (!error && data) return mapBookingRow(data);
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (session?.access_token && newBooking.orderId && newBooking.paymentId) {
+        try {
+          const fnRes = await invokeGauKripaPayments<{ success: boolean; booking?: BookingRecord }>({
+            action: 'create-booking',
+            booking: newBooking
+          });
+          if (fnRes?.booking) return fnRes.booking;
+        } catch {}
+      }
+    } else {
+      const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBooking)
+      });
+      if (res.ok && res.data?.booking) return res.data.booking;
     }
-
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newBooking)
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
 
     try {
       const stored = localStorage.getItem('gaukripa_bookings');
       const list: BookingRecord[] = stored ? JSON.parse(stored) : [];
-      list.unshift(newBooking);
-      localStorage.setItem('gaukripa_bookings', JSON.stringify(list));
+      if (!list.some((b) => b.bookingId === newBooking.bookingId)) {
+        list.unshift(newBooking);
+        localStorage.setItem('gaukripa_bookings', JSON.stringify(list));
+      }
     } catch {}
 
     return newBooking;
   },
 
   updateBookingStatus: async (id: string, status: BookingRecord['status']): Promise<BookingRecord> => {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('bookings')
-        .update({ status, whatsapp_sent: status === 'completed' })
-        .or(`id.eq.${id},booking_id.eq.${id}`)
-        .select()
-        .single();
-      if (!error && data) return mapBookingRow(data);
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseRest<any[]>('bookings', `?or=(id.eq.${encodeURIComponent(id)},booking_id.eq.${encodeURIComponent(id)})&select=*`);
+        const current = rows?.[0] ? mapBookingRow(rows[0]) : undefined;
+        const nextData = { ...(current || { id }), status, whatsappSent: status === 'completed' };
+        const patched = await supabaseMutation<any[]>(
+          'bookings',
+          'PATCH',
+          `?or=(id.eq.${encodeURIComponent(id)},booking_id.eq.${encodeURIComponent(id)})`,
+          { status, data: nextData, updated_at: new Date().toISOString() }
+        );
+        if (Array.isArray(patched) && patched[0]) return mapBookingRow(patched[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok && res.data?.booking) return res.data.booking;
     }
-
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
 
     try {
       const stored = localStorage.getItem('gaukripa_bookings');
@@ -951,30 +949,33 @@ export const api = {
     id: string,
     proof: { videoProofUrl?: string; photoProofUrls?: string[]; priestName?: string; status?: string }
   ): Promise<BookingRecord> => {
-    if (supabase) {
-      const patch: Record<string, unknown> = {
-        whatsapp_sent: true,
-        status: proof.status || 'completed'
-      };
-      if (proof.videoProofUrl !== undefined) patch.video_proof_url = proof.videoProofUrl;
-      if (proof.photoProofUrls !== undefined) patch.photo_proof_urls = proof.photoProofUrls;
-      if (proof.priestName !== undefined) patch.priest_name = proof.priestName;
-
-      const { data, error } = await supabase
-        .from('bookings')
-        .update(patch)
-        .or(`id.eq.${id},booking_id.eq.${id}`)
-        .select()
-        .single();
-      if (!error && data) return mapBookingRow(data);
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseRest<any[]>('bookings', `?or=(id.eq.${encodeURIComponent(id)},booking_id.eq.${encodeURIComponent(id)})&select=*`);
+        const current = rows?.[0] ? mapBookingRow(rows[0]) : undefined;
+        const nextStatus = (proof.status || 'completed') as BookingRecord['status'];
+        const nextData = {
+          ...(current || { id }),
+          ...proof,
+          status: nextStatus,
+          whatsappSent: true
+        };
+        const patched = await supabaseMutation<any[]>(
+          'bookings',
+          'PATCH',
+          `?or=(id.eq.${encodeURIComponent(id)},booking_id.eq.${encodeURIComponent(id)})`,
+          { status: nextStatus, data: nextData, updated_at: new Date().toISOString() }
+        );
+        if (Array.isArray(patched) && patched[0]) return mapBookingRow(patched[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/proof`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(proof)
+      });
+      if (res.ok && res.data?.booking) return res.data.booking;
     }
-
-    const res = await safeFetchJson<{ booking: BookingRecord }>(`${API_BASE}/bookings/${id}/proof`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(proof)
-    });
-    if (res.ok && res.data?.booking) return res.data.booking;
 
     try {
       const stored = localStorage.getItem('gaukripa_bookings');
@@ -991,22 +992,34 @@ export const api = {
     return { id, ...proof, status: 'completed' } as any;
   },
 
-  // Wallet: balances and transaction history (Supabase Edge Function + PostgreSQL)
+  // Wallet: balances and transaction history (Supabase Edge Function gaukripa-payments + PostgreSQL)
   getWallet: async (phone: string): Promise<WalletInfo> => {
     const cleanPhone = normalizePhone(phone);
 
-    const serverRes = isSupabaseConfigured
-      ? await invokeSupabaseFunction<WalletInfo>('get-wallet', {
-          method: 'GET',
-          query: { phone: cleanPhone }
-        })
-      : await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(cleanPhone)}`);
-
-    if (serverRes.ok && serverRes.data) {
-      try {
-        localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(serverRes.data));
-      } catch {}
-      return serverRes.data;
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (session?.access_token) {
+        try {
+          const data = await invokeGauKripaPayments<WalletInfo>({
+            action: 'get-wallet',
+            phone: cleanPhone
+          });
+          if (data) {
+            try {
+              localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(data));
+            } catch {}
+            return data;
+          }
+        } catch {}
+      }
+    } else {
+      const serverRes = await safeFetchJson<WalletInfo>(`${API_BASE}/wallet/${encodeURIComponent(cleanPhone)}`);
+      if (serverRes.ok && serverRes.data) {
+        try {
+          localStorage.setItem(`gaukripa_wallet_${cleanPhone}`, JSON.stringify(serverRes.data));
+        } catch {}
+        return serverRes.data;
+      }
     }
 
     try {
@@ -1022,10 +1035,52 @@ export const api = {
     };
   },
 
-  // Standard Razorpay Checkout Methods (Seva Bookings via Supabase Edge Functions or Express)
+  // Standard Razorpay Checkout Methods (Seva Bookings via gaukripa-payments Edge Function)
   createOrder: async (amountInPaise: number, currency = 'INR', receipt?: string, notes?: Record<string, string>) => {
     if (!amountInPaise || amountInPaise < 100) {
       throw new Error('Minimum order amount must be at least 100 paise (₹1).');
+    }
+
+    const accountPhone = getStoredUserPhone();
+    const cleanPhone = normalizePhone(accountPhone || notes?.phone, '');
+
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (!session?.access_token) {
+        throw new Error('Please sign in with your email and password before paying for Seva.');
+      }
+      if (cleanPhone.length < 10) {
+        throw new Error('Please add a valid 10-digit mobile number before making a payment.');
+      }
+
+      const data = await invokeGauKripaPayments<{
+        order_id?: string;
+        orderId?: string;
+        amount: number;
+        currency: string;
+        key_id?: string;
+        keyId?: string;
+      }>({
+        action: 'create-seva-order',
+        phone: cleanPhone,
+        amount_paise: Math.round(amountInPaise),
+        currency,
+        receipt: receipt || `gks_${Date.now()}`,
+        seva_title: notes?.sevaTitle || 'GauKripa Seva Booking',
+        notes: notes || {}
+      });
+
+      const orderId = data?.order_id || data?.orderId;
+      const keyId = data?.key_id || data?.keyId;
+      if (orderId && keyId) {
+        return {
+          order_id: orderId,
+          amount: data.amount || amountInPaise,
+          currency: (data.currency || currency || 'INR') as string,
+          key_id: keyId
+        };
+      }
+      throw new Error('Unable to create Razorpay order. Please check Razorpay LIVE configuration.');
     }
 
     const payload = {
@@ -1038,19 +1093,14 @@ export const api = {
       notes
     };
 
-    const res = isSupabaseConfigured
-      ? await invokeSupabaseFunction<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-          'create-razorpay-order',
-          { method: 'POST', body: payload }
-        )
-      : await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-          `${API_BASE}/create-order`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          }
-        );
+    const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
+      `${API_BASE}/create-order`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
 
     const orderId = res.data?.order_id || res.data?.orderId;
     const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
@@ -1071,20 +1121,51 @@ export const api = {
       throw new Error('order_id, payment_id, and signature are required.');
     }
 
-    const payload = { type: 'seva', order_id, payment_id, signature, ...(bookingData ? { booking: bookingData } : {}) };
-    const res = isSupabaseConfigured
-      ? await invokeSupabaseFunction<{ success: boolean; verified: boolean; message: string; booking?: any }>(
-          'verify-razorpay-payment',
-          { method: 'POST', body: payload }
-        )
-      : await safeFetchJson<{ success: boolean; verified: boolean; message: string; booking?: any }>(
-          `${API_BASE}/verify-payment`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+    if (isSupabaseConfigured) {
+      const accountPhone = getStoredUserPhone();
+      const cleanPhone = normalizePhone(accountPhone || bookingData?.phone, '');
+      const verifyData = await invokeGauKripaPayments<{ success: boolean; verified: boolean }>({
+        action: 'verify-seva-payment',
+        order_id,
+        payment_id,
+        signature,
+        phone: cleanPhone
+      });
+
+      if (!verifyData?.success || !verifyData?.verified) {
+        throw new Error('Payment verification failed. Please contact support before retrying.');
+      }
+
+      if (bookingData) {
+        const bookingRes = await invokeGauKripaPayments<{ success: boolean; booking?: BookingRecord }>({
+          action: 'create-booking',
+          booking: {
+            ...bookingData,
+            orderId: order_id,
+            paymentId: payment_id,
+            phone: cleanPhone
           }
-        );
+        });
+        return {
+          success: true,
+          verified: true,
+          message: 'Payment verified and Seva booking saved.',
+          booking: bookingRes?.booking
+        };
+      }
+
+      return { success: true, verified: true, message: 'Payment verified.' };
+    }
+
+    const payload = { type: 'seva', order_id, payment_id, signature, ...(bookingData ? { booking: bookingData } : {}) };
+    const res = await safeFetchJson<{ success: boolean; verified: boolean; message: string; booking?: any }>(
+      `${API_BASE}/verify-payment`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
 
     if (res.ok && res.data?.success && res.data?.verified) {
       return res.data;
@@ -1092,7 +1173,7 @@ export const api = {
     throw new Error(res.error || 'Payment verification failed. Please contact support before retrying.');
   },
 
-  // Wallet Razorpay Recharge (Supabase Edge Functions: create-razorpay-order + verify-razorpay-payment)
+  // Wallet Razorpay Recharge (Supabase Edge Function gaukripa-payments)
   createWalletOrder: async (phone: string, amount: number, name: string, email?: string) => {
     const numAmount = Number(amount);
     if (!Number.isInteger(numAmount) || numAmount < 50 || numAmount > 100000) {
@@ -1103,33 +1184,51 @@ export const api = {
       throw new Error('Please add a valid 10-digit mobile number to your profile before recharging.');
     }
 
-    const res = isSupabaseConfigured
-      ? await invokeSupabaseFunction<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-          'create-razorpay-order',
-          {
-            method: 'POST',
-            body: {
-              phone: cleanPhone,
-              amount: numAmount,
-              name,
-              email
-            }
-          }
-        )
-      : await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
-          `${API_BASE}/wallet/create-razorpay-order`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              phone: cleanPhone,
-              amount: numAmount,
-              amountInPaise: Math.round(numAmount * 100),
-              name,
-              email
-            })
-          }
-        );
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (!session?.access_token) {
+        throw new Error('Your login session expired. Please Log Out and Sign In again to recharge securely.');
+      }
+      const data = await invokeGauKripaPayments<{
+        order_id?: string;
+        orderId?: string;
+        amount: number;
+        currency: string;
+        key_id?: string;
+        keyId?: string;
+      }>({
+        action: 'create-order',
+        phone: cleanPhone,
+        amount: numAmount
+      });
+
+      const orderId = data?.order_id || data?.orderId;
+      const keyId = data?.key_id || data?.keyId;
+      if (orderId && keyId) {
+        return {
+          order_id: orderId,
+          amount: data.amount || numAmount * 100,
+          currency: (data.currency || 'INR') as 'INR',
+          key_id: keyId
+        };
+      }
+      throw new Error('Razorpay order creation failed. No valid order ID was returned.');
+    }
+
+    const res = await safeFetchJson<{ order_id?: string; orderId?: string; amount: number; currency: string; key_id?: string; keyId?: string }>(
+      `${API_BASE}/wallet/create-razorpay-order`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          amount: numAmount,
+          amountInPaise: Math.round(numAmount * 100),
+          name,
+          email
+        })
+      }
+    );
 
     const orderId = res.data?.order_id || res.data?.orderId;
     const keyId = res.data?.key_id || res.data?.keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
@@ -1156,32 +1255,47 @@ export const api = {
       throw new Error('A valid 10-digit mobile number is required to verify wallet payment.');
     }
 
-    const res = isSupabaseConfigured
-      ? await invokeSupabaseFunction<{ success: boolean; verified?: boolean; credited?: boolean; message?: string; balance?: number; wallet?: WalletInfo }>(
-          'verify-razorpay-payment',
-          {
-            method: 'POST',
-            body: {
-              order_id: payload.order_id,
-              payment_id: payload.payment_id,
-              signature: payload.signature,
-              phone: cleanPhone
-            }
-          }
-        )
-      : await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message?: string; balance?: number; wallet?: WalletInfo }>(
-          `${API_BASE}/wallet/verify-razorpay-payment`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_id: payload.order_id,
-              payment_id: payload.payment_id,
-              signature: payload.signature,
-              phone: cleanPhone
-            })
-          }
-        );
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaPayments<{
+        success: boolean;
+        verified?: boolean;
+        credited?: boolean;
+        already_credited?: boolean;
+        balance?: number;
+        wallet?: WalletInfo;
+      }>({
+        action: 'verify-payment',
+        order_id: payload.order_id,
+        payment_id: payload.payment_id,
+        signature: payload.signature,
+        phone: cleanPhone
+      });
+
+      if (data?.success && data?.verified) {
+        const refreshed = await api.getWallet(cleanPhone);
+        return {
+          success: true,
+          verified: true,
+          credited: data.credited !== false && !data.already_credited,
+          balance: typeof data.balance === 'number' ? data.balance : refreshed.balance
+        };
+      }
+      throw new Error('Razorpay payment could not be verified.');
+    }
+
+    const res = await safeFetchJson<{ success: boolean; verified?: boolean; credited?: boolean; message?: string; balance?: number; wallet?: WalletInfo }>(
+      `${API_BASE}/wallet/verify-razorpay-payment`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: payload.order_id,
+          payment_id: payload.payment_id,
+          signature: payload.signature,
+          phone: cleanPhone
+        })
+      }
+    );
 
     if (res.ok && res.data?.success && res.data?.verified) {
       const storageKey = `gaukripa_wallet_${cleanPhone}`;
@@ -1226,18 +1340,13 @@ export const api = {
   ): Promise<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }> => {
     const cleanPhone = normalizePhone(phone);
 
-    if (supabase) {
+    if (isSupabaseConfigured) {
       try {
-        const [settingsData, bookingRes] = await Promise.all([
+        const [settingsData, bookingRows] = await Promise.all([
           api.getSettings(),
-          supabase
-            .from('bookings')
-            .select('id, status')
-            .eq('phone', cleanPhone)
-            .in('status', ['completed', 'confirmed'])
-            .limit(1)
+          supabaseRest<any[]>('bookings', `?phone=eq.${encodeURIComponent(cleanPhone)}&select=id&limit=1`).catch(() => [])
         ]);
-        const hasBooking = !bookingRes.error && Array.isArray(bookingRes.data) && bookingRes.data.length > 0;
+        const hasBooking = Array.isArray(bookingRows) && bookingRows.length > 0;
         const eligible = settingsData.discountEnabled && hasBooking;
         return {
           eligible,
@@ -1247,12 +1356,12 @@ export const api = {
           rule: eligible ? '50% Seva Discount Applied' : 'Standard Consultation Rate'
         };
       } catch {}
+    } else {
+      const res = await safeFetchJson<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }>(
+        `${API_BASE}/wallet/discount-check/${encodeURIComponent(cleanPhone)}`
+      );
+      if (res.ok && res.data) return res.data;
     }
-
-    const res = await safeFetchJson<{ eligible: boolean; ratePerMin: number; standardRate: number; discountedRate: number; rule: string }>(
-      `${API_BASE}/wallet/discount-check/${encodeURIComponent(cleanPhone)}`
-    );
-    if (res.ok && res.data) return res.data;
 
     try {
       const stored = localStorage.getItem('gaukripa_bookings');
@@ -1267,7 +1376,7 @@ export const api = {
     return { eligible: false, ratePerMin: 20, standardRate: 20, discountedRate: 10, rule: 'Standard Consultation Rate' };
   },
 
-  // Live Chat Workflow (Supabase PostgreSQL + Edge Function Heartbeat Billing)
+  // Live Chat Workflow (Supabase Edge Function gaukripa-chat + PostgreSQL)
   requestChat: async (payload: {
     astrologerId: string;
     customerId?: string;
@@ -1281,63 +1390,19 @@ export const api = {
   }): Promise<{ success: boolean; session: ChatSession }> => {
     const cleanPhone = normalizePhone(payload.customerPhone);
 
-    if (supabase) {
-      const astros = await api.getAstrologers();
-      const astro = astros.find((a) => a.id === payload.astrologerId) || astros[0];
-      const currentTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const messages: ChatMessage[] =
-        payload.initialMessages && payload.initialMessages.length > 0
-          ? payload.initialMessages
-          : [
-              {
-                id: `msg-intake-${Date.now()}`,
-                sender: 'customer',
-                senderName: payload.customerName || 'Devotee',
-                text: `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Name: ${payload.customerName}\n• Date of Birth: ${payload.birthDate}\n• Birth Time: ${payload.birthTime}\n• Birth Place: ${payload.birthPlace}\n• Guidance Needed: ${payload.customerConcern || 'Kundali & Grah Upay guidance'}\n\nPranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.`,
-                timestamp: currentTimeStr
-              },
-              {
-                id: `msg-welcome-${Date.now() + 1}`,
-                sender: 'astrologer',
-                senderName: astro?.name || 'Vedic Astrologer',
-                text: `Pranam ${payload.customerName} ji! 🙏 Har Har Mahadev. I have received your complete birth details (DOB: ${payload.birthDate}, Time: ${payload.birthTime}, Place: ${payload.birthPlace}). I am analyzing your Lagna Kundali now for ${payload.customerConcern || 'your spiritual guidance'}. Please feel free to ask your questions.`,
-                timestamp: currentTimeStr
-              }
-            ];
-
-      const sessionId = `CHAT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
-      const nowIso = new Date().toISOString();
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .insert({
-          id: sessionId,
-          astrologer_id: payload.astrologerId,
-          astrologer_name: astro?.name || 'Vedic Astrologer',
-          customer_id: payload.customerId || cleanPhone,
-          customer_name: payload.customerName || 'Devotee',
-          customer_phone: cleanPhone,
-          customer_concern: payload.customerConcern || 'Vedic Guidance',
-          birth_date: payload.birthDate,
-          birth_time: payload.birthTime,
-          birth_place: payload.birthPlace,
-          status: 'active',
-          rate_per_min: astro?.ratePerMin || 20,
-          has_discount: true,
-          created_at: nowIso,
-          started_at: nowIso,
-          duration_seconds: 0,
-          total_charged: 0,
-          astrologer_earned: 0,
-          messages
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        const session = mapChatSessionRow(data);
-        saveLocalSession(session);
-        broadcastChatEvent({ type: 'NEW_CHAT_REQUEST', session });
-        return { success: true, session };
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaChat<{ success: boolean; session: ChatSession }>({
+        action: 'request',
+        astrologerId: payload.astrologerId,
+        customerConcern: payload.customerConcern,
+        birthDate: payload.birthDate,
+        birthTime: payload.birthTime,
+        birthPlace: payload.birthPlace
+      });
+      if (data?.session) {
+        saveLocalSession(data.session);
+        broadcastChatEvent({ type: 'NEW_CHAT_REQUEST', session: data.session });
+        return { success: true, session: data.session };
       }
     }
 
@@ -1405,22 +1470,22 @@ export const api = {
   getIncomingChat: async (astrologerId: string): Promise<ChatSession | null> => {
     const targetAstro = astrologerId || 'all';
 
-    if (supabase) {
-      let query = supabase
-        .from('chat_sessions')
-        .select('*')
-        .in('status', ['active', 'waiting_approval'])
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (targetAstro !== 'all') {
-        query = query.eq('astrologer_id', targetAstro);
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (session?.access_token) {
+        try {
+          const data = await invokeGauKripaChat<{ incoming: ChatSession | null }>({
+            action: 'incoming',
+            astrologerId: targetAstro
+          });
+          if (data?.incoming) {
+            saveLocalSession(data.incoming);
+            return data.incoming;
+          }
+          return null;
+        } catch {}
       }
-      const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const session = mapChatSessionRow(data[0]);
-        saveLocalSession(session);
-        return session;
-      }
+      return null;
     }
 
     const res = await safeFetchJson<{ incoming: ChatSession | null }>(`${API_BASE}/chat/incoming/${encodeURIComponent(targetAstro)}`);
@@ -1432,50 +1497,22 @@ export const api = {
     if (targetAstro !== 'all') {
       const local = getAstrologerActiveSession(targetAstro);
       if (local) return local;
-    } else {
-      try {
-        const latestId = localStorage.getItem('gaukripa_latest_chat_id');
-        if (latestId) {
-          const s = getLocalSession(latestId);
-          if (s && (s.status === 'active' || s.status === 'waiting_approval')) return s;
-        }
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith('gaukripa_session_')) {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-              const sess: ChatSession = JSON.parse(raw);
-              if (sess.status === 'active' || sess.status === 'waiting_approval') return sess;
-            }
-          }
-        }
-      } catch {}
     }
-
-    try {
-      const raw = localStorage.getItem(`gaukripa_incoming_chat_${targetAstro}`);
-      if (raw) return JSON.parse(raw);
-    } catch {}
     return null;
   },
 
   respondChat: async (sessionId: string, astrologerId: string, action: 'accept' | 'reject'): Promise<ChatSession> => {
-    if (supabase) {
-      const patch =
-        action === 'accept'
-          ? { status: 'active', started_at: new Date().toISOString(), last_heartbeat: new Date().toISOString() }
-          : { status: 'rejected', ended_at: new Date().toISOString() };
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .update(patch)
-        .eq('id', sessionId)
-        .select()
-        .single();
-      if (!error && data) {
-        const session = mapChatSessionRow(data);
-        saveLocalSession(session);
-        broadcastChatEvent({ type: 'CHAT_ACCEPTED', session });
-        return session;
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaChat<{ session: ChatSession }>({
+        action: 'respond',
+        sessionId,
+        astrologerId,
+        response: action
+      });
+      if (data?.session) {
+        saveLocalSession(data.session);
+        broadcastChatEvent({ type: 'CHAT_ACCEPTED', session: data.session });
+        return data.session;
       }
     }
 
@@ -1508,26 +1545,27 @@ export const api = {
   getChatSession: async (sessionId: string): Promise<{ session: ChatSession; customerWalletBalance: number }> => {
     const local = getLocalSession(sessionId);
 
-    if (supabase) {
-      const { data, error } = await supabase.from('chat_sessions').select('*').eq('id', sessionId).maybeSingle();
-      if (!error && data) {
-        const session = mapChatSessionRow(data);
-        if (local && local.messages.length > (session.messages?.length || 0)) {
-          session.messages = local.messages;
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaChat<{ session: ChatSession; customerWalletBalance: number }>({
+        action: 'get-session',
+        sessionId
+      });
+      if (data?.session) {
+        if (local && local.messages.length > (data.session.messages?.length || 0)) {
+          data.session.messages = local.messages;
         }
-        saveLocalSession(session);
-        const wallet = await api.getWallet(session.customerPhone);
-        return { session, customerWalletBalance: wallet.balance };
+        saveLocalSession(data.session);
+        return data;
       }
-    }
-
-    const res = await safeFetchJson<{ session: ChatSession; customerWalletBalance: number }>(`${API_BASE}/chat/session/${sessionId}`);
-    if (res.ok && res.data?.session) {
-      if (local && local.messages.length > (res.data.session.messages?.length || 0)) {
-        res.data.session.messages = local.messages;
+    } else {
+      const res = await safeFetchJson<{ session: ChatSession; customerWalletBalance: number }>(`${API_BASE}/chat/session/${sessionId}`);
+      if (res.ok && res.data?.session) {
+        if (local && local.messages.length > (res.data.session.messages?.length || 0)) {
+          res.data.session.messages = local.messages;
+        }
+        saveLocalSession(res.data.session);
+        return res.data;
       }
-      saveLocalSession(res.data.session);
-      return res.data;
     }
 
     if (local) {
@@ -1547,38 +1585,18 @@ export const api = {
       clientMessageId?: string;
     }
   ): Promise<ChatMessage> => {
-    if (supabase) {
-      const { data: existing, error: fetchErr } = await supabase
-        .from('chat_sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .maybeSingle();
-
-      if (!fetchErr && existing) {
-        const currentMessages: ChatMessage[] = Array.isArray(existing.messages) ? existing.messages : [];
-        const newMessage: ChatMessage = {
-          id: payload.clientMessageId || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          sender: payload.sender,
-          senderName: payload.senderName || (payload.sender === 'astrologer' ? existing.astrologer_name : existing.customer_name),
-          text: payload.text,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          suggestedSeva: payload.suggestedSeva
-        };
-        if (!currentMessages.some((m) => m.id === newMessage.id)) {
-          const updatedMessages = [...currentMessages, newMessage];
-          const { data: updated, error: updErr } = await supabase
-            .from('chat_sessions')
-            .update({ messages: updatedMessages })
-            .eq('id', sessionId)
-            .select()
-            .single();
-          if (!updErr && updated) {
-            const session = mapChatSessionRow(updated);
-            saveLocalSession(session);
-            broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message: newMessage, session });
-            return newMessage;
-          }
-        }
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaChat<{ success: boolean; message: ChatMessage; session: ChatSession }>({
+        action: 'send-message',
+        sessionId,
+        text: payload.text,
+        suggestedSeva: payload.suggestedSeva,
+        clientMessageId: payload.clientMessageId
+      });
+      if (data?.message && data?.session) {
+        saveLocalSession(data.session);
+        broadcastChatEvent({ type: 'NEW_MESSAGE', sessionId, message: data.message, session: data.session });
+        return data.message;
       }
     }
 
@@ -1630,16 +1648,13 @@ export const api = {
     status: string;
   }> => {
     if (isSupabaseConfigured) {
-      const fnRes = await invokeSupabaseFunction<{
+      return await invokeGauKripaChat<{
         durationSeconds: number;
         totalCharged: number;
         astrologerEarned: number;
         walletBalance: number;
         status: string;
-      }>('chat-heartbeat', { method: 'POST', body: { sessionId } });
-      if (fnRes.ok && fnRes.data) {
-        return fnRes.data;
-      }
+      }>({ action: 'heartbeat', sessionId });
     }
 
     const res = await safeFetchJson<{
@@ -1664,28 +1679,14 @@ export const api = {
   endChat: async (sessionId: string): Promise<ChatSession> => {
     broadcastChatEvent({ type: 'CHAT_ENDED', sessionId });
 
-    if (supabase) {
-      const { data: existing } = await supabase.from('chat_sessions').select('*').eq('id', sessionId).maybeSingle();
-      if (existing) {
-        const msgs = Array.isArray(existing.messages) ? [...existing.messages] : [];
-        msgs.push({
-          id: `sys-${Date.now()}`,
-          sender: 'astrologer',
-          senderName: 'System',
-          text: `Consultation concluded. Total Duration: ${Math.floor((existing.duration_seconds || 0) / 60)} min ${(existing.duration_seconds || 0) % 60} sec. Total Service Fee: ₹${existing.total_charged || 0}. Jai Gaumata!`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        const { data: updated, error } = await supabase
-          .from('chat_sessions')
-          .update({ status: 'ended', ended_at: new Date().toISOString(), messages: msgs })
-          .eq('id', sessionId)
-          .select()
-          .single();
-        if (!error && updated) {
-          const session = mapChatSessionRow(updated);
-          saveLocalSession(session);
-          return session;
-        }
+    if (isSupabaseConfigured) {
+      const data = await invokeGauKripaChat<{ session: ChatSession }>({
+        action: 'end',
+        sessionId
+      });
+      if (data?.session) {
+        saveLocalSession(data.session);
+        return data.session;
       }
     }
 
@@ -1699,10 +1700,6 @@ export const api = {
     session.status = 'ended';
     session.endedAt = new Date().toISOString();
     saveLocalSession(session);
-    try {
-      localStorage.setItem(`gaukripa_chat_session_${sessionId}`, JSON.stringify(session));
-      window.dispatchEvent(new Event('storage'));
-    } catch {}
     return session;
   },
 
@@ -1719,27 +1716,25 @@ export const api = {
   }> => {
     const isAll = !astrologerId || astrologerId === 'all';
 
-    if (supabase) {
-      let query = supabase.from('chat_sessions').select('*').eq('status', 'ended').order('ended_at', { ascending: false });
-      if (!isAll) query = query.eq('astrologer_id', astrologerId);
-      const { data, error } = await query;
-      if (!error && Array.isArray(data)) {
-        const sessions = data.map(mapChatSessionRow);
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todayEarnings = sessions
-          .filter((s) => s.endedAt && s.endedAt.startsWith(todayStr))
-          .reduce((acc, s) => acc + (s.astrologerEarned || 0), 0);
-        const totalEarnings = sessions.reduce((acc, s) => acc + (s.astrologerEarned || 0), 0);
-        return {
-          sessions,
-          analytics: {
-            totalConsultations: sessions.length,
-            todayEarnings,
-            weeklyEarnings: Math.round(totalEarnings * 0.4),
-            monthlyEarnings: totalEarnings
-          }
-        };
+    if (isSupabaseConfigured) {
+      const session = await getActiveSessionSafe();
+      if (session?.access_token) {
+        try {
+          return await invokeGauKripaChat<{
+            sessions: ChatSession[];
+            analytics: {
+              totalConsultations: number;
+              todayEarnings: number;
+              weeklyEarnings: number;
+              monthlyEarnings: number;
+            };
+          }>({ action: 'history', astrologerId: isAll ? 'all' : astrologerId });
+        } catch {}
       }
+      return {
+        sessions: [],
+        analytics: { totalConsultations: 0, todayEarnings: 0, weeklyEarnings: 0, monthlyEarnings: 0 }
+      };
     }
 
     const res = await safeFetchJson<{
@@ -1753,42 +1748,23 @@ export const api = {
     }>(`${API_BASE}/chat/history/${encodeURIComponent(isAll ? 'all' : astrologerId)}`);
     if (res.ok && res.data) return res.data;
 
-    const matchedSessions: ChatSession[] = [];
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('gaukripa_chat_session_') || key.startsWith('gaukripa_session_'))) {
-          const s: ChatSession = JSON.parse(localStorage.getItem(key) || '{}');
-          if (s && s.id && (isAll || s.astrologerId === astrologerId)) {
-            if (!matchedSessions.some((existing) => existing.id === s.id)) {
-              matchedSessions.push(s);
-            }
-          }
-        }
-      }
-    } catch {}
-
-    const totalEarned = matchedSessions.reduce((sum, s) => sum + (s.astrologerEarned || 0), 0);
     return {
-      sessions: matchedSessions,
-      analytics: {
-        totalConsultations: matchedSessions.length,
-        todayEarnings: totalEarned,
-        weeklyEarnings: Math.round(totalEarned * 0.4),
-        monthlyEarnings: totalEarned
-      }
+      sessions: [],
+      analytics: { totalConsultations: 0, todayEarnings: 0, weeklyEarnings: 0, monthlyEarnings: 0 }
     };
   },
 
-  // Settings
+  // Settings (live table: app_settings, id: 'global')
   getSettings: async (): Promise<AppSettings> => {
-    if (supabase) {
-      const { data, error } = await supabase.from('settings').select('*').eq('id', 'config').maybeSingle();
-      if (!error && data) return mapSettingsRow(data);
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseRest<any[]>('app_settings', '?id=eq.global&select=*');
+        if (Array.isArray(rows) && rows[0]) return mapSettingsRow(rows[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<AppSettings>(`${API_BASE}/settings`);
+      if (res.ok && res.data) return res.data;
     }
-
-    const res = await safeFetchJson<AppSettings>(`${API_BASE}/settings`);
-    if (res.ok && res.data) return res.data;
 
     try {
       const stored = localStorage.getItem('gaukripa_settings');
@@ -1807,52 +1783,45 @@ export const api = {
   },
 
   updateSettings: async (settings: Partial<AppSettings>): Promise<AppSettings> => {
-    if (supabase) {
-      const current = await api.getSettings();
-      const merged = { ...current, ...settings };
-      const { data, error } = await supabase
-        .from('settings')
-        .upsert({
-          id: 'config',
-          standard_rate_per_min: merged.standardRatePerMin,
-          discounted_rate_per_min: merged.discountedRatePerMin,
-          discount_enabled: merged.discountEnabled,
-          extra_occasion_fee: merged.extraOccasionFee,
-          promo_banner_text: merged.promoBannerText,
-          banner_enabled: merged.bannerEnabled,
-          trust_name: merged.trustName
-        })
-        .select()
-        .single();
-      if (!error && data) return mapSettingsRow(data);
+    const current = await api.getSettings();
+    const merged = { ...current, ...settings };
+
+    if (isSupabaseConfigured) {
+      try {
+        const patched = await supabaseMutation<any[]>('app_settings', 'PATCH', '?id=eq.global', {
+          data: merged,
+          updated_at: new Date().toISOString()
+        });
+        if (Array.isArray(patched) && patched[0]) return mapSettingsRow(patched[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ settings: AppSettings }>(`${API_BASE}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      if (res.ok && res.data?.settings) return res.data.settings;
     }
 
-    const res = await safeFetchJson<{ settings: AppSettings }>(`${API_BASE}/settings`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    });
-    if (res.ok && res.data?.settings) return res.data.settings;
-
-    const current = await api.getSettings();
-    const updated = { ...current, ...settings };
     try {
-      localStorage.setItem('gaukripa_settings', JSON.stringify(updated));
+      localStorage.setItem('gaukripa_settings', JSON.stringify(merged));
     } catch {}
-    return updated;
+    return merged;
   },
 
   // Reviews
   getReviews: async (): Promise<ReviewItem[]> => {
-    if (supabase) {
-      const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map(mapReviewRow);
-      }
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseRest<any[]>('reviews', '?order=created_at.desc&select=*');
+        if (Array.isArray(rows) && rows.length > 0) {
+          return rows.map(mapReviewRow);
+        }
+      } catch {}
+    } else {
+      const res = await safeFetchJson<ReviewItem[]>(`${API_BASE}/reviews`);
+      if (res.ok && Array.isArray(res.data)) return res.data;
     }
-
-    const res = await safeFetchJson<ReviewItem[]>(`${API_BASE}/reviews`);
-    if (res.ok && Array.isArray(res.data)) return res.data;
 
     try {
       const stored = localStorage.getItem('gaukripa_reviews');
@@ -1877,30 +1846,24 @@ export const api = {
       createdAt: new Date().toISOString()
     };
 
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
+    if (isSupabaseConfigured) {
+      try {
+        const inserted = await supabaseMutation<any[]>('reviews', 'POST', '', {
           id: newRev.id,
-          name: newRev.name,
-          city: newRev.city,
-          seva: newRev.seva,
-          one_liner: newRev.oneLiner,
-          stars: newRev.stars,
           is_approved: newRev.isApproved,
+          data: newRev,
           created_at: newRev.createdAt
-        })
-        .select()
-        .single();
-      if (!error && data) return mapReviewRow(data);
+        });
+        if (Array.isArray(inserted) && inserted[0]) return mapReviewRow(inserted[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newRev)
+      });
+      if (res.ok && res.data?.review) return res.data.review;
     }
-
-    const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newRev)
-    });
-    if (res.ok && res.data?.review) return res.data.review;
 
     const reviews = await api.getReviews();
     reviews.unshift(newRev);
@@ -1911,22 +1874,25 @@ export const api = {
   },
 
   approveReview: async (id: string, isApproved: boolean): Promise<ReviewItem> => {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('reviews')
-        .update({ is_approved: isApproved })
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return mapReviewRow(data);
+    if (isSupabaseConfigured) {
+      try {
+        const rows = await supabaseRest<any[]>('reviews', `?id=eq.${encodeURIComponent(id)}&select=*`).catch(() => []);
+        const current = rows?.[0] ? mapReviewRow(rows[0]) : { id };
+        const nextData = { ...current, isApproved };
+        const patched = await supabaseMutation<any[]>('reviews', 'PATCH', `?id=eq.${encodeURIComponent(id)}`, {
+          is_approved: isApproved,
+          data: nextData
+        });
+        if (Array.isArray(patched) && patched[0]) return mapReviewRow(patched[0]);
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews/${id}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isApproved })
+      });
+      if (res.ok && res.data?.review) return res.data.review;
     }
-
-    const res = await safeFetchJson<{ review: ReviewItem }>(`${API_BASE}/reviews/${id}/approve`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isApproved })
-    });
-    if (res.ok && res.data?.review) return res.data.review;
 
     const reviews = await api.getReviews();
     const idx = reviews.findIndex((r) => r.id === id);
@@ -1941,13 +1907,15 @@ export const api = {
   },
 
   deleteReview: async (id: string): Promise<boolean> => {
-    if (supabase) {
-      const { error } = await supabase.from('reviews').delete().eq('id', id);
-      if (!error) return true;
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseMutation('reviews', 'DELETE', `?id=eq.${encodeURIComponent(id)}`);
+        return true;
+      } catch {}
+    } else {
+      const res = await safeFetchJson<{ success: boolean }>(`${API_BASE}/reviews/${id}`, { method: 'DELETE' });
+      if (res.ok) return true;
     }
-
-    const res = await safeFetchJson<{ success: boolean }>(`${API_BASE}/reviews/${id}`, { method: 'DELETE' });
-    if (res.ok) return true;
 
     const reviews = (await api.getReviews()).filter((r) => r.id !== id);
     try {
@@ -1956,21 +1924,14 @@ export const api = {
     return true;
   },
 
-  // Media Upload helper (Supabase Storage -> Express -> Compressed DataURL fallback)
+  // Media Upload helper (Supabase Storage via gaukripa_supabase_session -> Compressed DataURL fallback)
   uploadMediaFile: async (file: File): Promise<string> => {
-    if (supabase) {
+    if (isSupabaseConfigured) {
       try {
-        const ext = file.name.split('.').pop() || 'bin';
-        const filePath = `proofs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: uploadErr } = await supabase.storage.from('gaukripa-media').upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-        if (!uploadErr) {
-          const { data } = supabase.storage.from('gaukripa-media').getPublicUrl(filePath);
-          if (data?.publicUrl) return data.publicUrl;
-        }
-      } catch {}
+        return await uploadGauKripaMedia(file);
+      } catch (err: any) {
+        if (err?.message) throw err;
+      }
     }
 
     const readRaw = (): Promise<string> =>
@@ -1981,58 +1942,18 @@ export const api = {
         reader.readAsDataURL(file);
       });
 
-    const compressImageIfNeeded = async (rawDataUrl: string): Promise<string> => {
-      if (!file.type.startsWith('image/') || typeof document === 'undefined') {
-        return rawDataUrl;
-      }
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const maxDim = 960;
-            let { width, height } = img;
-            if (width > maxDim || height > maxDim) {
-              if (width >= height) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              } else {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              resolve(rawDataUrl);
-              return;
-            }
-            ctx.drawImage(img, 0, 0, width, height);
-            const compressed = canvas.toDataURL('image/jpeg', 0.82);
-            resolve(compressed.length < rawDataUrl.length ? compressed : rawDataUrl);
-          } catch {
-            resolve(rawDataUrl);
-          }
-        };
-        img.onerror = () => resolve(rawDataUrl);
-        img.src = rawDataUrl;
-      });
-    };
-
     const rawDataUrl = await readRaw();
-    const preparedDataUrl = await compressImageIfNeeded(rawDataUrl);
     try {
       const res = await safeFetchJson<{ url: string }>(`${API_BASE}/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataUrl: preparedDataUrl, fileName: file.name })
+        body: JSON.stringify({ dataUrl: rawDataUrl, fileName: file.name })
       });
       if (res.ok && res.data?.url) {
         return res.data.url;
       }
     } catch {}
-    return preparedDataUrl;
+    return rawDataUrl;
   },
 
   getDatabaseStatus: async (): Promise<{
@@ -2042,27 +1963,25 @@ export const api = {
     collections?: Record<string, number>;
     error?: string;
   }> => {
-    if (supabase) {
+    if (isSupabaseConfigured) {
       try {
-        const [srv, ast, bkg, rev] = await Promise.all([
-          supabase.from('services').select('id', { count: 'exact', head: true }),
-          supabase.from('astrologers').select('id', { count: 'exact', head: true }),
-          supabase.from('bookings').select('id', { count: 'exact', head: true }),
-          supabase.from('reviews').select('id', { count: 'exact', head: true })
+        const [srv, ast, rev] = await Promise.all([
+          supabaseRest<any[]>('services', '?select=id').catch(() => []),
+          supabaseRest<any[]>('astrologers', '?select=id').catch(() => []),
+          supabaseRest<any[]>('reviews', '?select=id').catch(() => [])
         ]);
-        if (!srv.error) {
-          return {
-            connected: true,
-            projectId: getSupabaseProjectRef(),
-            databaseId: 'Supabase PostgreSQL',
-            collections: {
-              services: srv.count || 0,
-              astrologers: ast.count || 0,
-              bookings: bkg.count || 0,
-              reviews: rev.count || 0
-            }
-          };
-        }
+        const bkg = await supabaseRest<any[]>('bookings', '?select=id').catch(() => []);
+        return {
+          connected: true,
+          projectId: getSupabaseProjectRef(),
+          databaseId: 'Supabase PostgreSQL',
+          collections: {
+            services: Array.isArray(srv) ? srv.length : 0,
+            astrologers: Array.isArray(ast) ? ast.length : 0,
+            bookings: Array.isArray(bkg) ? bkg.length : 0,
+            reviews: Array.isArray(rev) ? rev.length : 0
+          }
+        };
       } catch {}
     }
 
@@ -2078,11 +1997,11 @@ export const api = {
       connected: true,
       projectId: getSupabaseProjectRef(),
       databaseId: 'Supabase PostgreSQL',
-      collections: { services: 6, astrologers: 2, bookings: 3, wallets: 3, reviews: 5 }
+      collections: { services: 6, astrologers: 2, bookings: 0, reviews: 5 }
     };
   },
 
-  // User Registration (Supabase Auth + PostgreSQL profiles)
+  // User Registration (Supabase Auth + PostgreSQL app_users)
   registerUser: async (data: {
     name: string;
     email: string;
@@ -2092,21 +2011,42 @@ export const api = {
     const trimmedName = (data.name || '').trim();
     const trimmedEmail = (data.email || '').trim().toLowerCase();
     const trimmedPass = (data.password || '').trim();
-    const trimmedPhone = normalizePhone(data.phone);
+    const trimmedPhone = normalizePhone(data.phone, '');
 
     if (!trimmedName) throw new Error('Please enter your full name.');
     if (!trimmedEmail) throw new Error('Please enter your email address.');
-    if (trimmedPass.length < 4) throw new Error('Password must be at least 4 characters long.');
+    if (trimmedPass.length < 8) throw new Error('Password must be at least 8 characters long.');
+    if (trimmedPhone.length !== 10) throw new Error('Please enter a valid 10-digit mobile number.');
 
     if (isSupabaseConfigured) {
-      const fnRes = await invokeSupabaseFunction<{ success: boolean; message: string }>('auth-register', {
-        method: 'POST',
-        body: { name: trimmedName, email: trimmedEmail, password: trimmedPass, phone: trimmedPhone }
+      const auth = await supabaseAuth('signup', {
+        email: trimmedEmail,
+        password: trimmedPass,
+        data: { name: trimmedName, full_name: trimmedName, phone: trimmedPhone }
       });
-      if (fnRes.ok && fnRes.data?.success) {
-        return fnRes.data;
+
+      if (auth?.access_token && auth?.user) {
+        const session: SupabaseSession = {
+          access_token: auth.access_token,
+          refresh_token: auth.refresh_token,
+          expires_at: auth.expires_at,
+          user: auth.user
+        };
+        await saveSupabaseSession(session);
+        if (supabase && auth.refresh_token) {
+          try {
+            await supabase.auth.setSession({
+              access_token: auth.access_token,
+              refresh_token: auth.refresh_token
+            });
+          } catch {}
+        }
       }
-      throw new Error(fnRes.error || 'Failed to register user.');
+
+      return {
+        success: true,
+        message: 'Account created successfully! Please sign in with your email and password.'
+      };
     }
 
     const serverRes = await safeFetchJson<{ success: boolean; message: string }>(`${API_BASE}/auth/register`, {
@@ -2119,48 +2059,17 @@ export const api = {
       return serverRes.data;
     }
 
-    if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
-      throw new Error(serverRes.error);
-    }
-
-    let passHash = '';
-    try {
-      const enc = new TextEncoder().encode(trimmedPass);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      passHash = Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-    } catch {
-      passHash = trimmedPass;
-    }
-
-    const existingUsers = getRegisteredUsers();
-    if (existingUsers[trimmedEmail] || trimmedEmail === 'bankush014@gmail.com') {
-      throw new Error('This email is already registered. Please sign in.');
-    }
-
-    existingUsers[trimmedEmail] = {
-      name: trimmedName,
-      email: trimmedEmail,
-      passwordHash: passHash,
-      phone: trimmedPhone,
-      createdAt: new Date().toISOString()
-    };
-    saveRegisteredUsers(existingUsers);
-
-    return {
-      success: true,
-      message: 'Account created successfully! Please sign in with your email and password.'
-    };
+    throw new Error(serverRes.error || 'Failed to register user.');
   },
 
-  // Authentication: Supabase Auth + Role-based Super Admin & Devotee login
+  // Authentication: Supabase Auth + app_users Role-based profile
   login: async (credentials: { email: string; password: string; phone?: string }): Promise<{
     success: boolean;
     user: {
       name: string;
       email: string;
-      role: 'super_admin' | 'devotee';
+      role: 'super_admin' | 'admin' | 'astrologer' | 'devotee';
+      astrologerId?: string;
       phone?: string;
       isAdmin?: boolean;
     };
@@ -2176,37 +2085,60 @@ export const api = {
     }
 
     if (isSupabaseConfigured) {
-      const fnRes = await invokeSupabaseFunction<{
-        success: boolean;
-        user: {
-          name: string;
-          email: string;
-          role: 'super_admin' | 'devotee';
-          phone?: string;
-          isAdmin?: boolean;
-        };
-        session?: { access_token: string; refresh_token: string } | null;
-      }>('auth-login', {
-        method: 'POST',
-        body: { email: trimmedEmail, password: trimmedPass, phone: credentials.phone }
+      const auth = await supabaseAuth('token?grant_type=password', {
+        email: trimmedEmail,
+        password: trimmedPass
       });
 
-      if (fnRes.ok && fnRes.data?.user) {
-        if (supabase && fnRes.data.session?.access_token && fnRes.data.session?.refresh_token) {
-          try {
-            await supabase.auth.setSession({
-              access_token: fnRes.data.session.access_token,
-              refresh_token: fnRes.data.session.refresh_token
-            });
-          } catch {}
-        }
-        try {
-          localStorage.setItem('gaukripa_user', JSON.stringify(fnRes.data.user));
-        } catch {}
-        return { success: true, user: fnRes.data.user };
+      if (!auth?.access_token || !auth?.user) {
+        throw new Error('Invalid email or password. Please try again.');
       }
 
-      throw new Error(fnRes.error || 'Account not found or invalid credentials.');
+      const session: SupabaseSession = {
+        access_token: auth.access_token,
+        refresh_token: auth.refresh_token,
+        expires_at: auth.expires_at,
+        user: auth.user
+      };
+      await saveSupabaseSession(session);
+
+      if (supabase && auth.refresh_token) {
+        try {
+          await supabase.auth.setSession({
+            access_token: auth.access_token,
+            refresh_token: auth.refresh_token
+          });
+        } catch {}
+      }
+
+      const rows = await supabaseRest<any[]>(
+        'app_users',
+        `?auth_user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,email,full_name,phone,role,astrologer_id`,
+        auth.access_token
+      ).catch(() => []);
+
+      const profile = rows?.[0];
+      const meta = auth.user.user_metadata || {};
+      const resolvedRole = (
+        profile?.role ||
+        (trimmedEmail === 'bankush014@gmail.com' ? 'super_admin' : 'devotee')
+      ) as 'super_admin' | 'admin' | 'astrologer' | 'devotee';
+
+      const user = {
+        name:
+          profile?.full_name ||
+          String(meta.full_name || meta.name || (resolvedRole === 'super_admin' ? 'Super Admin' : 'Devotee')),
+        email: profile?.email || auth.user.email || trimmedEmail,
+        role: resolvedRole,
+        astrologerId: profile?.astrologer_id || undefined,
+        phone: normalizePhone(profile?.phone || String(meta.phone || credentials.phone || ''), ''),
+        isAdmin: resolvedRole === 'super_admin' || resolvedRole === 'admin'
+      };
+
+      try {
+        localStorage.setItem('gaukripa_user', JSON.stringify(user));
+      } catch {}
+      return { success: true, user };
     }
 
     const serverRes = await safeFetchJson<{
@@ -2231,64 +2163,11 @@ export const api = {
       return serverRes.data;
     }
 
-    if (!serverRes.isHtml && serverRes.error && !serverRes.error.includes('failed')) {
-      throw new Error(serverRes.error);
-    }
-
-    let passHash = '';
-    try {
-      const enc = new TextEncoder().encode(trimmedPass);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      passHash = Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-    } catch {
-      passHash = trimmedPass;
-    }
-
-    const SECURE_ADMIN_HASH = 'f20a5b4a1228638e06651aa7c17522834328bf543cb8b222ddbc352ad7a855f2';
-
-    if (trimmedEmail === 'bankush014@gmail.com') {
-      if (passHash === SECURE_ADMIN_HASH) {
-        const user = {
-          name: 'Super Admin',
-          email: 'bankush014@gmail.com',
-          role: 'super_admin' as const,
-          phone: credentials.phone || '9876543210',
-          isAdmin: true
-        };
-        try {
-          localStorage.setItem('gaukripa_user', JSON.stringify(user));
-        } catch {}
-        return { success: true, user };
-      } else {
-        throw new Error('Invalid email or password. Please try again.');
-      }
-    }
-
-    const registeredUsers = getRegisteredUsers();
-    if (registeredUsers[trimmedEmail]) {
-      if (passHash === registeredUsers[trimmedEmail].passwordHash) {
-        const user = {
-          name: registeredUsers[trimmedEmail].name,
-          email: trimmedEmail,
-          role: 'devotee' as const,
-          phone: registeredUsers[trimmedEmail].phone,
-          isAdmin: false
-        };
-        try {
-          localStorage.setItem('gaukripa_user', JSON.stringify(user));
-        } catch {}
-        return { success: true, user };
-      } else {
-        throw new Error('Invalid email or password. Please try again.');
-      }
-    }
-
-    throw new Error('Account not found. Please sign up first, or try again when the login service is online.');
+    throw new Error(serverRes.error || 'Account not found or invalid credentials.');
   },
 
   logout: async (): Promise<void> => {
+    clearSupabaseSession();
     try {
       localStorage.removeItem('gaukripa_user');
     } catch {}

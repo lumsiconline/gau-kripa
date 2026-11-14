@@ -1,10 +1,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-export const SUPABASE_URL = String((import.meta as any).env?.VITE_SUPABASE_URL || '')
+const DEFAULT_SUPABASE_URL = 'https://nwvsesrnhuhcihftagcp.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_-tePuMa2rXckjabvey4hWA_dFkB0bJx';
+
+export const SUPABASE_URL = String((import.meta as any).env?.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL)
   .trim()
   .replace(/\/+$/, '');
 
-export const SUPABASE_ANON_KEY = String((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+export const SUPABASE_ANON_KEY = String(
+  (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
+).trim();
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 

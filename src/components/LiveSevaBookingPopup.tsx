@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, MapPin, Sparkles, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface SevaPopupEntry {
@@ -329,59 +329,36 @@ export const LiveSevaBookingPopup: React.FC = () => {
   const entry = shuffledQueue[currentIndex] || LIVE_SEVA_ENTRIES[0];
   const name = lang === 'en' ? entry.nameEn : entry.nameHi;
   const city = lang === 'en' ? entry.cityEn : entry.cityHi;
-  const state = lang === 'en' ? entry.stateEn : entry.stateHi;
   const sevaName = lang === 'en' ? entry.sevaEn : entry.sevaHi;
-  const timeAgo = lang === 'en' ? entry.timeAgoEn : entry.timeAgoHi;
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`fixed bottom-3 left-3 sm:bottom-4 sm:left-4 z-40 w-[268px] sm:w-[304px] bg-[#fffdf7]/95 backdrop-blur-md border border-[#d9ba78] rounded-2xl shadow-xl p-3 transition-all duration-300 ${
+      className={`fixed bottom-2.5 left-2.5 sm:bottom-3.5 sm:left-3.5 z-40 w-auto min-w-[168px] max-w-[210px] sm:max-w-[230px] bg-[#fffdf7]/95 backdrop-blur-md border border-[#d9ba78] rounded-xl shadow-lg px-2.5 py-2 pr-6 transition-all duration-300 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
       }`}
     >
-      <div className="flex items-start gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-[#1b4b32] text-amber-300 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-          <Sparkles className="w-4 h-4" />
-        </div>
-
-        <div className="min-w-0 flex-1 pr-4">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="truncate">{tr('लाइव सेवा बुकिंग', 'Live Seva Booking')}</span>
-            <span className="text-[#948063] font-semibold">• {timeAgo}</span>
-          </div>
-
-          <p className="text-xs font-bold text-[#153e29] leading-snug mt-0.5 truncate">
-            {name}
-          </p>
-
-          <p className="text-[11px] font-semibold text-[#5b4d3b] flex items-center gap-1 mt-0.5 truncate">
-            <MapPin className="w-3 h-3 text-[#c4821a] shrink-0" />
-            <span className="truncate">{city}, {state}</span>
-          </p>
-
-          <p className="text-[11px] font-bold text-[#1b4b32] flex items-center gap-1 mt-1 bg-[#fdf5e2] px-2 py-1 rounded-lg border border-[#ebdcb9]">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-            <span className="truncate">
-              {tr('बुक किया:', 'Booked:')} {sevaName}
-            </span>
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setDismissed(true)}
-          aria-label={tr('सूचना बंद करें', 'Dismiss notification')}
-          className="absolute top-2 right-2 p-1 rounded-full text-[#7b6b54] hover:text-[#153e29] hover:bg-[#f4ebd4] transition-colors cursor-pointer"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
+      <div className="min-w-0 space-y-0.5">
+        <p className="text-[11px] font-bold text-[#153e29] leading-tight truncate">
+          {name}
+        </p>
+        <p className="text-[10px] font-semibold text-[#6e5c44] leading-tight truncate">
+          {city}
+        </p>
+        <p className="text-[10px] font-bold text-[#1b4b32] leading-tight truncate pt-0.5">
+          {sevaName}
+        </p>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label={tr('बंद करें', 'Close')}
+        className="absolute top-1.5 right-1.5 p-0.5 rounded-full text-[#7b6b54] hover:text-[#153e29] hover:bg-[#f4ebd4] transition-colors cursor-pointer"
+      >
+        <X className="w-3 h-3" />
+      </button>
     </div>
   );
 };
