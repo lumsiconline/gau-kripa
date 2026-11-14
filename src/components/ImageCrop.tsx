@@ -78,7 +78,7 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
   bounds: customBounds,
   className = '',
   alt = 'GauKripa Sacred Visual',
-  preserveAspectRatio = 'xMidYMid slice',
+  preserveAspectRatio = 'xMidYMid meet',
 }) => {
   const b = customBounds || (cropKey ? CROPS[cropKey] : null);
 

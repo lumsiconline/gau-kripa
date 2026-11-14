@@ -416,8 +416,12 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 </button>
 
                 <div className="relative shrink-0">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/60 shadow-xs bg-amber-50">
-                    <ImageCrop cropKey={astrologer.cropKey} className="w-full h-full object-cover" alt={astrologer.name} />
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/60 shadow-xs bg-[#f6ebd3] p-0.5 flex items-center justify-center">
+                    {astrologer.customImageUrl ? (
+                      <img src={astrologer.customImageUrl} alt={astrologer.name} referrerPolicy="no-referrer" className="w-full h-full object-contain rounded-lg" />
+                    ) : (
+                      <ImageCrop cropKey={astrologer.cropKey} className="w-full h-full rounded-lg" preserveAspectRatio="xMidYMid meet" alt={astrologer.name} />
+                    )}
                   </div>
                   <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#25d366] border-2 border-[#075e54]" />
                 </div>
@@ -714,8 +718,12 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 {/* Astrologer Profile & Credentials */}
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="relative shrink-0">
-                    <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-amber-300/90 shadow-md bg-amber-50">
-                      <ImageCrop cropKey={astrologer.cropKey} className="w-full h-full object-cover" alt={astrologer.name} />
+                    <div className="w-13 h-13 rounded-xl overflow-hidden border border-amber-300/90 shadow-md bg-[#f6ebd3] p-0.5 flex items-center justify-center">
+                      {astrologer.customImageUrl ? (
+                        <img src={astrologer.customImageUrl} alt={astrologer.name} referrerPolicy="no-referrer" className="w-full h-full object-contain rounded-lg" />
+                      ) : (
+                        <ImageCrop cropKey={astrologer.cropKey} className="w-full h-full rounded-lg" preserveAspectRatio="xMidYMid meet" alt={astrologer.name} />
+                      )}
                     </div>
                     <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />

@@ -47,8 +47,8 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
         {!joined ? (
           <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
             <div className="text-center space-y-1">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 mx-auto bg-amber-50 shadow-xs">
-                <ImageCrop cropKey="bottomCow" className="w-full h-full object-cover scale-110" alt="Gaumata" />
+              <div className="w-16 h-16 rounded-2xl overflow-hidden border border-amber-300 mx-auto bg-[#f6ebd3] p-1 flex items-center justify-center">
+                <ImageCrop cropKey="bottomCow" className="w-full h-full rounded-xl" preserveAspectRatio="xMidYMid meet" alt="Gaumata" />
               </div>
               <h4 className="font-playfair text-base font-bold text-[#1b4b32] pt-1">
                 {tr('गौमाता सेवा एवं आध्यात्मिक परिवार के सदस्य बनें', 'Gaumata Seva aur Adhyatmik Parivar se Judein')}

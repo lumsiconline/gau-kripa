@@ -304,31 +304,30 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             {/* 1. Particular Details of That Seva Only */}
             <div className="bg-[#fcf8ee] rounded-2xl p-4 sm:p-5 border border-[#ebdcb9] space-y-3 shadow-2xs">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                {/* Big HD Image of this particular seva */}
-                <div className="w-full sm:w-40 h-36 sm:h-32 rounded-xl overflow-hidden shrink-0 border border-[#d9ba78] shadow-xs relative bg-amber-50">
+                {/* Full Uncropped HD Image of this particular seva */}
+                <div className="w-full sm:w-44 h-36 rounded-xl overflow-hidden shrink-0 border border-[#d9ba78] bg-[#f6ebd3] p-1.5 flex items-center justify-center">
                   {displaySeva.customImageUrl ? (
                     <img
                       src={displaySeva.customImageUrl}
                       alt={displaySeva.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain rounded-lg"
                     />
                   ) : (
                     <ImageCrop
                       cropKey={displaySeva.cropKey}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full rounded-lg"
+                      preserveAspectRatio="xMidYMid meet"
                       alt={displaySeva.title}
                     />
                   )}
-                  <div className="absolute top-2 left-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#faedd0]/95 text-[#6d460d] border border-[#d6ba7f] shadow-xs backdrop-blur-xs">
-                      {displaySeva.planetTag}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Details text */}
                 <div className="flex-1 space-y-1">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-[#8b5a0a]">
+                    {displaySeva.planetTag}
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="font-playfair text-lg sm:text-xl font-bold text-[#1b4b32]">
                       {displaySeva.title}

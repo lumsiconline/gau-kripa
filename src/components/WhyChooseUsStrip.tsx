@@ -86,10 +86,11 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
           {/* Right Peeking Cow & Parivar CTA */}
           <div className="lg:col-span-4 flex items-center justify-center lg:justify-end gap-3 sm:gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#ebdcb9]">
             
-            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-full overflow-hidden border-2 border-[#d9ba78] shadow-xs bg-amber-50">
+            <div className="w-20 h-16 sm:w-24 sm:h-20 shrink-0 rounded-xl overflow-hidden border border-[#d9ba78] shadow-xs bg-[#f6ebd3] p-0.5">
               <ImageCrop
                 cropKey="bottomCow"
-                className="w-full h-full object-cover scale-110"
+                className="w-full h-full rounded-lg"
+                preserveAspectRatio="xMidYMid meet"
                 alt={tr('गौमाता दर्शन', 'Gaumata Darshan')}
               />
             </div>

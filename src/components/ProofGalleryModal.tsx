@@ -139,10 +139,11 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
             <div className="space-y-4">
               
               {/* Featured Video Player Box */}
-              <div className="relative rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center border border-[#d9ba78] shadow-md group">
+              <div className="relative rounded-2xl overflow-hidden bg-[#161008] aspect-video flex items-center justify-center border border-[#d9ba78] shadow-md group">
                 <ImageCrop
                   cropKey="sevaChara"
-                  className="w-full h-full object-cover opacity-80"
+                  className="w-full h-full opacity-80"
+                  preserveAspectRatio="xMidYMid meet"
                   alt={tr('गौशाला आहार वितरण वीडियो', 'Goshala Aahar Vitaran Video')}
                 />
 

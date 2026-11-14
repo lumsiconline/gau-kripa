@@ -127,12 +127,13 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Compact Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1b4b32] text-amber-200 text-[11px] font-bold shadow-2xs">
-              <Sparkles className="w-3 h-3 text-amber-300" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[#8b5a0a]">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>{tr('4.9/5 रेटिंग', '4.9/5 Rating')}</span>
             </span>
+            <span className="text-[#d9ba78] hidden sm:inline">•</span>
             <h3 className="font-playfair text-base sm:text-lg font-bold text-[#1b4b32]">
               {tr('देशभर से ग्राहकों एवं यजमानों के अनुभव', 'Desh Bhar se Bhakton aur Yajmanon ke Anubhav')}
             </h3>
@@ -145,7 +146,7 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
         {/* Compact Reviews Horizontal Track */}
         <div
           ref={scrollRef}
-          className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scroll-smooth scrollbar-none snap-x snap-mandatory"
+          className="flex items-stretch gap-3 overflow-x-auto pb-1.5 pt-0.5 scroll-smooth scrollbar-none snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {INDIA_REVIEWS.map((rev) => {
@@ -156,7 +157,7 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
             return (
               <div
                 key={rev.id}
-                className="snap-start shrink-0 w-[300px] sm:w-[340px] bg-[#fffdf9] border border-[#ebdcb9] hover:border-[#1b4b32]/40 rounded-2xl p-3 shadow-2xs transition-all hover:shadow-xs flex flex-col justify-between"
+                className="snap-start shrink-0 w-[268px] sm:w-[296px] bg-[#fffdf9] border border-[#ebdcb9] hover:border-[#1b4b32]/40 rounded-2xl p-3 transition-colors flex flex-col justify-between"
               >
                 {/* Reviewer Header */}
                 <div className="flex items-center justify-between gap-2 mb-1.5">

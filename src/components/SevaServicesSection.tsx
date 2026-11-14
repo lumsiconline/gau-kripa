@@ -145,63 +145,54 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
         </div>
 
         {/* Compact Cards: Mobile Horizontal Scroll (< md) & Compact Website Grid (md+) */}
-        <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar">
+        <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar">
           {sevaItems.map((item) => {
             const showCustomImage = Boolean(item.customImageUrl && !brokenImages[item.id]);
             return (
               <div
                 key={item.id}
-                className="group w-[244px] sm:w-[260px] md:w-auto shrink-0 snap-start bg-[#fffdf9] rounded-2xl overflow-hidden border border-[#ebdcb9] shadow-xs hover:shadow-md hover:border-[#cfb784] transition-all flex flex-col justify-between"
+                className="group w-[238px] sm:w-[252px] md:w-auto shrink-0 snap-start bg-[#fffdf9] rounded-2xl overflow-hidden border border-[#ebdcb9] shadow-xs hover:shadow-md hover:border-[#cfb784] transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Compact Image Header */}
-                  <div className="relative h-32 md:h-36 w-full overflow-hidden bg-amber-50">
-                    {showCustomImage ? (
-                      <img
-                        src={item.customImageUrl}
-                        alt={item.title}
-                        referrerPolicy="no-referrer"
-                        onError={() => setBrokenImages((prev) => ({ ...prev, [item.id]: true }))}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <ImageCrop
-                        cropKey={item.cropKey}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        alt={item.title}
-                      />
-                    )}
-
-                    {/* Compact Planetary Badge */}
-                    <div className="absolute top-2 left-2 z-10">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#faedd0]/95 text-[#6d460d] border border-[#d6ba7f] shadow-2xs backdrop-blur-md">
-                        {item.planetTag}
-                      </span>
+                  {/* Full Uncropped Image Well */}
+                  <div className="p-2 pb-0">
+                    <div className="h-36 md:h-40 w-full rounded-xl overflow-hidden bg-[#f6ebd3] flex items-center justify-center border border-[#ead9b5]/70">
+                      {showCustomImage ? (
+                        <img
+                          src={item.customImageUrl}
+                          alt={item.title}
+                          referrerPolicy="no-referrer"
+                          onError={() => setBrokenImages((prev) => ({ ...prev, [item.id]: true }))}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <ImageCrop
+                          cropKey={item.cropKey}
+                          className="w-full h-full"
+                          preserveAspectRatio="xMidYMid meet"
+                          alt={item.title}
+                        />
+                      )}
                     </div>
+                  </div>
 
-                    {/* Compact Video Proof Badge */}
-                    <div className="absolute top-2 right-2 z-10">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/85 text-emerald-200 border border-emerald-400/50 shadow-2xs backdrop-blur-md">
-                        <Video className="w-2.5 h-2.5 text-emerald-400" />
+                  {/* Compact Service Details */}
+                  <div className="p-3 pt-2.5 text-left space-y-1.5">
+                    {/* Clean Unboxed Metadata Strip */}
+                    <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-[#7a5b24]">
+                      <span className="truncate">{item.planetTag}</span>
+                      <span className="inline-flex items-center gap-1 text-emerald-800 shrink-0">
+                        <Video className="w-3 h-3 text-emerald-700" />
                         <span>{tr('वीडियो पुष्टि', 'Video Proof')}</span>
                       </span>
                     </div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-                  </div>
-
-                  {/* Compact Service Details */}
-                  <div className="p-3.5 md:p-4 text-left space-y-2">
-                    <h3 className="font-playfair text-base md:text-[17px] font-bold text-[#1b4b32] leading-snug line-clamp-1 group-hover:text-[#123824] transition-colors">
-                      {item.title}
-                    </h3>
-
-                    {/* Compact Price Strip */}
-                    <div className="inline-flex items-baseline gap-1.5 bg-[#fdf6e7] px-2.5 py-1 rounded-lg border border-[#ebdcb9]">
-                      <span className="text-[10px] font-bold text-[#8a7251] uppercase">
-                        {tr('नियत शुल्क:', 'Seva Shulk:')}
-                      </span>
-                      <span className="text-sm md:text-base font-black text-[#1b4b32]">
+                    {/* Title + Fee Assembled on Clean Row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-playfair text-[15px] md:text-base font-bold text-[#1b4b32] leading-snug group-hover:text-[#123824] transition-colors">
+                        {item.title}
+                      </h3>
+                      <span className="shrink-0 text-xs md:text-[13px] font-black text-[#1b4b32] bg-[#fdf6e7] px-2 py-0.5 rounded-lg border border-[#ebdcb9] whitespace-nowrap">
                         {item.priceDisplay}
                       </span>
                     </div>
@@ -220,10 +211,10 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
                 </div>
 
                 {/* Compact Book Now Button */}
-                <div className="p-3.5 pt-0 md:p-4 md:pt-0">
+                <div className="p-3 pt-0">
                   <button
                     onClick={() => onBookSeva(item)}
-                    className="w-full py-2 px-3 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer group-hover:bg-[#123824]"
+                    className="w-full py-2 px-3 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer group-hover:bg-[#123824]"
                   >
                     <span>{tr('आहार सेवा व्यवस्था करें', 'Apni Seva Book Karein')}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-amber-300" />

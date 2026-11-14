@@ -65,102 +65,95 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
           </p>
         </div>
 
-        {/* 5 Distinct Jyotish Service Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
-          {categories.map((cat, idx) => (
+        {/* 5 Distinct Jyotish Service Cards + Direct Consult Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((cat) => (
             <div
               key={cat.id}
-              className={`rounded-3xl p-5 sm:p-6 bg-[#fffefc] border border-[#ebdcb9] shadow-xs hover:shadow-md hover:border-[#cfb784] transition-all flex flex-col justify-between group ${
-                idx === 0 ? 'lg:col-span-1' : ''
-              }`}
+              className="rounded-2xl p-4 bg-[#fffefc] border border-[#ebdcb9] shadow-xs hover:shadow-md hover:border-[#cfb784] transition-all flex flex-col justify-between group"
             >
               <div>
-                {/* Header with Icon & Badge */}
-                <div className="flex items-center justify-between gap-2 mb-3.5">
-                  <div className="w-11 h-11 rounded-2xl bg-[#f7efdc] border border-[#e2ce9f] flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                    {getCategoryIcon(cat.iconName)}
+                {/* Compact Header: Icon + Title + Unboxed Kicker */}
+                <div className="flex items-start justify-between gap-2.5 mb-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#f7efdc] border border-[#e2ce9f] flex items-center justify-center shrink-0">
+                      {getCategoryIcon(cat.iconName)}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="block text-[10px] font-bold text-[#8a6828] uppercase tracking-wide leading-tight">
+                        {cat.badge}
+                      </span>
+                      <h3 className="font-playfair text-base font-bold text-[#1b4b32] group-hover:text-[#123824] transition-colors leading-snug">
+                        {cat.title}
+                      </h3>
+                    </div>
                   </div>
-
-                  <span className="text-[11px] font-bold text-[#7a5518] bg-[#fdf5e2] px-2.5 py-0.5 rounded-full border border-[#ebdcb9]">
-                    {cat.badge}
-                  </span>
                 </div>
 
-                {/* Title & Subtitle */}
-                <h3 className="font-playfair text-lg sm:text-xl font-bold text-[#1b4b32] group-hover:text-[#123824] transition-colors leading-snug">
-                  {cat.title}
-                </h3>
-                <p className="text-[11px] font-semibold text-[#8a765e] mt-0.5">
-                  {cat.subtitle}
-                </p>
-
-                {/* Description */}
-                <p className="text-xs text-[#5e513e] mt-2.5 leading-relaxed">
+                {/* Concise Description */}
+                <p className="text-[11px] text-[#5e513e] leading-relaxed line-clamp-2">
                   {cat.description}
                 </p>
 
-                {/* Key Consultation Topics */}
-                <div className="mt-4 pt-3.5 border-t border-[#f2e7cd] space-y-1.5">
-                  <div className="text-[11px] font-bold text-[#8a6828] uppercase tracking-wide">
+                {/* Clean 2-Column Topics List (No Nested Pill Boxes) */}
+                <div className="mt-2.5 pt-2.5 border-t border-[#f2e7cd]">
+                  <div className="text-[10px] font-bold text-[#8a6828] uppercase tracking-wide mb-1.5">
                     {tr('मुख्य परामर्श बिंदु:', 'Mukhya Paramarsh Bindu:')}
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-[#4a3f31] font-medium">
                     {cat.topics.map((topic, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="text-[11px] bg-[#faf4e6] text-[#4a3f31] font-medium px-2 py-0.5 rounded-lg border border-[#ebdcb9]"
-                      >
+                      <li key={tIdx} className="truncate">
                         • {topic}
-                      </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="mt-5 pt-3 border-t border-[#f2e7cd]/60">
+              {/* Compact Action Button */}
+              <div className="mt-3.5 pt-2.5 border-t border-[#f2e7cd]/70">
                 <button
                   onClick={() => onSelectCategory(cat)}
-                  className="w-full py-2.5 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer group-hover:bg-[#153e29]"
+                  className="w-full py-2 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                 >
                   <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
                   <span>{tr('परामर्श प्राप्त करें', 'Paramarsh Lein')}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-amber-300 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 text-amber-300 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
             </div>
           ))}
 
           {/* 6th Card: Direct Quick Consultation Trust Card */}
-          <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-[#1b4b32] to-[#123824] text-white flex flex-col justify-between shadow-md border border-[#23583c] relative overflow-hidden">
-            <div className="relative z-10 space-y-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-200 text-[11px] font-bold border border-amber-300/30">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+          <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-[#1b4b32] to-[#123824] text-white flex flex-col justify-between shadow-sm border border-[#23583c] relative overflow-hidden">
+            <div className="relative z-10 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-amber-300 text-[11px] font-bold uppercase tracking-wide">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                 <span>{tr('100% गोपनीय एवं प्रामाणिक', '100% Gopniya aur Pramanik')}</span>
               </div>
 
-              <h3 className="font-playfair text-xl sm:text-2xl font-bold text-amber-100 leading-tight">
+              <h3 className="font-playfair text-lg sm:text-xl font-bold text-amber-100 leading-snug">
                 {tr('सीधे वैदिक ज्योतिषाचार्य से बात करें', 'Seedhe Vedic Jyotishacharya se Baat Karein')}
               </h3>
 
-              <p className="text-xs text-emerald-100/90 leading-relaxed">
+              <p className="text-[11px] text-emerald-100/90 leading-relaxed">
                 {tr(
                   'अपने जीवन के महत्वपूर्ण निर्णयों, जन्म कुंडली व ग्रह गोचर के व्यक्तिगत प्रश्नों पर लाइव चैट अथवा फोन कॉल द्वारा तुरंत मार्गदर्शन प्राप्त करें।',
                   'Apne jeevan ke mahatvapurna faislon, Janam Kundali aur Grah Gochar ke niji prashnon par Live Chat se turant margdarshan paayein.'
                 )}
               </p>
 
-              <div className="pt-2 text-xs space-y-1.5 text-emerald-200 font-medium">
+              <div className="pt-1.5 text-[11px] space-y-1 text-emerald-200 font-medium">
                 <p>✓ {tr('सटीक जन्म समय व कुंडली मिलान', 'Sateek Janam Samay aur Kundali Milan')}</p>
                 <p>✓ {tr('सरल, सात्विक एवं वैदिक ग्रह उपाय', 'Saral, Sattvic aur Vedic Grah Upay')}</p>
                 <p>✓ {tr('प्रथम गौ सेवा के साथ 50% विशेष छूट', 'Pehli Gau Seva ke sath 50% Vishesh Chhoot')}</p>
               </div>
             </div>
 
-            <div className="relative z-10 pt-5 mt-4 border-t border-emerald-700/50">
+            <div className="relative z-10 pt-3.5 mt-3 border-t border-emerald-700/50">
               <button
                 onClick={onGeneralConsult}
-                className="w-full py-2.5 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                className="w-full py-2 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
                 <span>{tr('अभी ज्योतिषी से जुड़ें', 'Abhi Jyotishi se Judein')}</span>
                 <ArrowRight className="w-4 h-4" />

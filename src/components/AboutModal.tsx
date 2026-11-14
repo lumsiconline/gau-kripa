@@ -41,8 +41,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
 
         {/* Content */}
         <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm text-[#483c2e] leading-relaxed">
-          <div className="h-44 rounded-2xl overflow-hidden border border-[#ebdcb9] shadow-xs">
-            <ImageCrop cropKey="heroCows" className="w-full h-full object-cover" alt="GauKripa Goshala" />
+          <div className="h-48 rounded-2xl overflow-hidden border border-[#ebdcb9] bg-[#f6ebd3] p-1.5 flex items-center justify-center">
+            <ImageCrop cropKey="heroCows" className="w-full h-full rounded-xl" preserveAspectRatio="xMidYMid meet" alt="GauKripa Goshala" />
           </div>
 
           <p>

@@ -652,14 +652,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                             </div>
                           </div>
 
-                          <div className="h-32 rounded-xl overflow-hidden bg-amber-50 relative border border-[#ebdcb9] group">
+                          <div className="h-36 rounded-xl overflow-hidden bg-[#f6ebd3] p-1.5 border border-[#ebdcb9] flex items-center justify-center">
                             {s.customImageUrl ? (
-                              <img src={s.customImageUrl} alt={s.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                              <img src={s.customImageUrl} alt={s.title} referrerPolicy="no-referrer" className="w-full h-full object-contain rounded-lg" />
                             ) : (
-                              <ImageCrop cropKey={s.cropKey} className="w-full h-full object-cover" alt={s.title} />
+                              <ImageCrop cropKey={s.cropKey} className="w-full h-full rounded-lg" preserveAspectRatio="xMidYMid meet" alt={s.title} />
                             )}
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2">
                             <label
-                              className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1b4b32]/90 hover:bg-[#153e29] text-white text-[10px] font-bold shadow-md cursor-pointer backdrop-blur-xs"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1b4b32] hover:bg-[#153e29] text-white text-[10px] font-bold cursor-pointer"
                               title={tr('वेबसाइट पर सेवा फ़ोटो बदलें', 'Website par Seva photo badlein')}
                             >
                               <Upload className="w-3 h-3 text-amber-300" />
@@ -680,7 +683,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               <button
                                 type="button"
                                 onClick={() => handleResetServiceImage(s.id)}
-                                className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-white/90 hover:bg-white text-[#6d460d] border border-[#d6ba7f] text-[10px] font-bold shadow-xs cursor-pointer"
+                                className="px-2 py-1 rounded-lg bg-[#faedd0] hover:bg-[#f2dfb7] text-[#6d460d] border border-[#d6ba7f] text-[10px] font-bold cursor-pointer"
                               >
                                 {tr('रीसेट', 'Reset')}
                               </button>
@@ -791,11 +794,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       >
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#d9ba78] shrink-0 bg-amber-50">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#d9ba78] shrink-0 bg-[#f6ebd3] p-1 flex items-center justify-center">
                               {a.customImageUrl ? (
-                                <img src={a.customImageUrl} alt={a.name} className="w-full h-full object-cover" />
+                                <img src={a.customImageUrl} alt={a.name} referrerPolicy="no-referrer" className="w-full h-full object-contain rounded-lg" />
                               ) : (
-                                <ImageCrop cropKey={a.cropKey} className="w-full h-full object-cover" alt={a.name} />
+                                <ImageCrop cropKey={a.cropKey} className="w-full h-full rounded-lg" preserveAspectRatio="xMidYMid meet" alt={a.name} />
                               )}
                             </div>
                             <div className="min-w-0">
@@ -1303,18 +1306,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   )}
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="w-24 h-16 rounded-lg overflow-hidden border border-[#ebdcb9] bg-amber-50 shrink-0">
+                  <div className="w-28 h-20 rounded-xl overflow-hidden border border-[#ebdcb9] bg-[#f6ebd3] p-1 shrink-0 flex items-center justify-center">
                     {editingService.customImageUrl ? (
                       <img
                         src={editingService.customImageUrl}
                         alt={editingService.title || 'Preview'}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain rounded-lg"
                       />
                     ) : (
                       <ImageCrop
                         cropKey={(editingService.cropKey as any) || 'sevaChara'}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full rounded-lg"
+                        preserveAspectRatio="xMidYMid meet"
                         alt={editingService.title || 'Default'}
                       />
                     )}
