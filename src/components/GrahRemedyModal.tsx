@@ -39,7 +39,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
                 {remedy.title} • {tr('वैदिक ग्रह उपाय', 'Vedic Grah Upay')}
               </h3>
               <p className="text-xs text-emerald-100/80">
-                {tr('प्रमुख ग्रह प्रभाव:', 'Governing Influence:')} {remedy.rulingPlanets}
+                {tr('प्रमुख ग्रह प्रभाव:', 'Mukhya Grah Prabhav:')} {remedy.rulingPlanets}
               </p>
             </div>
           </div>
@@ -59,7 +59,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-[#faf2e1] border border-[#e4d3a9] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-[#96631b] uppercase tracking-wider">
-                {tr('ज्योतिषीय कारण एवं विश्लेषण', 'Astrological Root Cause')}
+                {tr('ज्योतिषीय कारण एवं विश्लेषण', 'Jyotish Karan aur Vishleshan')}
               </span>
               <span className="text-xs font-bold text-[#1b4b32] bg-[#eddcb4] px-2 py-0.5 rounded-md">
                 {remedy.dosha}
@@ -69,7 +69,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
               {remedy.description}{' '}
               {tr(
                 'पाराशर ज्योतिष परंपरा के अनुसार, जब कुंडली में ग्रह प्रतिकूल हों तो गौमाता एवं जीवों के लिए नियमित आहार व्यवस्था अत्यंत सात्विक और फलदायी मानी जाती है।',
-                'According to Parashara Jyotish, arranging regular pure feed for Gaumata and living beings is a deeply peaceful and authentic Vedic practice.'
+                'Parashara Jyotish parampara ke anusar, jab Kundali mein grah pratikool hon to Gaumata aur jeevon ke liye niyamit aahar seva bahut hi sattvic aur faldayi maani jati hai.'
               )}
             </p>
           </div>
@@ -81,7 +81,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
                 <span className="text-xl">🌿</span>
                 <div>
                   <span className="text-[10px] font-bold text-[#c4821a] uppercase tracking-wider">
-                    {tr('अनुशंसित आहार सेवा', 'Recommended Feed Service')}
+                    {tr('अनुशंसित आहार सेवा', 'Anushansit Aahar Seva')}
                   </span>
                   <h4 className="font-playfair text-base font-bold text-[#1b4b32]">
                     {recommendedSeva.title}
@@ -104,7 +104,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
               }}
               className="w-full py-2.5 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
             >
-              <span>{tr(`${recommendedSeva.title} बुक करें`, `Book ${recommendedSeva.title} Now`)}</span>
+              <span>{tr(`${recommendedSeva.title} बुक करें`, `${recommendedSeva.title} Book Karein`)}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -113,20 +113,20 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-[#f4faee] border border-[#cfe2c4] space-y-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#2d6139]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{tr('दैनिक वैदिक मंत्र जप', 'Daily Sacred Mantra Chanting')}</span>
+              <span>{tr('दैनिक वैदिक मंत्र जप', 'Dainik Vedic Mantra Jaap')}</span>
             </div>
             <div className="font-serif text-sm font-bold text-[#1b4b32] bg-white/80 p-2 rounded-xl text-center border border-[#d6e7ce]">
               {remedy.mantra}
             </div>
             <p className="text-[11px] text-[#556959] text-center">
-              {tr('प्रातःकाल पूर्व दिशा की ओर मुख करके 108 बार शांतिपूर्वक जप करें।', 'Recite 108 times peacefully at sunrise facing East.')}
+              {tr('प्रातःकाल पूर्व दिशा की ओर मुख करके 108 बार शांतिपूर्वक जप करें।', 'Roz subah poorab disha ki taraf mukh karke 108 baar shanti se jaap karein.')}
             </p>
           </div>
 
           {/* Astrologer Consultation Option */}
           <div className="pt-2 border-t border-[#ebdcb9] flex items-center justify-between text-xs">
             <span className="text-[#6d5e49]">
-              {tr('विस्तृत जन्म कुंडली विश्लेषण चाहते हैं?', 'Need full Kundali birth chart analysis?')}
+              {tr('विस्तृत जन्म कुंडली विश्लेषण चाहते हैं?', 'Poorna Janam Kundali vishleshan chahiye?')}
             </span>
             <button
               onClick={() => {
@@ -135,7 +135,7 @@ export const GrahRemedyModal: React.FC<GrahRemedyModalProps> = ({
               }}
               className="font-bold text-[#c4821a] hover:text-[#9e6612] underline cursor-pointer"
             >
-              {tr('ज्योतिषी से बात करें (50% छूट)', 'Talk to Astrologer (50% OFF)')}
+              {tr('ज्योतिषी से बात करें (50% छूट)', 'Jyotishi se Baat Karein (50% Chhoot)')}
             </button>
           </div>
 

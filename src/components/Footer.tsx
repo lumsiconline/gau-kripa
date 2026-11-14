@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({
               <span className="text-[10px] font-medium text-amber-200/90 tracking-wide mt-1">
                 {tr(
                   'गौमाता आहार व्यवस्था • ज्योतिष मार्गदर्शन • आध्यात्मिक परामर्श',
-                  'Gaumata Feed Management • Astrology Guidance • Spiritual Counseling'
+                  'Gaumata Aahar Vyavastha • Jyotish Margdarshan • Adhyatmik Paramarsh'
                 )}
               </span>
             </div>
@@ -56,7 +56,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenServices}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              {tr('गौ-आहार सेवाएँ', 'Gau Feed Services')}
+              {tr('गौ-आहार सेवाएँ', 'Gau-Aahar Sevaein')}
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={onOpenJyotish}
                   className="hover:text-amber-300 text-amber-200 transition-colors cursor-pointer"
                 >
-                  {tr('ज्योतिष मार्गदर्शन (5 विषय)', 'Jyotish Guidance (5 Topics)')}
+                  {tr('ज्योतिष मार्गदर्शन (5 विषय)', 'Jyotish Salah (5 Vishay)')}
                 </button>
                 <span className="text-emerald-700/60" aria-hidden="true">|</span>
               </>
@@ -76,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenAstrology}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              {tr('ज्योतिषाचार्य', 'Astrologers')}
+              {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -84,7 +84,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenReviews}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              {tr('समीक्षाएं एवं वीडियो पुष्टि', 'Reviews & Video Proof')}
+              {tr('समीक्षाएं एवं वीडियो पुष्टि', 'Samiksha & Video Proof')}
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -92,7 +92,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenAbout}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              {tr('परिचय', 'About Us')}
+              {tr('परिचय', 'Hamare Baare Mein')}
             </button>
             <span className="text-emerald-700/60" aria-hidden="true">|</span>
 
@@ -100,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onOpenContact}
               className="hover:text-amber-300 transition-colors cursor-pointer"
             >
-              {tr('संपर्क करें', 'Contact Us')}
+              {tr('संपर्क करें', 'Sampark Karein')}
             </button>
 
             {onOpenAdmin && (
@@ -122,7 +122,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={onOpenAstrologer}
                   className="text-emerald-200 hover:text-amber-200 transition-colors cursor-pointer flex items-center gap-1"
                 >
-                  <span>🔮</span> {tr('ज्योतिष डेस्क', 'Astro Desk')}
+                  <span>🔮</span> {tr('ज्योतिष डेस्क', 'Jyotish Desk')}
                 </button>
               </>
             )}
@@ -174,7 +174,7 @@ export const Footer: React.FC<FooterProps> = ({
             {/* Secure Payments Badge */}
             <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-200/90 bg-[#0d2a1b] px-3 py-1.5 rounded-full border border-emerald-900/80">
               <Lock className="w-3.5 h-3.5 text-amber-300" />
-              <span>{tr('सुरक्षित भुगतान', 'Secure Payments')}</span>
+              <span>{tr('सुरक्षित भुगतान', 'Surakshit Bhugtan')}</span>
             </div>
 
           </div>
@@ -186,15 +186,15 @@ export const Footer: React.FC<FooterProps> = ({
           <p>
             © {new Date().getFullYear()} {tr(
               'GauKripa. गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष मार्गदर्शन। सर्वाधिकार सुरक्षित।',
-              'GauKripa. Gaumata Feed Management & Vedic Astrology Guidance. All rights reserved.'
+              'GauKripa. Gaumata Aahar Vyavastha aur Vedic Jyotish Margdarshan. Sabhi Adhikar Surakshit.'
             )}
           </p>
           <div className="flex items-center gap-4">
-            <a href="#privacy" className="hover:underline">{tr('गोपनीयता नीति', 'Privacy Policy')}</a>
+            <a href="#privacy" className="hover:underline">{tr('गोपनीयता नीति', 'Gopniyata Niti')}</a>
             <span>•</span>
-            <a href="#terms" className="hover:underline">{tr('सेवा नियम व शर्तें', 'Terms of Service')}</a>
+            <a href="#terms" className="hover:underline">{tr('सेवा नियम व शर्तें', 'Seva Niyam & Shartein')}</a>
             <span>•</span>
-            <a href="#transparency" className="hover:underline">{tr('आहार वितरण वीडियो पुष्टि', 'Distribution Video Proof')}</a>
+            <a href="#transparency" className="hover:underline">{tr('आहार वितरण वीडियो पुष्टि', 'Aahar Vitaran Video Proof')}</a>
           </div>
         </div>
 

@@ -106,7 +106,7 @@ export default function App() {
       setAuthPromptMessage(
         tr(
           'प्रबंधन कंसोल खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
-          'Super Admin sign-in required (bankush014@gmail.com) to access management consoles.'
+          'Management console kholne ke liye Super Admin (bankush014@gmail.com) login zaroori hai.'
         )
       );
       setAuthModalOpen(true);
@@ -131,7 +131,7 @@ export default function App() {
           setAuthPromptMessage(
             tr(
               'एडमिन कंसोल खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
-              'Super Admin sign-in required (bankush014@gmail.com) to access the Admin Console.'
+              'Admin console kholne ke liye Super Admin (bankush014@gmail.com) login zaroori hai.'
             )
           );
           setAuthModalOpen(true);
@@ -144,7 +144,7 @@ export default function App() {
           setAuthPromptMessage(
             tr(
               'ज्योतिषी डेस्क खोलने के लिए सुपर एडमिन (bankush014@gmail.com) लॉगिन आवश्यक है।',
-              'Super Admin sign-in required (bankush014@gmail.com) to access the Astrologer Desk.'
+              'Jyotishi desk kholne ke liye Super Admin (bankush014@gmail.com) login zaroori hai.'
             )
           );
           setAuthModalOpen(true);
@@ -227,7 +227,7 @@ export default function App() {
       setAuthPromptMessage(
         tr(
           'वैदिक ज्योतिषियों से परामर्श लेने के लिए कृपया अपने ईमेल व पासवर्ड से साइन इन करें।',
-          'Please sign in with your email & password to consult with Vedic Astrologers.'
+          'Vedic Jyotishiyon se paramarsh lene ke liye kripaya apne email aur password se Sign In karein.'
         )
       );
       setPendingAction({ type: 'astrologer', astrologer, mode, concern: concernText });
@@ -392,7 +392,7 @@ export default function App() {
           <button
             onClick={() => navigateTo('admin')}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer whitespace-nowrap"
-            title={tr('एडमिन डैशबोर्ड खोलें', 'Open Admin Dashboard')}
+            title={tr('एडमिन डैशबोर्ड खोलें', 'Admin Dashboard Kholein')}
           >
             <span className="text-sm">🛡️</span>
             <span>{tr('एडमिन डैशबोर्ड', 'Admin Dashboard')}</span>
@@ -400,10 +400,10 @@ export default function App() {
           <button
             onClick={() => navigateTo('astrologer')}
             className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-amber-200 font-semibold text-xs transition-all cursor-pointer whitespace-nowrap"
-            title={tr('ज्योतिष डेस्क खोलें', 'Open Astrologer Desk')}
+            title={tr('ज्योतिष डेस्क खोलें', 'Jyotish Desk Kholein')}
           >
             <span className="text-sm">🔮</span>
-            <span>{tr('ज्योतिष डेस्क', 'Astro Desk')}</span>
+            <span>{tr('ज्योतिष डेस्क', 'Jyotish Desk')}</span>
           </button>
         </aside>
       )}
@@ -423,7 +423,7 @@ export default function App() {
         onClose={() => setAstroModalOpen(false)}
         hasDiscount={hasAstrologerDiscount}
         customerPhone={currentUser?.phone || '9876543210'}
-        customerName={currentUser?.name || tr('भक्त', 'Devotee')}
+        customerName={currentUser?.name || tr('भक्त', 'Bhakt')}
         initialConcern={selectedConcern}
         onBookPrescribedSeva={(sevaTitle) => {
           handleOpenSevaBooking(findPrescribedSeva(sevaTitle));

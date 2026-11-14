@@ -84,13 +84,13 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
     : selectedSeva;
 
   const occasionPresets = [
-    { id: 'general', hi: 'दैनिक गौ-आहार सेवा', en: 'General Daily Feed Seva', isExtra: false },
+    { id: 'general', hi: 'दैनिक गौ-आहार सेवा', en: 'Dainik Gau-Aahar Seva', isExtra: false },
     { id: 'diwali', hi: 'दीपावली / गोवर्धन पूजा', en: 'Diwali / Govardhan Puja', isExtra: true },
-    { id: 'birthday', hi: 'जन्मदिवस संकल्प', en: 'Birthday Blessing', isExtra: true },
-    { id: 'anniversary', hi: 'विवाह वर्षगांठ', en: 'Wedding Anniversary', isExtra: true },
+    { id: 'birthday', hi: 'जन्मदिवस संकल्प', en: 'Janamdin Sankalp', isExtra: true },
+    { id: 'anniversary', hi: 'विवाह वर्षगांठ', en: 'Vivah Varshgaanth', isExtra: true },
     { id: 'purnima', hi: 'पूर्णिमा / एकादशी', en: 'Purnima / Ekadashi', isExtra: true },
-    { id: 'pitra', hi: 'पितृ शांति विशेष', en: 'Pitra Shanti / Ancestors', isExtra: true },
-    { id: 'health', hi: 'स्वास्थ्य एवं सुख-शांति', en: 'Health & Peace', isExtra: true },
+    { id: 'pitra', hi: 'पितृ शांति विशेष', en: 'Pitra Shanti Vishesh', isExtra: true },
+    { id: 'health', hi: 'स्वास्थ्य एवं सुख-शांति', en: 'Swasthya aur Sukh-Shanti', isExtra: true },
   ];
 
   const selectedOccasion = occasionPresets.find((o) => o.id === occasionId) || occasionPresets[0];
@@ -111,10 +111,10 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
   };
 
   const getDurationText = () => {
-    if (duration === 'once') return tr('1 दिन (एक दिवसीय सेवा)', '1 Day (Single Seva)');
-    if (duration === '7days') return tr('7 दिन (साप्ताहिक संकल्प)', '7 Days (Weekly Sankalp)');
-    if (duration === 'monthly') return tr('30 दिन (मासिक संकल्प)', '30 Days (Monthly Sankalp)');
-    return tr(`${customDays} दिन (विशेष संकल्प)`, `${customDays} Days (Custom Sankalp)`);
+    if (duration === 'once') return tr('1 दिन (एक दिवसीय सेवा)', '1 Din (Ek Divasiya Seva)');
+    if (duration === '7days') return tr('7 दिन (साप्ताहिक संकल्प)', '7 Din (Saptahik Sankalp)');
+    if (duration === 'monthly') return tr('30 दिन (मासिक संकल्प)', '30 Din (Masik Sankalp)');
+    return tr(`${customDays} दिन (विशेष संकल्प)`, `${customDays} Din (Vishesh Sankalp)`);
   };
 
   const baseTotal = calculateBaseTotal();
@@ -141,7 +141,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
       setPaymentError(
         tr(
           'आहार वितरण की वीडियो पुष्टि पाने के लिए कृपया मान्य 10-अंकीय मोबाइल नंबर दर्ज करें।',
-          'Please enter a valid 10-digit mobile number for Sankalp video proof.'
+          'Aahar vitaran ka video proof paane ke liye kripaya sahi 10-digit mobile number darj karein.'
         )
       );
       return;
@@ -155,7 +155,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
       const receiptId = `gk_seva_${Date.now()}`;
       const order = await api.createOrder(amountInPaise, 'INR', receiptId, {
         sevaTitle: displaySeva.title,
-        devoteeName: devoteeName || tr('भक्त', 'Devotee'),
+        devoteeName: devoteeName || tr('भक्त', 'Bhakt'),
         phone: cleanPhone,
         gotra: gotra || tr('कश्यप', 'Kashyap'),
         occasion: occasionLabel
@@ -167,19 +167,19 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => resolve();
-          script.onerror = () => reject(new Error(tr('सुरक्षित Razorpay चेकआउट लोड नहीं हो सका।', 'Unable to load secure Razorpay Checkout.')));
+          script.onerror = () => reject(new Error(tr('सुरक्षित Razorpay चेकआउट लोड नहीं हो सका।', 'Surakshit Razorpay Checkout load nahi ho saka.')));
           document.body.appendChild(script);
         });
       }
 
       const RazorpayCheckout = (window as any).Razorpay;
       if (!RazorpayCheckout) {
-        throw new Error(tr('Razorpay चेकआउट अभी उपलब्ध नहीं है। कृपया पुनः प्रयास करें।', 'Razorpay Checkout is currently unavailable. Please try again.'));
+        throw new Error(tr('Razorpay चेकआउट अभी उपलब्ध नहीं है। कृपया पुनः प्रयास करें।', 'Razorpay Checkout abhi uplabdh nahi hai. Kripaya dobara koshish karein.'));
       }
 
       const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
       if (!keyId) {
-        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID is not configured.'));
+        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID configure nahi hai.'));
       }
 
       const checkoutOptions: any = {
@@ -187,9 +187,9 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
         amount: order.amount || amountInPaise,
         currency: 'INR',
         name: 'GauKripa',
-        description: `${displaySeva.title} • ${tr('संकल्प सेवा', 'Seva Sankalp')}`,
+        description: `${displaySeva.title} • ${tr('संकल्प सेवा', 'Sankalp Seva')}`,
         prefill: {
-          name: devoteeName || tr('भक्त', 'Devotee'),
+          name: devoteeName || tr('भक्त', 'Bhakt'),
           contact: cleanPhone
         },
         notes: {
@@ -211,7 +211,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               planet: displaySeva.planetTag,
               quantity: `${quantity} × ${displaySeva.unit}`,
               duration: getDurationText(),
-              devoteeName: devoteeName || tr('भक्त', 'Devotee'),
+              devoteeName: devoteeName || tr('भक्त', 'Bhakt'),
               gotra: gotra || tr('कश्यप', 'Kashyap'),
               familyMembers,
               occasion: occasionLabel,
@@ -221,7 +221,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               baseAmount: baseTotal,
               extraFee: extraOccasionFee,
               amount: totalAmount,
-              goshala: tr('सुरभि सेवा धाम, वृन्दावन', 'Surabhi Seva Dham, Vrindavan'),
+              goshala: tr('गौकृपा प्रमाणित गौशाला', 'GauKripa Pramanit Goshala'),
               astrologerCoupon: 'GAU50-FREE-ASTRO',
               timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
             };
@@ -241,7 +241,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             }
             if (onBookingSuccess) onBookingSuccess(receipt);
           } catch (verifyErr: any) {
-            setPaymentError(verifyErr?.message || tr('भुगतान हस्ताक्षर सत्यापन असफल रहा।', 'Payment signature verification failed.'));
+            setPaymentError(verifyErr?.message || tr('भुगतान हस्ताक्षर सत्यापन असफल रहा।', 'Payment verification asafal raha.'));
           } finally {
             setIsProcessing(false);
           }
@@ -261,13 +261,13 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
       const checkout = new RazorpayCheckout(checkoutOptions);
       checkout.on('payment.failed', (resp: any) => {
-        setPaymentError(resp?.error?.description || tr('Razorpay भुगतान पूर्ण नहीं हो सका। कृपया पुनः प्रयास करें।', 'Razorpay payment was not completed. Please try again.'));
+        setPaymentError(resp?.error?.description || tr('Razorpay भुगतान पूर्ण नहीं हो सका। कृपया पुनः प्रयास करें।', 'Razorpay payment poora nahi ho saka. Kripaya dobara koshish karein.'));
         setIsProcessing(false);
       });
 
       checkout.open();
     } catch (err: any) {
-      setPaymentError(err?.message || tr('सुरक्षित Razorpay चेकआउट प्रारंभ नहीं हो सका।', 'Failed to initiate secure Razorpay checkout.'));
+      setPaymentError(err?.message || tr('सुरक्षित Razorpay चेकआउट प्रारंभ नहीं हो सका।', 'Surakshit Razorpay checkout shuru nahi ho saka.'));
       setIsProcessing(false);
     }
   };
@@ -285,7 +285,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 {displaySeva.title} • {tr('संकल्प', 'Sankalp')}
               </h3>
               <p className="text-xs text-emerald-100/90 font-medium">
-                {tr('सुरभि सेवा धाम, वृन्दावन में प्रत्यक्ष गौ-आहार व्यवस्था', 'Dedicated Feed Arrangement at Surabhi Seva Dham, Vrindavan')}
+                {tr('प्रमाणित गौशाला में प्रत्यक्ष गौ-आहार व्यवस्था', 'Pramanit Goshala mein Pratyaksh Gau-Aahar Seva')}
               </p>
             </div>
           </div>
@@ -343,7 +343,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                   </p>
 
                   <p className="text-[11px] text-[#715f4a] italic pt-0.5 leading-snug">
-                    <strong className="text-[#1b4b32] not-italic">{tr('वैदिक महत्व: ', 'Vedic Significance: ')}</strong>
+                    <strong className="text-[#1b4b32] not-italic">{tr('वैदिक महत्व: ', 'Vedic Mahatva: ')}</strong>
                     {displaySeva.vedicSignificance}
                   </p>
                 </div>
@@ -353,7 +353,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/90 flex items-center gap-2 text-xs text-[#634f31]">
                 <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong className="text-[#1b4b32]">{tr('सेवा लाभ:', 'Service Benefit:')}</strong> {displaySeva.benefit}
+                  <strong className="text-[#1b4b32]">{tr('सेवा लाभ:', 'Seva Labh:')}</strong> {displaySeva.benefit}
                 </span>
               </div>
             </div>
@@ -362,10 +362,10 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="bg-[#fffcf7] p-3.5 rounded-2xl border border-[#ebdcb9] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <label className="block text-xs font-bold text-[#453728]">
-                  {tr(`आहार मात्रा (${displaySeva.unit})`, `Feed Quantity (${displaySeva.unit})`)}
+                  {tr(`आहार मात्रा (${displaySeva.unit})`, `Aahar Matra (${displaySeva.unit})`)}
                 </label>
                 <span className="text-[11px] text-[#756653]">
-                  {tr(`दर: ₹${displaySeva.basePrice} प्रति ${displaySeva.unit}`, `Rate: ₹${displaySeva.basePrice} per ${displaySeva.unit}`)}
+                  {tr(`दर: ₹${displaySeva.basePrice} प्रति ${displaySeva.unit}`, `Dar: ₹${displaySeva.basePrice} prati ${displaySeva.unit}`)}
                 </span>
               </div>
 
@@ -393,7 +393,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             {/* 3. Duration Selector: 1 Day, 7 Days, 30 Days and Custom Buttons */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-[#453728] uppercase tracking-wider">
-                {tr('सेवा अवधि चुनें', 'Select Sankalp Period')}
+                {tr('सेवा अवधि चुनें', 'Seva Avadhi Chunein')}
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -407,8 +407,8 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                       : 'bg-[#fcf8ee] text-[#3d3224] border-[#ebdcb9] hover:bg-[#f6efe0]'
                   }`}
                 >
-                  <div className="font-bold text-xs">{tr('1 दिन', '1 Day')}</div>
-                  <div className="text-[10px] opacity-80">{tr('एक दिवसीय सेवा', 'Single Day')}</div>
+                  <div className="font-bold text-xs">{tr('1 दिन', '1 Din')}</div>
+                  <div className="text-[10px] opacity-80">{tr('एक दिवसीय सेवा', 'Ek Din ki Seva')}</div>
                 </button>
 
                 {/* 7 Days */}
@@ -421,8 +421,8 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                       : 'bg-[#fcf8ee] text-[#3d3224] border-[#ebdcb9] hover:bg-[#f6efe0]'
                   }`}
                 >
-                  <div className="font-bold text-xs">{tr('7 दिन', '7 Days')}</div>
-                  <div className="text-[10px] opacity-80">{tr('साप्ताहिक संकल्प', 'Weekly Sankalp')}</div>
+                  <div className="font-bold text-xs">{tr('7 दिन', '7 Din')}</div>
+                  <div className="text-[10px] opacity-80">{tr('साप्ताहिक संकल्प', 'Saptahik Sankalp')}</div>
                 </button>
 
                 {/* 30 Days (Monthly) */}
@@ -435,8 +435,8 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                       : 'bg-[#fcf8ee] text-[#3d3224] border-[#ebdcb9] hover:bg-[#f6efe0]'
                   }`}
                 >
-                  <div className="font-bold text-xs">{tr('30 दिन', '30 Days')}</div>
-                  <div className="text-[10px] opacity-80">{tr('मासिक सेवा', 'Monthly Seva')}</div>
+                  <div className="font-bold text-xs">{tr('30 दिन', '30 Din')}</div>
+                  <div className="text-[10px] opacity-80">{tr('मासिक सेवा', 'Masik Seva')}</div>
                 </button>
 
                 {/* Custom Days Button */}
@@ -449,8 +449,8 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                       : 'bg-[#fcf8ee] text-[#3d3224] border-[#ebdcb9] hover:bg-[#f6efe0]'
                   }`}
                 >
-                  <div className="font-bold text-xs">{tr('अन्य दिन', 'Custom Days')}</div>
-                  <div className="text-[10px] opacity-80">{tr('मनचाहे दिन चुनें', 'Pick any days')}</div>
+                  <div className="font-bold text-xs">{tr('अन्य दिन', 'Anya Din')}</div>
+                  <div className="text-[10px] opacity-80">{tr('मनचाहे दिन चुनें', 'Apne din chunein')}</div>
                 </button>
               </div>
 
@@ -459,7 +459,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 <div className="p-3 rounded-2xl bg-[#faf3e2] border border-[#e4d4ad] space-y-2.5 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#1b4b32]">
-                      {tr('दिनों की संख्या चुनें:', 'Choose Number of Days:')}
+                      {tr('दिनों की संख्या चुनें:', 'Dinon ki Sankhya Chunein:')}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
@@ -490,7 +490,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                   {/* Auspicious Shortcut Chips */}
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
                     <span className="text-[11px] text-[#715f4a] font-medium mr-1">
-                      {tr('शुभ अवधि:', 'Auspicious Periods:')}
+                      {tr('शुभ अवधि:', 'Shubh Avadhi:')}
                     </span>
                     {[11, 21, 40, 51, 108].map((days) => (
                       <button
@@ -503,7 +503,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                             : 'bg-white text-[#524434] border-[#ebdcb9] hover:bg-[#f6eee0]'
                         }`}
                       >
-                        {days} {tr('दिन', 'Days')} {days === 40 && tr('(मंडल)', '(Mandal)')}
+                        {days} {tr('दिन', 'Din')} {days === 40 && tr('(मंडल)', '(Mandal)')}
                       </button>
                     ))}
                   </div>
@@ -515,10 +515,10 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-1">
                 <label className="block text-xs font-bold text-[#453728] uppercase tracking-wider">
-                  {tr('विशेष अवसर', 'Occasion')}
+                  {tr('विशेष अवसर', 'Vishesh Avsar')}
                 </label>
                 <span className="text-[11px] text-[#786955]">
-                  {tr('व्यक्तिगत संकल्प हेतु अवसर चुनें', 'Select an occasion for personalized sankalp')}
+                  {tr('व्यक्तिगत संकल्प हेतु अवसर चुनें', 'Vyaktigat sankalp ke liye avsar chunein')}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -558,7 +558,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               <div className="text-xs font-bold text-[#1b4b32] uppercase tracking-wider flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <UserIcon className="w-3.5 h-3.5" />
-                  {tr('संकल्प विवरण', 'Devotee Sankalp Details')}
+                  {tr('संकल्प विवरण', 'Bhakt Sankalp Vivaran')}
                 </span>
                 
                 {/* Button to add family members */}
@@ -568,7 +568,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                   className="text-[11px] font-bold text-[#c4821a] hover:text-[#9e6612] flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{tr('परिवार का सदस्य जोड़ें', 'Add Family Member')}</span>
+                  <span>{tr('परिवार का सदस्य जोड़ें', 'Parivar ka Sadasya Jodein')}</span>
                 </button>
               </div>
 
@@ -576,7 +576,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               {familyMembers.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-amber-50/80 border border-amber-200">
                   <span className="text-[11px] font-bold text-[#1b4b32] self-center">
-                    {tr('संकल्प में परिवार:', 'Family in Sankalp:')}
+                    {tr('संकल्प में परिवार:', 'Sankalp mein Parivar:')}
                   </span>
                   {familyMembers.map((member, idx) => (
                     <span
@@ -603,7 +603,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                     type="text"
                     value={newMemberName}
                     onChange={(e) => setNewMemberName(e.target.value)}
-                    placeholder={tr('परिवार के सदस्य का नाम लिखें', "Enter family member's name")}
+                    placeholder={tr('परिवार के सदस्य का नाम लिखें', 'Parivar ke sadasya ka naam likhein')}
                     className="flex-1 px-3 py-1.5 rounded-lg border border-[#ebdcb9] bg-white text-xs focus:outline-hidden"
                   />
                   <button
@@ -611,14 +611,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                     onClick={handleAddMember}
                     className="px-3 py-1.5 rounded-lg bg-[#1b4b32] text-white text-xs font-bold cursor-pointer"
                   >
-                    {tr('जोड़ें', 'Add')}
+                    {tr('जोड़ें', 'Jodein')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddMember(false)}
                     className="px-2 py-1.5 text-xs text-[#756653] cursor-pointer"
                   >
-                    {tr('रद्द करें', 'Cancel')}
+                    {tr('रद्द करें', 'Radd Karein')}
                   </button>
                 </div>
               )}
@@ -626,14 +626,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                    {tr('संकल्प कर्ता का नाम *', 'Primary Devotee Name *')}
+                    {tr('संकल्प कर्ता का नाम *', 'Sankalp Karta ka Naam *')}
                   </label>
                   <input
                     type="text"
                     required
                     value={devoteeName}
                     onChange={(e) => setDevoteeName(e.target.value)}
-                    placeholder={tr('जैसे: हर्ष भारद्वाज', 'e.g. Harsh Bhardwaj')}
+                    placeholder={tr('जैसे: हर्ष भारद्वाज', 'Jaise: Harsh Bhardwaj')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
                   />
                 </div>
@@ -646,14 +646,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                     type="text"
                     value={gotra}
                     onChange={(e) => setGotra(e.target.value)}
-                    placeholder={tr('जैसे: कश्यप / भारद्वाज', 'e.g. Kashyap / Bhardwaj')}
+                    placeholder={tr('जैसे: कश्यप / भारद्वाज', 'Jaise: Kashyap / Bhardwaj')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                    {tr('व्हाट्सएप नंबर (वीडियो पुष्टि हेतु) *', 'WhatsApp Number (for Video Proof) *')}
+                    {tr('व्हाट्सएप नंबर (वीडियो पुष्टि हेतु) *', 'WhatsApp Number (Video Proof ke Liye) *')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-xs text-[#7d705c] font-semibold">+91</span>
@@ -670,7 +670,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                    {tr('सेवा प्रारंभ तिथि', 'Starting Date of Seva')}
+                    {tr('सेवा प्रारंभ तिथि', 'Seva Shuru Hone ki Tarikh')}
                   </label>
                   <input
                     type="date"
@@ -683,13 +683,13 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
               <div>
                 <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                  {tr('प्रार्थना / मनोकामना', 'Prayer / Sankalp Wish')}
+                  {tr('प्रार्थना / मनोकामना', 'Prarthana / Manokamna')}
                 </label>
                 <input
                   type="text"
                   value={sankalpWish}
                   onChange={(e) => setSankalpWish(e.target.value)}
-                  placeholder={tr('जैसे: परिवार में सुख-शांति, स्वास्थ्य व ग्रह शांति', 'e.g. Family peace, health & planetary harmony')}
+                  placeholder={tr('जैसे: परिवार में सुख-शांति, स्वास्थ्य व ग्रह शांति', 'Jaise: Parivar mein sukh-shanti, swasthya aur grah shanti')}
                   className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
                 />
               </div>
@@ -699,10 +699,10 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2.5">
               <Video className="w-4 h-4 text-emerald-700 shrink-0" />
               <span>
-                <strong>{tr('आहार वितरण की वीडियो पुष्टि:', 'Video Distribution Proof:')}</strong>{' '}
+                <strong>{tr('आहार वितरण की वीडियो पुष्टि:', 'Aahar Vitaran ka Video Proof:')}</strong>{' '}
                 {tr(
                   `वीडियो आपके पंजीकृत नंबर${phone ? ` (+91 ${phone})` : ''} पर साझा किया जाएगा।`,
-                  `Video will be shared on your registered number${phone ? ` (+91 ${phone})` : ''}.`
+                  `Video aapke registered number${phone ? ` (+91 ${phone})` : ''} par bheja jayega.`
                 )}
               </span>
             </div>
@@ -710,7 +710,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             {/* 6. Payment Method Selector */}
             <div>
               <label className="block text-xs font-bold text-[#5c4e3a] mb-1.5">
-                {tr('भुगतान माध्यम चुनें', 'Select Payment Mode')}
+                {tr('भुगतान माध्यम चुनें', 'Payment ka Madhyam Chunein')}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -733,7 +733,7 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                       : 'bg-[#fffcf5] text-[#332b21] border-[#ebdcb9]'
                   }`}
                 >
-                  💳 {tr('डेबिट / क्रेडिट कार्ड', 'Debit / Card')}
+                  💳 {tr('डेबिट / क्रेडिट कार्ड', 'Debit / Credit Card')}
                 </button>
                 <button
                   type="button"
@@ -755,14 +755,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-base text-[#b87611] font-bold">卐</span>
                   <div>
-                    <strong className="text-[#1b4b32]">{tr('विशेष अवसर संकल्प:', 'Special Occasion Sankalp:')}</strong>{' '}
+                    <strong className="text-[#1b4b32]">{tr('विशेष अवसर संकल्प:', 'Vishesh Avsar Sankalp:')}</strong>{' '}
                     <span className="text-[#6d5b3d]">
-                      {tr(`${occasionLabel} हेतु ₹21 विशेष संकल्प शुल्क`, `₹21 extra added for ${occasionLabel}`)}
+                      {tr(`${occasionLabel} हेतु ₹21 विशेष संकल्प शुल्क`, `${occasionLabel} ke liye ₹21 vishesh sankalp shulk`)}
                     </span>
                   </div>
                 </div>
                 <span className="font-extrabold text-[#1b4b32] text-xs shrink-0 bg-[#faedd0] px-2.5 py-1 rounded-lg border border-[#d6ba7f]">
-                  +₹21 {tr('अतिरिक्त', 'Extra')}
+                  +₹21 {tr('अतिरिक्त', 'Atirikt')}
                 </span>
               </div>
             )}
@@ -779,13 +779,13 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#ebdcb9]">
               <div>
                 <span className="text-xs text-[#716450] font-medium">
-                  {tr(`कुल सेवा शुल्क (${getDurationText()}):`, `Total Service Fee (${getDurationText()}):`)}
+                  {tr(`कुल सेवा शुल्क (${getDurationText()}):`, `Kul Seva Shulk (${getDurationText()}):`)}
                 </span>
                 <div className="flex items-baseline gap-2">
                   <div className="text-2xl font-black text-[#1b4b32]">₹{totalAmount}</div>
                   {isExtraOccasion && (
                     <span className="text-xs text-[#8c7a64] font-medium">
-                      {tr(`(₹${baseTotal} सेवा + ₹21 विशेष अवसर)`, `(₹${baseTotal} service + ₹21 occasion)`)}
+                      {tr(`(₹${baseTotal} सेवा + ₹21 विशेष अवसर)`, `(₹${baseTotal} seva + ₹21 vishesh avsar)`)}
                     </span>
                   )}
                 </div>
@@ -799,11 +799,11 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 {isProcessing ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>{tr('संकल्प दर्ज हो रहा है...', 'Registering Sankalp...')}</span>
+                    <span>{tr('संकल्प दर्ज हो रहा है...', 'Sankalp Darj Ho Raha Hai...')}</span>
                   </>
                 ) : (
                   <>
-                    <span>{tr(`सेवा बुक करें एवं ₹${totalAmount} भुगतान करें`, `Confirm Service & Pay ₹${totalAmount}`)}</span>
+                    <span>{tr(`सेवा बुक करें एवं ₹${totalAmount} भुगतान करें`, `Seva Book Karein aur ₹${totalAmount} Bhugtan Karein`)}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -821,12 +821,12 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="space-y-1">
               <span className="text-xs font-bold tracking-widest text-[#c4821a] uppercase">सङ्कल्प सिद्धम्</span>
               <h4 className="font-playfair text-2xl font-bold text-[#1b4b32]">
-                {tr('सेवा संकल्प सफलतापूर्वक दर्ज हुआ!', 'Seva Sankalp Registered!')}
+                {tr('सेवा संकल्प सफलतापूर्वक दर्ज हुआ!', 'Seva Sankalp Safaltapoorvak Darj Hua!')}
               </h4>
               <p className="text-xs sm:text-sm text-[#5c4e3a] max-w-md mx-auto">
                 {tr(
                   `जय गौमाता! आपकी ${bookingReceipt?.sevaTitle} (${bookingReceipt?.duration}) की व्यवस्था सुनिश्चित हो गई है।`,
-                  `Jai Gaumata! Your ${bookingReceipt?.sevaTitle} for ${bookingReceipt?.duration} is confirmed.`
+                  `Jai Gaumata! Aapki ${bookingReceipt?.sevaTitle} (${bookingReceipt?.duration}) ki seva sunishchit ho gayi hai.`
                 )}
               </p>
             </div>
@@ -835,14 +835,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
             <div className="bg-[#fff9ea] border-2 border-[#d9ba78] rounded-2xl p-4 text-left max-w-lg mx-auto shadow-xs space-y-2.5">
               <div className="flex items-center justify-between border-b border-[#ebdcb9] pb-2">
                 <span className="font-playfair font-bold text-[#1b4b32] text-sm">
-                  {tr('गौकृपा • गौमाता आहार व्यवस्था एवं सेवा', 'GauKripa • Gaumata Feed Management & Service')}
+                  {tr('गौकृपा • गौमाता आहार व्यवस्था एवं सेवा', 'GauKripa • Gaumata Aahar Vyavastha aur Seva')}
                 </span>
                 <span className="text-xs font-mono font-bold text-[#8b6f38]">{bookingReceipt?.bookingId}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[#887863]">{tr('यजमान / भक्त:', 'Devotee:')}</span>
+                  <span className="text-[#887863]">{tr('यजमान / भक्त:', 'Yajman / Bhakt:')}</span>
                   <div className="font-bold text-[#2d3a31]">{bookingReceipt?.devoteeName}</div>
                 </div>
                 <div>
@@ -850,13 +850,13 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                   <div className="font-bold text-[#2d3a31]">{bookingReceipt?.gotra}</div>
                 </div>
                 <div>
-                  <span className="text-[#887863]">{tr('सेवा एवं अवधि:', 'Service & Duration:')}</span>
+                  <span className="text-[#887863]">{tr('सेवा एवं अवधि:', 'Seva aur Avadhi:')}</span>
                   <div className="font-bold text-[#1b4b32]">{bookingReceipt?.sevaTitle} ({bookingReceipt?.duration})</div>
                 </div>
                 <div>
                   <span className="text-[#887863]">
-                    {tr('कुल सेवा शुल्क', 'Total Service Fee')}
-                    {bookingReceipt?.extraFee > 0 ? tr(' (सहित ₹21 विशेष संकल्प)', ' (incl. ₹21 special occasion)') : ''}:
+                    {tr('कुल सेवा शुल्क', 'Kul Seva Shulk')}
+                    {bookingReceipt?.extraFee > 0 ? tr(' (सहित ₹21 विशेष संकल्प)', ' (₹21 vishesh sankalp sahit)') : ''}:
                   </span>
                   <div className="font-bold text-[#1b4b32]">₹{bookingReceipt?.amount}</div>
                 </div>
@@ -864,18 +864,18 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
 
               {bookingReceipt?.familyMembers?.length > 0 && (
                 <div className="text-[11px] pt-1 border-t border-[#ebdcb9]">
-                  <span className="text-[#887863]">{tr('संकल्प में सम्मिलित परिवार:', 'Family in Sankalp:')} </span>
+                  <span className="text-[#887863]">{tr('संकल्प में सम्मिलित परिवार:', 'Sankalp mein Shamil Parivar:')} </span>
                   <span className="font-semibold text-[#1b4b32]">{bookingReceipt.familyMembers.join(', ')}</span>
                 </div>
               )}
 
               <div className="pt-2 border-t border-[#ebdcb9] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-[#6d5f4c]">
                 <span>
-                  {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर भेजी जाएगी:', 'Video distribution proof will be sent on WhatsApp:')}{' '}
+                  {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर भेजी जाएगी:', 'Aahar vitaran ka video proof WhatsApp par bheja jayega:')}{' '}
                   <strong className="text-[#1b4b32]">+91 {bookingReceipt?.phone}</strong>
                 </span>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> {tr('प्रत्यक्ष गौशाला सेवा', 'Direct Goshala Service')}
+                  <ShieldCheck className="w-3.5 h-3.5" /> {tr('प्रत्यक्ष गौशाला सेवा', 'Pratyaksh Goshala Seva')}
                 </span>
               </div>
             </div>
@@ -887,14 +887,14 @@ export const SevaBookingModal: React.FC<SevaBookingModalProps> = ({
                 className="px-4 py-2 rounded-full border border-[#1b4b32] text-[#1b4b32] font-semibold text-xs flex items-center gap-1.5 hover:bg-[#1b4b32]/5 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{tr('संकल्प प्रमाणपत्र सहेजें', 'Save Sankalp Certificate')}</span>
+                <span>{tr('संकल्प प्रमाणपत्र सहेजें', 'Sankalp Certificate Save Karein')}</span>
               </button>
 
               <button
                 onClick={onClose}
                 className="px-6 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-semibold text-xs shadow-xs cursor-pointer"
               >
-                {tr('पूर्ण', 'Done')}
+                {tr('पूर्ण', 'Poorn')}
               </button>
             </div>
 

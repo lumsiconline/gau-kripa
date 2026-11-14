@@ -81,7 +81,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [concern, setConcern] = useState<string>(
-    initialConcern || tr('वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन', 'Vedic Astrology & Grah Shanti Guidance')
+    initialConcern || tr('वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन', 'Vedic Jyotish aur Grah Shanti Margdarshan')
   );
   const [formStep, setFormStep] = useState(0);
 
@@ -89,7 +89,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const [birthDetails, setBirthDetails] = useState({
     name: customerName || '',
     birthDate: '1998-05-15',
-    birthPlace: tr('नई दिल्ली, भारत', 'New Delhi, India'),
+    birthPlace: tr('नई दिल्ली, भारत', 'Nayi Dilli, Bharat'),
   });
 
   // Dedicated 12-hour Time state with explicit AM / PM selector
@@ -124,15 +124,15 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     setBirthDetails({
       name: customerName || '',
       birthDate: '1998-05-15',
-      birthPlace: tr('नई दिल्ली, भारत', 'New Delhi, India'),
+      birthPlace: tr('नई दिल्ली, भारत', 'Nayi Dilli, Bharat'),
     });
     setTimeHour('09');
     setTimeMinute('20');
     setTimePeriod('AM');
     setSession(null);
     setMessages([]);
-    setErrorMessage(initialMode === 'call' ? tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.') : null);
-    setConcern(initialConcern || tr('वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन', 'Vedic Astrology & Grah Shanti Guidance'));
+    setErrorMessage(initialMode === 'call' ? tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice call seva abhi shuru nahi hai. Kripaya Live Vedic Chat ka upyog karein.') : null);
+    setConcern(initialConcern || tr('वैदिक ज्योतिष एवं ग्रह शांति मार्गदर्शन', 'Vedic Jyotish aur Grah Shanti Margdarshan'));
 
     // Fetch user wallet
     const cleanPhone = normalizePhone(customerPhone);
@@ -198,18 +198,18 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     setErrorMessage(null);
 
     const currentTimeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const topicText = concern.trim() || tr('जन्म कुंडली एवं ग्रह शांति मार्गदर्शन', 'Kundali & Grah Upay guidance');
+    const topicText = concern.trim() || tr('जन्म कुंडली एवं ग्रह शांति मार्गदर्शन', 'Kundali aur Grah Upay margdarshan');
 
     // 1. Structured intake card message sent automatically from devotee's side
     const devoteeIntakeText = tr(
       `📋 VEDIC KUNDALI INTAKE DETAILS:\n• नाम: ${birthDetails.name.trim()}\n• जन्म तिथि: ${birthDetails.birthDate}\n• जन्म समय: ${formattedBirthTime}\n• जन्म स्थान: ${birthDetails.birthPlace.trim()}\n• परामर्श विषय: ${topicText}\n\nप्रणाम गुरुजी! यह मेरा जन्म विवरण है। कृपया मेरी कुंडली का विश्लेषण कर उचित मार्गदर्शन प्रदान करें।`,
-      `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Name: ${birthDetails.name.trim()}\n• Date of Birth: ${birthDetails.birthDate}\n• Birth Time: ${formattedBirthTime}\n• Birth Place: ${birthDetails.birthPlace.trim()}\n• Guidance Needed: ${topicText}\n\nPranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.`
+      `📋 VEDIC KUNDALI INTAKE DETAILS:\n• Naam: ${birthDetails.name.trim()}\n• Janam Tarikh: ${birthDetails.birthDate}\n• Janam Samay: ${formattedBirthTime}\n• Janam Sthan: ${birthDetails.birthPlace.trim()}\n• Paramarsh Vishay: ${topicText}\n\nPranam Guruji! Yeh mera poora janam vivaran hai. Kripaya meri kundali dekhkar sahi margdarshan dein.`
     );
 
     const initialDevoteeMsg: ChatMessage = {
       id: `msg-intake-${Date.now()}`,
       sender: 'customer',
-      senderName: birthDetails.name.trim() || tr('भक्त', 'Devotee'),
+      senderName: birthDetails.name.trim() || tr('भक्त', 'Bhakt'),
       text: devoteeIntakeText,
       timestamp: currentTimeString,
     };
@@ -221,7 +221,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       senderName: astrologer.name,
       text: tr(
         `प्रणाम ${birthDetails.name.trim()} जी! 🙏 हर हर महादेव। मुझे आपका जन्म विवरण (तिथि: ${birthDetails.birthDate}, समय: ${formattedBirthTime}, स्थान: ${birthDetails.birthPlace.trim()}) प्राप्त हो गया है।\n\nमैं आपकी लग्न कुंडली, ग्रह स्थिति और वर्तमान महादशा का अध्ययन कर रहा/रही हूँ (${topicText})।\n\nकृपया आप अपना विशेष प्रश्न यहाँ पूछें।`,
-        `Pranam ${birthDetails.name.trim()} ji! 🙏 Har Har Mahadev. I have received your complete birth details (DOB: ${birthDetails.birthDate}, Time: ${formattedBirthTime}, Place: ${birthDetails.birthPlace.trim()}).\n\nI am analyzing your Lagna Kundali, planetary positions, and current Mahadasha regarding ${topicText}.\n\nPlease feel free to ask your specific questions here.`
+        `Pranam ${birthDetails.name.trim()} ji! 🙏 Har Har Mahadev. Mujhe aapka poora janam vivaran (Tarikh: ${birthDetails.birthDate}, Samay: ${formattedBirthTime}, Sthan: ${birthDetails.birthPlace.trim()}) mil gaya hai.\n\nMain aapki Lagna Kundali, grah sthiti aur vartaman Mahadasha ka adhyayan kar raha/rahi hoon (${topicText}).\n\nKripaya apna vishesh prashn yahan poochhein.`
       ),
       timestamp: currentTimeString,
     };
@@ -267,7 +267,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     const optimisticMessage: ChatMessage = {
       id: clientMessageId,
       sender: 'customer',
-      senderName: birthDetails.name || customerName || tr('भक्त', 'Devotee'),
+      senderName: birthDetails.name || customerName || tr('भक्त', 'Bhakt'),
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
@@ -276,7 +276,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
     try {
       const sent = await api.sendChatMessage(session.id, {
         sender: 'customer',
-        senderName: birthDetails.name || customerName || tr('भक्त', 'Devotee'),
+        senderName: birthDetails.name || customerName || tr('भक्त', 'Bhakt'),
         text,
         clientMessageId,
       });
@@ -285,7 +285,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
       console.error('Unable to send chat message:', err);
       setMessages((prev) => prev.filter((message) => message.id !== clientMessageId));
       setInputText(text);
-      setErrorMessage(tr('संदेश भेजा नहीं जा सका। कृपया पुनः प्रयास करें।', 'Message could not be sent. Please try again.'));
+      setErrorMessage(tr('संदेश भेजा नहीं जा सका। कृपया पुनः प्रयास करें।', 'Sandesh bheja nahi ja saka. Kripaya dobara koshish karein.'));
     } finally {
       sendingMessageRef.current = false;
     }
@@ -311,30 +311,30 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
   const handleTopup = async (amt: number) => {
     const cleanPhone = normalizePhone(customerPhone, '');
     if (cleanPhone.length < 10) {
-      setErrorMessage(tr('रिचार्ज करने के लिए वैध 10-अंकीय मोबाइल नंबर आवश्यक है।', 'Please provide a valid 10-digit mobile number to recharge.'));
+      setErrorMessage(tr('रिचार्ज करने के लिए वैध 10-अंकीय मोबाइल नंबर आवश्यक है।', 'Recharge ke liye sahi 10-digit mobile number zaroori hai.'));
       return;
     }
 
     setErrorMessage(null);
     setTopupLoading(true);
     try {
-      const order = await api.createWalletOrder(cleanPhone, amt, customerName || tr('भक्त', 'Devotee'));
+      const order = await api.createWalletOrder(cleanPhone, amt, customerName || tr('भक्त', 'Bhakt'));
       if (!(window as any).Razorpay) {
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => resolve();
-          script.onerror = () => reject(new Error(tr('Razorpay चेकआउट लोड नहीं हो सका।', 'Unable to load secure Razorpay Checkout.')));
+          script.onerror = () => reject(new Error(tr('Razorpay चेकआउट लोड नहीं हो सका।', 'Surakshit Razorpay Checkout load nahi ho saka.')));
           document.body.appendChild(script);
         });
       }
       const RazorpayCheckout = (window as any).Razorpay;
       if (!RazorpayCheckout) {
-        throw new Error(tr('Razorpay चेकआउट उपलब्ध नहीं है।', 'Razorpay Checkout is unavailable.'));
+        throw new Error(tr('Razorpay चेकआउट उपलब्ध नहीं है।', 'Razorpay Checkout abhi uplabdh nahi hai.'));
       }
       const keyId = order.key_id || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
       if (!keyId) {
-        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID is not configured.'));
+        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID configure nahi hai.'));
       }
 
       const checkoutOptions: any = {
@@ -342,8 +342,8 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'GauKripa',
-        description: tr('गौकृपा सुरक्षित वॉलेट रिचार्ज', 'GauKripa Wallet Recharge'),
-        prefill: { name: customerName || tr('भक्त', 'Devotee'), contact: cleanPhone },
+        description: tr('गौकृपा सुरक्षित वॉलेट रिचार्ज', 'GauKripa Surakshit Wallet Recharge'),
+        prefill: { name: customerName || tr('भक्त', 'Bhakt'), contact: cleanPhone },
         notes: { purpose: 'GauKripa wallet recharge', phone: cleanPhone },
         theme: { color: '#1b4b32' },
         handler: async (response: any) => {
@@ -360,7 +360,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
             setIsTopupOpen(false);
             setErrorMessage(null);
           } catch (verifyErr: any) {
-            setErrorMessage(verifyErr?.message || tr('Razorpay भुगतान सत्यापन असफल रहा।', 'Razorpay payment verification failed.'));
+            setErrorMessage(verifyErr?.message || tr('Razorpay भुगतान सत्यापन असफल रहा।', 'Razorpay payment verification asafal raha.'));
           } finally {
             setTopupLoading(false);
           }
@@ -378,13 +378,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
       const checkout = new RazorpayCheckout(checkoutOptions);
       checkout.on('payment.failed', (resp: any) => {
-        setErrorMessage(resp?.error?.description || tr('Razorpay भुगतान असफल रहा।', 'Razorpay payment failed.'));
+        setErrorMessage(resp?.error?.description || tr('Razorpay भुगतान असफल रहा।', 'Razorpay payment fail ho gaya.'));
         setTopupLoading(false);
       });
       setTopupLoading(false);
       checkout.open();
     } catch (err: any) {
-      setErrorMessage(err?.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Unable to start Razorpay wallet recharge.'));
+      setErrorMessage(err?.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Wallet recharge shuru nahi ho saka.'));
       setTopupLoading(false);
     }
   };
@@ -410,7 +410,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   type="button"
                   onClick={() => setChatStatus('idle')}
                   className="p-1 rounded-full hover:bg-white/10 text-white/90 mr-0.5 cursor-pointer"
-                  title={tr('विवरण पृष्ठ पर वापस जाएँ', 'Back to Details')}
+                  title={tr('विवरण पृष्ठ पर वापस जाएँ', 'Vivaran par wapas jayein')}
                 >
                   <ArrowRight className="w-5 h-5 rotate-180" />
                 </button>
@@ -431,7 +431,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   </div>
                   <div className="text-[11px] text-emerald-200 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse" />
-                    <span>{tr('ऑनलाइन • वैदिक ज्योतिषाचार्य', 'online • Vedic Astrologer')}</span>
+                    <span>{tr('ऑनलाइन • वैदिक ज्योतिषाचार्य', 'Online • Vedic Jyotishacharya')}</span>
                   </div>
                 </div>
               </div>
@@ -440,10 +440,10 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'))}
+                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice call seva abhi shuru nahi hai. Kripaya Live Vedic Chat ka upyog karein.'))}
                   disabled
                   className="p-2 rounded-full text-white/40 cursor-not-allowed"
-                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup pending')}
+                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup baki hai')}
                 >
                   <Phone className="w-4 h-4" />
                 </button>
@@ -452,16 +452,16 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   type="button"
                   onClick={handleEndChat}
                   className="px-2.5 py-1 rounded-full bg-red-600/90 hover:bg-red-700 text-white text-[11px] font-bold cursor-pointer transition-colors shadow-2xs"
-                  title={tr('चैट समाप्त करें', 'End Chat')}
+                  title={tr('चैट समाप्त करें', 'Chat Band Karein')}
                 >
-                  {tr('चैट समाप्त करें', 'End Chat')}
+                  {tr('चैट समाप्त करें', 'Chat Band Karein')}
                 </button>
 
                 <button
                   type="button"
                   onClick={onClose}
                   className="p-1.5 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
-                  title={tr('बंद करें', 'Close')}
+                  title={tr('बंद करें', 'Band Karein')}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -484,7 +484,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 <div className="bg-[#ffeecd] text-[#5e4b2d] text-[10px] sm:text-[11px] font-medium px-3.5 py-1.5 rounded-xl shadow-2xs border border-[#ebdcb9] max-w-sm text-center leading-relaxed">
                   {tr(
                     `🔒 आपकी बातचीत पूर्णतः गोपनीय एवं सुरक्षित है। आपका जन्म विवरण सीधे ${astrologer.name} को भेजा गया है।`,
-                    `🔒 Messages are end-to-end encrypted with Vedic confidentiality. Your birth details are sent directly to ${astrologer.name}.`
+                    `🔒 Aapki baatcheet poori tarah gopniya aur surakshit hai. Aapka janam vivaran seedhe ${astrologer.name} ko bhej diya gaya hai.`
                   )}
                 </div>
               </div>
@@ -492,7 +492,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               {/* Centered Date Badge */}
               <div className="flex justify-center my-1">
                 <span className="bg-[#ffffff]/90 text-[#54656f] text-[10px] font-bold px-3 py-0.5 rounded-md shadow-2xs uppercase tracking-wider">
-                  {tr('आज', 'TODAY')}
+                  {tr('आज', 'AAJ')}
                 </span>
               </div>
 
@@ -518,25 +518,25 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                         <div className="space-y-2">
                           <div className="flex items-center gap-1.5 pb-1.5 border-b border-emerald-300/60 font-bold text-[#1b4b32]">
                             <FileText className="w-4 h-4 text-emerald-700" />
-                            <span>{tr('वैदिक कुंडली विवरण पत्र', 'Vedic Kundali Intake Form')}</span>
+                            <span>{tr('वैदिक कुंडली विवरण पत्र', 'Vedic Kundali Vivaran Patra')}</span>
                           </div>
 
                           <div className="bg-white/80 rounded-xl p-2.5 space-y-1.5 border border-emerald-200/60 text-[11px] text-[#2c3e2e]">
                             <div className="flex items-center gap-1.5">
                               <User className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                              <span className="font-semibold text-slate-800">{tr('नाम:', 'Devotee Name:')}</span>
-                              <span className="font-bold text-[#1b4b32]">{birthDetails.name || tr('भक्त', 'Devotee')}</span>
+                              <span className="font-semibold text-slate-800">{tr('नाम:', 'Naam:')}</span>
+                              <span className="font-bold text-[#1b4b32]">{birthDetails.name || tr('भक्त', 'Bhakt')}</span>
                             </div>
 
                             <div className="flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                              <span className="font-semibold text-slate-800">{tr('जन्म तिथि:', 'Date of Birth:')}</span>
+                              <span className="font-semibold text-slate-800">{tr('जन्म तिथि:', 'Janam Tarikh:')}</span>
                               <span className="font-medium text-slate-900">{birthDetails.birthDate}</span>
                             </div>
 
                             <div className="flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                              <span className="font-semibold text-slate-800">{tr('जन्म समय:', 'Birth Time:')}</span>
+                              <span className="font-semibold text-slate-800">{tr('जन्म समय:', 'Janam Samay:')}</span>
                               <span className="font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded font-mono">
                                 {formattedBirthTime}
                               </span>
@@ -544,16 +544,16 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                              <span className="font-semibold text-slate-800">{tr('जन्म स्थान:', 'Birth Place:')}</span>
+                              <span className="font-semibold text-slate-800">{tr('जन्म स्थान:', 'Janam Sthan:')}</span>
                               <span className="font-medium text-slate-900">{birthDetails.birthPlace}</span>
                             </div>
 
                             <div className="flex items-start gap-1.5 pt-1 border-t border-emerald-100">
                               <HelpCircle className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
                               <div>
-                                <span className="font-semibold text-slate-800">{tr('परामर्श विषय:', 'Consultation Focus:')}</span>
+                                <span className="font-semibold text-slate-800">{tr('परामर्श विषय:', 'Paramarsh Vishay:')}</span>
                                 <p className="text-[#1b4b32] font-medium">
-                                  {concern || tr('कुंडली विश्लेषण व ग्रह उपाय', 'Kundali & Grah Upay')}
+                                  {concern || tr('कुंडली विश्लेषण व ग्रह उपाय', 'Kundali vishleshan aur Grah Upay')}
                                 </p>
                               </div>
                             </div>
@@ -562,7 +562,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                           <p className="text-xs text-[#1e3a24] font-medium pt-0.5">
                             {tr(
                               'प्रणाम गुरुजी! यह मेरा संपूर्ण जन्म विवरण है। कृपया मेरी कुंडली का विश्लेषण कर उचित मार्गदर्शन दें।',
-                              'Pranam Guruji! Here are my complete birth details. Please analyze my chart and guide me.'
+                              'Pranam Guruji! Yeh mera poora janam vivaran hai. Kripaya meri kundali dekhkar sahi margdarshan dein.'
                             )}
                           </p>
                         </div>
@@ -575,7 +575,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                         <div className="mt-2.5 pt-2 border-t border-[#ebdcb9] space-y-1.5 bg-amber-50/70 p-2 rounded-xl">
                           <span className="text-[11px] font-bold text-[#1b4b32] flex items-center gap-1">
                             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                            <span>{tr('सुझाई गई गौ-आहार उपाय सेवा:', 'Prescribed Seva Remedy:')}</span>
+                            <span>{tr('सुझाई गई गौ-आहार उपाय सेवा:', 'Sujhayi Gayi Gau-Aahar Upay Seva:')}</span>
                           </span>
                           <button
                             type="button"
@@ -585,7 +585,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                             }}
                             className="w-full py-1.5 px-3 rounded-xl bg-[#e5a024] hover:bg-[#d8941d] text-slate-950 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
                           >
-                            <span>{tr(`${m.suggestedSeva} अभी बुक करें`, `Book ${m.suggestedSeva} Now`)}</span>
+                            <span>{tr(`${m.suggestedSeva} अभी बुक करें`, `${m.suggestedSeva} Abhi Book Karein`)}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -593,7 +593,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                       {/* WhatsApp Time & Checkmark footer */}
                       <div className="flex items-center justify-end gap-1 text-[10px] text-[#667781] mt-1 select-none">
-                        <span>{m.timestamp || tr('अभी', 'Now')}</span>
+                        <span>{m.timestamp || tr('अभी', 'Abhi')}</span>
                         {isDevotee && (
                           <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb] shrink-0" />
                         )}
@@ -615,12 +615,12 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-playfair text-lg font-bold text-[#1b4b32]">
-                      {tr('वैदिक परामर्श समाप्त करें?', 'End Vedic Consultation?')}
+                      {tr('वैदिक परामर्श समाप्त करें?', 'Vedic Paramarsh Samapt Karein?')}
                     </h4>
                     <p className="text-xs text-[#71614e] leading-relaxed">
                       {tr(
                         'क्या आप वाकई यह परामर्श सत्र समाप्त करना चाहते हैं? सत्र तुरंत समाप्त हो जाएगा।',
-                        'Are you sure you want to end this consultation? The session will conclude instantly.'
+                        'Kya aap sach mein yeh paramarsh band karna chahte hain? Yeh chat turant samapt ho jayegi.'
                       )}
                     </p>
                   </div>
@@ -630,14 +630,14 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                       onClick={() => setShowEndConfirm(false)}
                       className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-colors"
                     >
-                      {tr('रद्द करें', 'Cancel')}
+                      {tr('रद्द करें', 'Radd Karein')}
                     </button>
                     <button
                       type="button"
                       onClick={confirmAndEndChat}
                       className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition-colors shadow-md active:scale-95"
                     >
-                      {tr('हाँ, चैट समाप्त करें', 'Yes, End Chat')}
+                      {tr('हाँ, चैट समाप्त करें', 'Haan, Chat Band Karein')}
                     </button>
                   </div>
                 </div>
@@ -650,7 +650,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 <div className="flex items-center gap-2 text-[#3b4a54]">
                   <span className="text-lg">🙏</span>
                   <span className="font-semibold">
-                    {tr('यह परामर्श सत्र समाप्त हो गया है। हर हर महादेव!', 'This consultation has concluded. Har Har Mahadev!')}
+                    {tr('यह परामर्श सत्र समाप्त हो गया है। हर हर महादेव!', 'Yeh paramarsh satra samapt ho gaya hai. Har Har Mahadev!')}
                   </span>
                 </div>
                 <button
@@ -658,7 +658,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                   onClick={onClose}
                   className="px-4 py-2 rounded-full bg-[#075e54] hover:bg-[#054c44] text-white font-bold text-xs cursor-pointer shadow-xs transition-colors shrink-0"
                 >
-                  {tr('विंडो बंद करें', 'Close Window')}
+                  {tr('विंडो बंद करें', 'Band Karein')}
                 </button>
               </div>
             ) : (
@@ -674,7 +674,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 <button
                   type="button"
                   className="p-1.5 text-[#54656f] hover:text-[#111b21] transition-colors cursor-pointer"
-                  title={tr('संलग्न करें', 'Attach')}
+                  title={tr('संलग्न करें', 'File Jodein')}
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
@@ -684,7 +684,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder={tr('गुरुजी को संदेश लिखें...', 'Type a message to Guruji...')}
+                    placeholder={tr('गुरुजी को संदेश लिखें...', 'Guruji ko sandesh likhein...')}
                     className="flex-1 px-4 py-2.5 rounded-full bg-white text-xs sm:text-sm text-[#111b21] placeholder-[#667781] border border-white focus:outline-hidden shadow-2xs"
                   />
 
@@ -692,7 +692,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                     type="submit"
                     disabled={!inputText.trim() || !session}
                     className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white flex items-center justify-center transition-all cursor-pointer shadow-xs disabled:opacity-40 shrink-0 active:scale-95"
-                    title={tr('संदेश भेजें', 'Send Message')}
+                    title={tr('संदेश भेजें', 'Sandesh Bhejein')}
                   >
                     <Send className="w-4 h-4 ml-0.5" />
                   </button>
@@ -747,7 +747,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                       </span>
                       <span className="text-emerald-400/60">•</span>
                       <span className="text-emerald-200 font-medium">
-                        {tr('गोपनीय लाइव परामर्श', 'Confidential Live Consultation')}
+                        {tr('गोपनीय लाइव परामर्श', 'Gopniya Live Paramarsh')}
                       </span>
                     </div>
                   </div>
@@ -759,7 +759,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                     type="button"
                     onClick={() => setIsTopupOpen(!isTopupOpen)}
                     className="bg-emerald-950/85 hover:bg-emerald-900 px-3 py-1.5 rounded-xl border border-emerald-700/80 text-xs font-bold text-amber-200 flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs hover:border-amber-400/40 active:scale-95"
-                    title={tr('भक्त वॉलेट शेष (रिचार्ज के लिए क्लिक करें)', 'Devotee Wallet Balance (Click to Top Up)')}
+                    title={tr('भक्त वॉलेट शेष (रिचार्ज के लिए क्लिक करें)', 'Bhakt Wallet Balance (Recharge ke liye click karein)')}
                   >
                     <Wallet className="w-3.5 h-3.5 text-amber-400" />
                     <span>₹{walletBalance}</span>
@@ -770,7 +770,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                     type="button"
                     onClick={onClose}
                     className="p-1.5 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
-                    title={tr('बंद करें', 'Close')}
+                    title={tr('बंद करें', 'Band Karein')}
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -794,13 +794,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                 <button
                   type="button"
-                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice calling is not connected yet. Please use Live Vedic Chat.'))}
+                  onClick={() => setErrorMessage(tr('वॉइस कॉल सेवा अभी कॉन्फ़िगर नहीं है। कृपया लाइव चैट का उपयोग करें।', 'Voice call seva abhi shuru nahi hai. Kripaya Live Vedic Chat ka upyog karein.'))}
                   disabled
                   className="py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-400/30 text-slate-500 cursor-not-allowed"
-                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup pending')}
+                  title={tr('वॉइस कॉल सेटअप लंबित', 'Voice call setup baki hai')}
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>{tr('कॉल सेटअप लंबित', 'Call Setup Pending')}</span>
+                  <span>{tr('कॉल सेटअप लंबित', 'Call Setup Baki Hai')}</span>
                 </button>
               </div>
             </div>
@@ -808,7 +808,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
             {/* Top-Up Quick Drawer */}
             {isTopupOpen && (
               <div className="p-3 bg-[#fff9ea] border-b border-[#ebdcb9] flex items-center justify-between gap-2 text-xs animate-in slide-in-from-top-2">
-                <span className="font-bold text-[#1b4b32]">{tr('वॉलेट रिचार्ज करें:', 'Recharge Wallet:')}</span>
+                <span className="font-bold text-[#1b4b32]">{tr('वॉलेट रिचार्ज करें:', 'Wallet Recharge Karein:')}</span>
                 <div className="flex items-center gap-2">
                   {[100, 250, 500].map((amt) => (
                     <button
@@ -826,7 +826,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                     onClick={() => setIsTopupOpen(false)}
                     className="text-xs text-[#71614e] underline ml-1 cursor-pointer"
                   >
-                    {tr('बंद करें', 'Close')}
+                    {tr('बंद करें', 'Band Karein')}
                   </button>
                 </div>
               </div>
@@ -840,12 +840,12 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
                   <strong className="text-[#1b4b32] font-playfair text-sm block">
-                    {tr('प्रत्यक्ष वैदिक कुंडली एवं ग्रह परामर्श', 'Direct Vedic Kundali & Grah Consultation')}
+                    {tr('प्रत्यक्ष वैदिक कुंडली एवं ग्रह परामर्श', 'Pratyaksh Vedic Kundali aur Grah Paramarsh')}
                   </strong>
                   <p className="text-[11px] text-[#71614e]">
                     {tr(
                       `नीचे अपना जन्म विवरण दर्ज करें। आपकी कुंडली तुरंत तैयार कर लाइव परामर्श हेतु ${astrologer.name} को भेजी जाएगी।`,
-                      `Enter your birth details below. Your chart will be generated instantly and sent to ${astrologer.name} for live consultation.`
+                      `Neeche apna janam vivaran darj karein. Aapki kundali turant taiyar karke live paramarsh ke liye ${astrologer.name} ko bheji jayegi.`
                     )}
                   </p>
                 </div>
@@ -862,10 +862,10 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#1b4b32]">
-                    {tr('आपका जन्म विवरण', 'Your birth details')}
+                    {tr('आपका जन्म विवरण', 'Aapka Janam Vivaran')}
                   </span>
                   <span className="text-[11px] font-semibold text-[#887864]">
-                    {tr(`चरण ${formStep + 1} / 4`, `Step ${formStep + 1} of 4`)}
+                    {tr(`चरण ${formStep + 1} / 4`, `Charan ${formStep + 1} / 4`)}
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-[#eadfc8] overflow-hidden">
@@ -878,13 +878,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 {/* STEP 1: NAME */}
                 {formStep === 0 && (
                   <label className="block text-xs font-bold text-[#453728]">
-                    {tr('आपका पूरा नाम क्या है?', 'What is your full name?')}
+                    {tr('आपका पूरा नाम क्या है?', 'Aapka poora naam kya hai?')}
                     <input
                       autoFocus
                       type="text"
                       value={birthDetails.name}
                       onChange={(e) => setBirthDetails({ ...birthDetails, name: e.target.value })}
-                      placeholder={tr('अपना पूरा नाम लिखें', 'Enter your full name')}
+                      placeholder={tr('अपना पूरा नाम लिखें', 'Apna poora naam likhein')}
                       className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]"
                     />
                   </label>
@@ -893,7 +893,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 {/* STEP 2: DATE OF BIRTH */}
                 {formStep === 1 && (
                   <label className="block text-xs font-bold text-[#453728]">
-                    {tr('आपकी जन्म तिथि क्या है?', 'What is your date of birth?')}
+                    {tr('आपकी जन्म तिथि क्या है?', 'Aapki janam tarikh kya hai?')}
                     <input
                       autoFocus
                       type="date"
@@ -908,7 +908,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 {formStep === 2 && (
                   <div className="space-y-2">
                     <label className="block text-xs font-bold text-[#453728]">
-                      {tr('आपका सटीक जन्म समय क्या है?', 'What is your exact birth time?')}
+                      {tr('आपका सटीक जन्म समय क्या है?', 'Aapka sahi janam samay kya hai?')}
                     </label>
 
                     <div className="mt-2 p-3.5 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
@@ -919,7 +919,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                         {/* Hour Selector */}
                         <div>
                           <span className="block text-[11px] font-bold text-[#71614e] mb-1">
-                            {tr('घंटा (1-12)', 'Hour (1-12)')}
+                            {tr('घंटा (1-12)', 'Ghanta (1-12)')}
                           </span>
                           <select
                             value={timeHour}
@@ -985,7 +985,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
 
                       {/* Selected Time Preview Badge */}
                       <div className="flex items-center justify-between pt-1 border-t border-[#f0e3c5] text-xs">
-                        <span className="text-[#71614e]">{tr('चयनित जन्म समय:', 'Formatted Birth Time:')}</span>
+                        <span className="text-[#71614e]">{tr('चयनित जन्म समय:', 'Chuna Gaya Janam Samay:')}</span>
                         <span className="font-mono font-bold text-[#1b4b32] bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
                           ⏰ {formattedBirthTime}
                         </span>
@@ -998,13 +998,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                 {/* STEP 4: BIRTH PLACE */}
                 {formStep === 3 && (
                   <label className="block text-xs font-bold text-[#453728]">
-                    {tr('आपका जन्म स्थान (शहर/जिला) क्या है?', 'Where were you born?')}
+                    {tr('आपका जन्म स्थान (शहर/जिला) क्या है?', 'Aapka janam sthan (Shahar/Jila) kya hai?')}
                     <input
                       autoFocus
                       type="text"
                       value={birthDetails.birthPlace}
                       onChange={(e) => setBirthDetails({ ...birthDetails, birthPlace: e.target.value })}
-                      placeholder={tr('जैसे: नई दिल्ली, वाराणसी, जयपुर, मुंबई...', 'e.g. New Delhi, Mumbai, Varanasi, Jaipur...')}
+                      placeholder={tr('जैसे: नई दिल्ली, वाराणसी, जयपुर, मुंबई...', 'Jaise: Nayi Dilli, Varanasi, Jaipur, Mumbai...')}
                       className="mt-2 w-full px-3.5 py-3 rounded-xl border border-[#ebdcb9] bg-white text-sm font-medium focus:outline-hidden focus:border-[#1b4b32]"
                     />
                   </label>
@@ -1018,7 +1018,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                       onClick={() => setFormStep((step) => step - 1)}
                       className="px-5 py-3 rounded-full border border-[#1b4b32]/30 text-[#1b4b32] text-xs font-bold hover:bg-[#f6efe0] cursor-pointer"
                     >
-                      {tr('पीछे', 'Back')}
+                      {tr('पीछे', 'Peeche')}
                     </button>
                   )}
 
@@ -1036,7 +1036,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                       onClick={() => setFormStep((step) => step + 1)}
                       className="flex-1 py-3 px-5 rounded-full bg-[#1b4b32] text-white font-bold text-sm disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
                     >
-                      <span>{tr('आगे बढ़ें', 'Continue')}</span>
+                      <span>{tr('आगे बढ़ें', 'Aage Badhein')}</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   ) : (
@@ -1047,7 +1047,7 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
                       className="flex-1 py-3 px-5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 font-bold text-sm shadow-md disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-98"
                     >
                       <MessageSquare className="w-4 h-4 text-amber-300" />
-                      <span>{tr(`${astrologer.name} से लाइव चैट शुरू करें`, `Start Live Chat with ${astrologer.name}`)}</span>
+                      <span>{tr(`${astrologer.name} से लाइव चैट शुरू करें`, `${astrologer.name} se Live Chat Shuru Karein`)}</span>
                     </button>
                   )}
                 </div>
@@ -1057,13 +1057,13 @@ export const AstrologerConsultationModal: React.FC<AstrologerConsultationModalPr
               {/* Consultation Focus Field */}
               <div className="space-y-1.5 pt-1">
                 <label className="block text-xs font-bold text-[#453728]">
-                  {tr('आपको किस विषय में मार्गदर्शन चाहिए? (वैकल्पिक)', 'What guidance do you need? (optional)')}
+                  {tr('आपको किस विषय में मार्गदर्शन चाहिए? (वैकल्पिक)', 'Aapko kis vishay mein margdarshan chahiye? (Vaikalpik)')}
                 </label>
                 <input
                   type="text"
                   value={concern}
                   onChange={(e) => setConcern(e.target.value)}
-                  placeholder={tr('करियर, विवाह, प्रेम संबंध, स्वास्थ्य, व्यापार, आर्थिक स्थिति...', 'Career, marriage, relationship, health, business, finances...')}
+                  placeholder={tr('करियर, विवाह, प्रेम संबंध, स्वास्थ्य, व्यापार, आर्थिक स्थिति...', 'Career, vivah, prem sambandh, swasthya, vyapar, arthik sthiti...')}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebdcb9] bg-white text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
                 />
               </div>

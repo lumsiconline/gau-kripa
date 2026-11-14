@@ -96,7 +96,7 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
       customImageUrl: s.customImageUrl,
       detailedDescription: s.detailedDescription || s.benefit,
       vedicSignificance: s.vedicSignificance || '',
-      fulfilmentDetails: tr('व्हाट्सएप वीडियो पुष्टि शामिल', 'WhatsApp video distribution proof included'),
+      fulfilmentDetails: tr('व्हाट्सएप वीडियो पुष्टि शामिल', 'WhatsApp video proof shamil hai'),
     }));
 
   const sevaItems: SevaItem[] = [...mergedBuiltIns, ...customAdded];
@@ -114,7 +114,7 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
             </svg>
 
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#8a6828] bg-[#fbf2dd] px-3 py-0.5 rounded-full border border-[#ebdcb9]">
-              {tr('गौमाता आहार व्यवस्था एवं सेवा', 'Gaumata Feed Management & Seva')}
+              {tr('गौमाता आहार व्यवस्था एवं सेवा', 'Gaumata Aahar Vyavastha aur Seva')}
             </span>
 
             <svg className="w-6 h-3.5 sm:w-7 text-[#4a6b49] rotate-180" viewBox="0 0 40 20" fill="currentColor">
@@ -124,13 +124,13 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
           </div>
 
           <h2 className="font-playfair text-2xl sm:text-3xl lg:text-[36px] font-black text-[#153e29] leading-tight">
-            {tr('गौ-आहार प्रबंधन एवं प्रत्यक्ष सेवा', 'Gau-Aahar Management & Direct Service')}
+            {tr('गौ-आहार प्रबंधन एवं प्रत्यक्ष सेवा', 'Gau-Aahar Prabandhan aur Pratyaksh Seva')}
           </h2>
 
           <p className="text-xs sm:text-sm text-[#6b5a45] font-medium leading-relaxed">
             {tr(
               'प्रमाणित गौशालाओं में आपके नाम एवं गोत्र संकल्प के साथ गौमाता के भोजन की व्यवस्था। सेवा उपरांत आपके व्हाट्सएप पर आहार वितरण की वीडियो पुष्टि भेजी जाती है।',
-              'Direct arrangement of pure feed for Gaumata at certified goshalas with your name & Gotra Sankalp. After service fulfillment, a video confirmation is sent on your WhatsApp.'
+              'Pramanit goshalayon mein aapke naam aur Gotra Sankalp ke sath Gaumata ke bhojan ki vyavastha. Seva poori hone ke baad aapke WhatsApp par aahar vitaran ka video proof bheja jata hai.'
             )}
           </p>
         </div>
@@ -139,9 +139,9 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
         <div className="flex md:hidden items-center justify-between text-[11px] font-bold text-[#7b6747] mb-2.5 px-0.5">
           <span className="inline-flex items-center gap-1.5">
             <Video className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{tr('वीडियो पुष्टि सहित प्रत्यक्ष सेवा', 'Direct Seva + Video Proof')}</span>
+            <span>{tr('वीडियो पुष्टि सहित प्रत्यक्ष सेवा', 'Video Proof ke sath Pratyaksh Seva')}</span>
           </span>
-          <span className="text-[#8a6828]">{tr('बाएँ से दाएँ स्वाइप करें →', 'Swipe left to right →')}</span>
+          <span className="text-[#8a6828]">{tr('बाएँ से दाएँ स्वाइप करें →', 'Baayein se daayein swipe karein →')}</span>
         </div>
 
         {/* Compact Cards: Mobile Horizontal Scroll (< md) & Compact Website Grid (md+) */}
@@ -199,7 +199,7 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
                     {/* Compact Price Strip */}
                     <div className="inline-flex items-baseline gap-1.5 bg-[#fdf6e7] px-2.5 py-1 rounded-lg border border-[#ebdcb9]">
                       <span className="text-[10px] font-bold text-[#8a7251] uppercase">
-                        {tr('नियत शुल्क:', 'Service Fee:')}
+                        {tr('नियत शुल्क:', 'Seva Shulk:')}
                       </span>
                       <span className="text-sm md:text-base font-black text-[#1b4b32]">
                         {item.priceDisplay}
@@ -225,7 +225,7 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
                     onClick={() => onBookSeva(item)}
                     className="w-full py-2 px-3 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer group-hover:bg-[#123824]"
                   >
-                    <span>{tr('आहार सेवा व्यवस्था करें', 'Arrange Feed Service')}</span>
+                    <span>{tr('आहार सेवा व्यवस्था करें', 'Apni Seva Book Karein')}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-amber-300" />
                   </button>
                 </div>
@@ -239,12 +239,12 @@ export const SevaServicesSection: React.FC<SevaServicesSectionProps> = ({ onBook
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div className="space-y-0.5">
               <h4 className="font-playfair text-sm sm:text-base font-bold text-[#1b4b32]">
-                {tr('100% प्रत्यक्ष एवं पारदर्शी आहार सेवा प्रबंधन', '100% Direct & Transparent Feed Service Management')}
+                {tr('100% प्रत्यक्ष एवं पारदर्शी आहार सेवा प्रबंधन', '100% Pratyaksh aur Pardarshi Aahar Seva Prabandhan')}
               </h4>
               <p className="text-[11px] sm:text-xs text-[#6e6351]">
                 {tr(
                   'यह एक निर्धारित आहार प्रबंधन सेवा है। आपके द्वारा चयनित आहार (चारा, गुड़-चना या रोटी) को तय मात्रा में गौशाला तक पहुँचाकर गौमाता को अर्पित किया जाता है।',
-                  'This is a structured feed management service. The exact quantity of feed you select (fodder, gud-chana, or rotis) is arranged at the goshala and directly served to Gaumata.'
+                  'Yeh ek niyamit aahar prabandhan seva hai. Aapke dwara chuna gaya aahar (Chara, Gud-Chana ya Roti) tay matra mein goshala pahunchakar Gaumata ko khilaya jata hai.'
                 )}
               </p>
             </div>

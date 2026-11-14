@@ -142,7 +142,7 @@ create table if not exists public.bookings (
   date text not null,
   family_members jsonb not null default '[]'::jsonb,
   sankalp_wish text default '',
-  goshala text not null default 'Surabhi Seva Dham, Vrindavan',
+  goshala text not null default 'GauKripa Pramanit Goshala',
   video_proof_url text,
   photo_proof_urls jsonb default '[]'::jsonb,
   priest_name text,
@@ -536,7 +536,7 @@ insert into public.settings (
   21,
   '✨ Subh Deepawali Special Offer: 50% Off on Astrologer Consultation with any Seva Booking!',
   true,
-  'GauKripa Seva Trust • Vrindavan & Mathura'
+  'GauKripa Seva Trust'
 ) on conflict (id) do nothing;
 
 insert into public.profiles (email, name, phone, role)
@@ -580,7 +580,7 @@ insert into public.bookings (
   duration, occasion, amount, base_amount, extra_fee, status, date, family_members,
   sankalp_wish, goshala, video_proof_url, photo_proof_urls, priest_name, whatsapp_sent, created_at
 ) values
-  ('b-101', 'GK-749102', 'Harsh Bhardwaj', '9876543210', 'harshbhardwaj0745@gmail.com', 'Kashyap', 'gau-chara', 'Gau Chara Seva', '1 lot (5 kg)', '1 Day (Single Seva)', 'General Daily Seva', 251, 251, 0, 'completed', '2026-11-05', '["Sunita Bhardwaj","Aarav Bhardwaj"]'::jsonb, 'Family prosperity and peace', 'Surabhi Seva Dham, Vrindavan', 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4', '["/assets/aistudio/image_a83a3632.png"]'::jsonb, 'Pandit Radheshyam Shastri', true, '2026-11-05T17:02:14.523Z'),
+  ('b-101', 'GK-749102', 'Harsh Bhardwaj', '9876543210', 'harshbhardwaj0745@gmail.com', 'Kashyap', 'gau-chara', 'Gau Chara Seva', '1 lot (5 kg)', '1 Day (Single Seva)', 'General Daily Seva', 251, 251, 0, 'completed', '2026-11-05', '["Sunita Bhardwaj","Aarav Bhardwaj"]'::jsonb, 'Family prosperity and peace', 'GauKripa Pramanit Goshala', 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4', '["/assets/aistudio/image_a83a3632.png"]'::jsonb, 'Pandit Radheshyam Shastri', true, '2026-11-05T17:02:14.523Z'),
   ('b-102', 'GK-839211', 'Rameshwar Gupta', '9811223344', 'rameshwar.gupta@gmail.com', 'Garg', 'gau-roti', 'Gau Roti Seva', '1 lot (4 rotis)', '7 Days (Weekly Sankalp)', 'Birthday Blessing', 378, 357, 21, 'completed', '2026-11-04', '["Meenakshi Gupta"]'::jsonb, 'Chandra dosh nivaran and peace of mind', 'Gau Seva Ashram, Mathura', 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4', '["/assets/aistudio/image_123e24a7.png"]'::jsonb, 'Acharya Vidyadhar', true, '2026-11-04T17:02:14.523Z'),
   ('b-103', 'GK-910283', 'Anjali Sharma', '9877665544', 'anjali.s@gmail.com', 'Bhardwaj', 'cheenti-aata', 'Cheenti Aata Seva', '1 pudika pack', '1 Day (Single Seva)', 'General Daily Seva', 149, 149, 0, 'in_progress', '2026-11-06', '[]'::jsonb, 'Rahu Ketu dosh shanti', 'Kamadhenu Dham, Govardhan', null, '[]'::jsonb, 'Pandit Murari Lal', false, '2026-11-06T17:02:14.523Z')
 on conflict (id) do nothing;
@@ -588,7 +588,7 @@ on conflict (id) do nothing;
 insert into public.reviews (id, name, city, seva, one_liner, stars, is_approved, created_at) values
   ('rev-1', 'Rohit Sharma', 'Delhi NCR', 'Gau Chara Seva', 'Bhai WhatsApp pe direct 2 ghante me Gaumata ke chara khilane ka video proof mil gaya, bahut shanti mili!', 5, true, '2026-11-05T10:00:00Z'),
   ('rev-2', 'Ananya Verma', 'Mumbai', 'Gau Roti Seva', 'Gau Roti seva book ki thi, puja ki video dekh ke sach me pura mann prasann ho gaya.', 5, true, '2026-11-05T12:00:00Z'),
-  ('rev-3', 'Vikram Singhania', 'Varanasi', 'Gud-Chana Seva', 'Vrindavan goshala me Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.', 5, true, '2026-11-04T15:00:00Z'),
+  ('rev-3', 'Vikram Singhania', 'Varanasi', 'Gud-Chana Seva', 'Pramanit goshala me Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.', 5, true, '2026-11-04T15:00:00Z'),
   ('rev-4', 'Priya Deshmukh', 'Pune', 'Surya Grah Seva', 'Job interview se pehle chara seva ki thi, positive results mile aur mann me bohot confidence aaya.', 5, true, '2026-11-04T18:00:00Z'),
   ('rev-5', 'Rajesh Patel', 'Ahmedabad', 'Cheenti Aata Seva', 'Cheenti aata seva ka clear HD video phone pe aaya, itni transparent seva pehli baar dekhi.', 5, true, '2026-11-03T09:00:00Z')
 on conflict (id) do nothing;

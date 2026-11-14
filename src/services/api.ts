@@ -240,6 +240,24 @@ function unwrapRow(row: any): any {
   return row;
 }
 
+function sanitizeLegacyLocationText(val?: string): string {
+  if (!val) return '';
+  return String(val)
+    .replace(/Surabhi\s*(Gau\s*)?Seva\s*Dham,?\s*Vrindavan/gi, 'GauKripa Pramanit Goshala')
+    .replace(/सुरभि\s*(गौ\s*)?सेवा\s*धाम,?\s*(वृन्दावन|वृंदावन)/g, 'गौकृपा प्रमाणित गौशाला')
+    .replace(/परिक्रमा\s*मार्ग,?\s*रमण\s*रेती,?\s*(वृन्दावन|वृंदावन)[^.]*\.?/g, 'गौकृपा प्रमाणित गौशाला')
+    .replace(/Parikrama\s*Marg,?\s*Raman\s*Reti,?\s*Vrindavan[^.]*\.?/gi, 'GauKripa Pramanit Goshala')
+    .replace(/•\s*Vrindavan\s*&?\s*Mathura/gi, '')
+    .replace(/Vrindavan\s*goshala/gi, 'Pramanit goshala')
+    .replace(/(वृन्दावन|वृंदावन)\s*गौशाला/g, 'प्रमाणित गौशाला')
+    .replace(/\bVrindavan\b/gi, 'GauKripa')
+    .replace(/वृन्दावन|वृंदावन/g, 'गौकृपा')
+    .replace(/\bSurabhi\b/gi, 'GauKripa')
+    .replace(/सुरभि/g, 'गौकृपा')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 // Row <-> App Mappers for Supabase PostgreSQL tables (supports both JSONB data column and flat columns)
 function mapServiceRow(raw: any): ServiceItem {
   const row = unwrapRow(raw) || {};
@@ -305,7 +323,7 @@ function mapBookingRow(raw: any): BookingRecord {
     date: row.date,
     familyMembers: Array.isArray(row.family_members ?? row.familyMembers) ? (row.family_members ?? row.familyMembers) : [],
     sankalpWish: row.sankalp_wish ?? row.sankalpWish ?? undefined,
-    goshala: row.goshala ?? 'Surabhi Seva Dham, Vrindavan',
+    goshala: sanitizeLegacyLocationText(row.goshala) || 'GauKripa Pramanit Goshala',
     videoProofUrl: row.video_proof_url ?? row.videoProofUrl ?? undefined,
     photoProofUrls: Array.isArray(row.photo_proof_urls ?? row.photoProofUrls) ? (row.photo_proof_urls ?? row.photoProofUrls) : undefined,
     priestName: row.priest_name ?? row.priestName ?? undefined,
@@ -353,7 +371,7 @@ function mapSettingsRow(raw: any): AppSettings {
       row.promoBannerText ??
       'Flat 50% Off On Astrologer Consultation After Booking Any Gau Seva!',
     bannerEnabled: row.banner_enabled ?? row.bannerEnabled ?? true,
-    trustName: row.trust_name ?? row.trustName ?? 'GauKripa Seva Trust'
+    trustName: sanitizeLegacyLocationText(row.trust_name ?? row.trustName) || 'GauKripa Seva Trust'
   };
 }
 
@@ -364,7 +382,7 @@ function mapReviewRow(raw: any): ReviewItem {
     name: row.name,
     city: row.city,
     seva: row.seva,
-    oneLiner: row.one_liner ?? row.oneLiner,
+    oneLiner: sanitizeLegacyLocationText(row.one_liner ?? row.oneLiner),
     stars: Number(row.stars ?? 5),
     isApproved: row.is_approved ?? row.isApproved ?? true,
     createdAt: row.created_at ?? row.createdAt ?? new Date().toISOString()
@@ -869,7 +887,7 @@ export const api = {
       date: booking.date || new Date().toISOString().split('T')[0],
       familyMembers: booking.familyMembers || [],
       sankalpWish: booking.sankalpWish,
-      goshala: booking.goshala || 'Surabhi Seva Dham, Vrindavan',
+      goshala: sanitizeLegacyLocationText(booking.goshala) || 'GauKripa Pramanit Goshala',
       orderId: booking.orderId,
       paymentId: booking.paymentId,
       createdAt: new Date().toISOString()

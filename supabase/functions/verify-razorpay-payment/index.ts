@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
           date: String(b.date || new Date().toISOString().split("T")[0]),
           family_members: Array.isArray(b.familyMembers) ? b.familyMembers : [],
           sankalp_wish: String(b.sankalpWish || "").slice(0, 500),
-          goshala: String(b.goshala || "Surabhi Seva Dham, Vrindavan").slice(0, 160),
+          goshala: String(b.goshala || "GauKripa Pramanit Goshala").slice(0, 160),
           created_at: new Date().toISOString()
         };
 

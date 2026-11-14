@@ -31,7 +31,7 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-amber-300 fill-amber-300" />
             <h3 className="font-playfair text-lg font-bold text-amber-200">
-              {tr('गौकृपा परिवार से जुड़ें', 'Join GauKripa Seva Parivar')}
+              {tr('गौकृपा परिवार से जुड़ें', 'GauKripa Seva Parivar se Judein')}
             </h3>
           </div>
 
@@ -48,15 +48,15 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
           <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
             <div className="text-center space-y-1">
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 mx-auto bg-amber-50 shadow-xs">
-                <ImageCrop cropKey="bottomCow" className="w-full h-full object-cover scale-110" alt="Holy Cow" />
+                <ImageCrop cropKey="bottomCow" className="w-full h-full object-cover scale-110" alt="Gaumata" />
               </div>
               <h4 className="font-playfair text-base font-bold text-[#1b4b32] pt-1">
-                {tr('गौमाता सेवा एवं आध्यात्मिक परिवार के सदस्य बनें', 'Stay Connected with Vrindavan Goshala Updates')}
+                {tr('गौमाता सेवा एवं आध्यात्मिक परिवार के सदस्य बनें', 'Gaumata Seva aur Adhyatmik Parivar se Judein')}
               </h4>
               <p className="text-xs text-[#6e5d48]">
                 {tr(
-                  'प्रतिदिन प्रातःकालीन वृन्दावन गौशाला दर्शन, एकादशी तिथि सूचना और शुभ वैदिक पंचांग सीधे अपने व्हाट्सएप पर प्राप्त करें।',
-                  'Receive daily morning Vrindavan goshala updates, Ekadashi reminders & Vedic Panchang guidance directly on WhatsApp.'
+                  'प्रतिदिन प्रातःकालीन प्रमाणित गौशाला दर्शन, एकादशी तिथि सूचना और शुभ वैदिक पंचांग सीधे अपने व्हाट्सएप पर प्राप्त करें।',
+                  'Roz subah pramanit goshala darshan, Ekadashi tithi suchna aur shubh Vedic Panchang seedhe apne WhatsApp par paayein.'
                 )}
               </p>
             </div>
@@ -64,7 +64,7 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
             <div className="space-y-3 pt-2">
               <div>
                 <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                  {tr('पूरा नाम', 'Full Name')}
+                  {tr('पूरा नाम', 'Poora Naam')}
                 </label>
                 <input
                   type="text"
@@ -77,7 +77,7 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
 
               <div>
                 <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                  {tr('व्हाट्सएप मोबाइल नंबर', 'WhatsApp Number')}
+                  {tr('व्हाट्सएप मोबाइल नंबर', 'WhatsApp Mobile Number')}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-xs text-[#7d705c] font-semibold">+91</span>
@@ -93,7 +93,7 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
 
               <div>
                 <label className="block text-xs font-medium text-[#483d2e] mb-1">
-                  {tr('आपका शहर / राज्य', 'Your City / State')}
+                  {tr('आपका शहर / राज्य', 'Aapka Shehar / Rajya')}
                 </label>
                 <input
                   type="text"
@@ -109,7 +109,7 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
               type="submit"
               className="w-full py-2.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
-              <span>{tr('व्हाट्सएप सेवा परिवार में जुड़ें', 'Join Free WhatsApp Seva Parivar')}</span>
+              <span>{tr('व्हाट्सएप सेवा परिवार में जुड़ें', 'Free WhatsApp Seva Parivar Mein Judein')}</span>
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
@@ -121,25 +121,25 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
 
             <div className="space-y-1">
               <h4 className="font-playfair text-xl font-bold text-[#1b4b32]">
-                {tr('सेवा परिवार में आपका स्वागत है!', 'Welcome to GauKripa Parivar!')}
+                {tr('सेवा परिवार में आपका स्वागत है!', 'Seva Parivar Mein Aapka Swagat Hai!')}
               </h4>
               <p className="text-xs text-[#5d4e3b]">
                 {tr(
                   `प्रणाम ${name} जी! आप गौकृपा व्हाट्सएप समुदाय से जुड़ चुके हैं। दैनिक प्रातःकालीन दर्शन +91 ${phone} पर भेजे जाएंगे।`,
-                  `Pranam ${name}! You have been added to the GauKripa WhatsApp community. Morning updates will be shared with +91 ${phone}.`
+                  `Pranam ${name} ji! Aap GauKripa WhatsApp parivar se jud chuke hain. Roz subah darshan +91 ${phone} par bheje jayenge.`
                 )}
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-[#5e4b2d]">
-              🙏 {tr('“गावो मे हृदयं सन्तु, गावः सन्तु चिरोदये” — गौमाता की कृपा सदैव बनी रहे।', '“Gaavo Me Hridaya Santu, Gavah Santu Chirodhaye” — May sacred grace remain with your family.')}
+              🙏 {tr('“गावो मे हृदयं सन्तु, गावः सन्तु चिरोदये” — गौमाता की कृपा सदैव बनी रहे।', '“Gaavo Me Hridaya Santu, Gavah Santu Chirodhaye” — Gaumata ki kripa hamesha bani rahe.')}
             </div>
 
             <button
               onClick={onClose}
               className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-semibold cursor-pointer"
             >
-              {tr('बंद करें', 'Close')}
+              {tr('बंद करें', 'Band Karein')}
             </button>
           </div>
         )}

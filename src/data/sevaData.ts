@@ -120,7 +120,7 @@ export const SEVA_ITEMS_HI: SevaItem[] = [
 export const SEVA_ITEMS_EN: SevaItem[] = [
   {
     id: 'gau-chara',
-    title: 'Gaumata Green Fodder Service',
+    title: 'Gaumata Hara Chara Seva',
     planet: 'Surya Grah',
     planetTag: '☀️ Surya Grah Shanti',
     tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
@@ -128,63 +128,63 @@ export const SEVA_ITEMS_EN: SevaItem[] = [
     basePrice: 251,
     unit: '5 kg',
     minQty: 1,
-    benefit: 'Direct arrangement of 5 kg fresh & nutritious fodder for Gaumata. Pacifies Surya Dosh and supports confidence & success.',
+    benefit: 'Gaumata ko 5 kg taaza aur paushtik hara chara khilane ki pratyaksh seva. Surya Grah dosh shanti aur yash-kirti mein vriddhi.',
     cropKey: 'sevaChara',
-    detailedDescription: 'Provision and direct feeding of 5 kg fresh green fodder & dry feed for cows at verified Vedic goshalas. After service completion, a video confirmation of fodder distribution with your name & Gotra is sent on WhatsApp.',
-    vedicSignificance: 'According to Vedic scriptures, satisfying Gaumata with wholesome fodder brings the grace of all deities and strengthens Surya Grah for leadership and vitality.',
-    fulfilmentDetails: 'Direct 5 kg fresh fodder management at certified goshala + Gotra Sankalp + WhatsApp video distribution confirmation.'
+    detailedDescription: 'Pramanit goshala mein Gaumata ke liye 5 kg taaza hara chara aur sookha chara aahar vyavastha. Seva poori hone ke baad aapke naam aur Gotra ke sath aahar vitaran ka video proof WhatsApp par bheja jata hai.',
+    vedicSignificance: 'Shastron ke anusar Gaumata ko tript aahar karane se sabhi 33 koti devi-devtaon ka aashirwad milta hai aur Surya Grah ki kripa se jeevan mein tej aur safalta milti hai.',
+    fulfilmentDetails: 'Pramanit goshala mein 5 kg taaze chare ki pratyaksh vyavastha + Gotra Sankalp + WhatsApp par video confirmation.'
   },
   {
     id: 'gau-gud-chana',
-    title: 'Gaumata Gud-Chana Feed Service',
+    title: 'Gaumata Gud-Chana Aahar Seva',
     planet: 'Mangal Grah',
     planetTag: '🪐 Mangal Grah Shanti',
     tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
     priceDisplay: '₹151',
     basePrice: 151,
-    unit: 'Feed Thali',
+    unit: 'Aahar Thali',
     minQty: 1,
-    benefit: 'Nutrient-rich jaggery & roasted gram feed arrangement. Helps calm Mangal Dosh and brings courage & stability.',
+    benefit: 'Urjadayak gud-chana aahar vyavastha. Mangal dosh nivaran, karz mukti aur shakti-sahas prapti ke liye.',
     cropKey: 'sevaGudChana',
-    detailedDescription: 'Pure mineral jaggery (Gud) and roasted protein-rich gram (Chana) thali arranged for indigenous cows and calves to support their daily health and nutrition.',
-    vedicSignificance: 'Gud-Chana feeding harmonizes fiery Mangal (Mars) influences, eases debt stress, and removes hurdles in property or career matters.',
-    fulfilmentDetails: 'Pure Gud-Chana thali served directly to indigenous cows + WhatsApp video distribution confirmation.'
+    detailedDescription: 'Desi Gaumata aur bachhdon ke liye shuddh gud aur bhune chane ki vishesh paushtik thali. Gaumata ke swasthya aur poshan ke liye uttam aahar seva.',
+    vedicSignificance: 'Gud-chana aahar se Mangal Grah ke ugra prabhav shant hote hain, karz se mukti aur bhoomi-bhavan ya career ke kaamon mein safalta milti hai.',
+    fulfilmentDetails: 'Desi Gaumata ko shuddh Gud-Chana thali pratyaksh khilayi jati hai + WhatsApp par video proof.'
   },
   {
     id: 'gau-roti',
-    title: 'Gaumata Fresh Roti Service',
+    title: 'Gaumata Taazi Roti Seva',
     planet: 'Chandra Grah',
     planetTag: '🌙 Chandra Grah Shanti',
     tagColor: 'bg-amber-50 text-amber-900 border-amber-200',
-    priceDisplay: '4 Rotis ₹51',
+    priceDisplay: '4 Roti ₹51',
     basePrice: 51,
-    unit: '4 Rotis',
+    unit: '4 Roti',
     minQty: 1,
-    benefit: 'Arrangement of 4 freshly prepared wheat rotis for Gaumata. Calms Chandra Dosh and promotes mental peace & family harmony.',
+    benefit: 'Gaumata ke liye 4 taazi gehun ki rotiyon ki vyavastha. Chandra dosh shanti, mansik shanti aur parivarik sukh.',
     cropKey: 'sevaRoti',
-    detailedDescription: '4 fresh whole-wheat rotis lovingly prepared and hand-fed to maternal cows in certified goshalas, fulfilling the daily Vedic Go-Gras tradition.',
-    vedicSignificance: 'Offering fresh rotis to cows strengthens Chandra (Moon), easing anxiety, restlessness, and bringing peace within the household.',
-    fulfilmentDetails: '4 fresh wheat rotis gently fed to cows + WhatsApp video distribution confirmation.'
+    detailedDescription: 'Shuddh gehun ke aate se taazi bani 4 rotiyan Gaumata ko prem aur aadar se khilane ki vyavastha, jisse daily Vedic Go-Gras niyam poora hota hai.',
+    vedicSignificance: 'Gaumata ko roz roti khilane se Chandra Grah majboot hota hai, mansik tanav aur anindra door hoti hai aur ghar mein sukh-shanti bani rehti hai.',
+    fulfilmentDetails: 'Gaumata ko 4 taazi gehun ki rotiyan prem se khilayi jati hain + WhatsApp video proof.'
   },
   {
     id: 'pakshi-dana',
-    title: 'Pakshi Dana Grain Service',
+    title: 'Pakshi Dana Aahar Seva',
     planet: 'Budh Grah',
     planetTag: '🦅 Budh Grah Shanti',
     tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
     priceDisplay: '₹101',
     basePrice: 101,
-    unit: 'Grain Bowl',
+    unit: 'Dana Katori',
     minQty: 1,
-    benefit: 'Pearl millet, grains & water bowl arrangement for birds. Harmonizes Budh Grah, clarity of speech & business wisdom.',
+    benefit: 'Pakshiyon ke liye bajra, anaj aur shuddh jal ki vyavastha. Budh Grah dosh nivaran, vyapar buddhi aur vaani mein sudhar.',
     cropKey: 'sevaPakshi',
-    detailedDescription: 'Morning arrangement of nutritious bajra, broken wheat, sesame seeds, and clean drinking water for birds at sheltered feeding points.',
-    vedicSignificance: 'Mercury (Budh) governs intellect, communication, and trade. Feeding birds sharpens clarity and invites auspicious business opportunities.',
-    fulfilmentDetails: 'Grains and clean water arranged at natural bird feeding shelters.'
+    detailedDescription: 'Subah pakshiyon ke liye paushtik bajra, gehun, til aur peene ke saaf paani ki vyavastha. Vaani dosh aur vyapar ki rukawaton ko door karne ki uttam seva.',
+    vedicSignificance: 'Budh Grah vaani, buddhi aur vyapar ka karak hai. Pakshiyon ko dana khilane se mansik spashtata aur naye business avsar milte hain.',
+    fulfilmentDetails: 'Prakritik pakshi aashray sthalon par anaj-dana aur paani rakha jata hai.'
   },
   {
     id: 'cheenti-aata',
-    title: 'Cheenti Aata-Kasar Feed Service',
+    title: 'Cheenti Aata-Kasar Aahar Seva',
     planet: 'Rahu-Ketu',
     planetTag: '🪱 Rahu-Ketu Shanti',
     tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
@@ -192,27 +192,27 @@ export const SEVA_ITEMS_EN: SevaItem[] = [
     basePrice: 149,
     unit: 'Kasar Pack',
     minQty: 1,
-    benefit: 'Roasted flour & sweet kasar arranged under sacred Peepal trees. Shields from sudden Rahu-Ketu obstacles.',
+    benefit: 'Peepal aur Vatvriksh ke neeche meethe kasar ki vyavastha. Rahu-Ketu ke achanak aane wale sankaton se suraksha.',
     cropKey: 'sevaCheenti',
-    detailedDescription: 'Wholesome kasar mix of roasted wheat flour, unrefined sugar, and sesame placed gently near ant colonies under holy Peepal and Banyan trees.',
-    vedicSignificance: 'Nourishing tiny living beings resolves deep karmic blocks, calms unknown fears, and stabilizes Rahu-Ketu planetary periods.',
-    fulfilmentDetails: 'Aata-kasar feed placed respectfully beneath sacred Peepal trees.'
+    detailedDescription: 'Bhune hue gehun ke aate, bura shakkar aur til se bana paushtik kasar aahar. Pavitra vrikshon ke neeche cheentiyon ke bilon ke paas arpit kiya jata hai.',
+    vedicSignificance: 'Sookshma jeevon ko bhojan karane se sanchit karm dosh katte hain, agyat bhay khatam hota hai aur Rahu-Ketu mahadasha mein sthirta aati hai.',
+    fulfilmentDetails: 'Pavitra Peepal vriksh ke neeche aata-kasar aahar arpit kiya jata hai.'
   },
   {
     id: 'street-dogs',
-    title: 'Stray Dog Meal Service',
+    title: 'Shwan (Street Dogs) Aahar Seva',
     planet: 'Ketu Grah',
     planetTag: '🐕 Ketu Grah Shanti',
     tagColor: 'bg-amber-100 text-amber-900 border-amber-300',
     priceDisplay: '₹199',
     basePrice: 199,
-    unit: 'Meal Tray',
+    unit: 'Aahar Thali',
     minQty: 1,
-    benefit: 'Freshly cooked wholesome meals for stray dogs. Harmonizes Ketu Dosh and brings spiritual protection.',
+    benefit: 'Sadak ke besahara shwan ke liye taaza paka bhojan. Ketu dosh shanti aur adrishya sankaton se parivar ki raksha.',
     cropKey: 'sevaDogs',
-    detailedDescription: 'Fresh, hygienic cooked meals prepared with rice, turmeric, rotis, and milk served with care to hungry community dogs.',
-    vedicSignificance: 'Stray dogs are regarded as guardians associated with Lord Bhairava. Serving them protects families from unseen obstacles and balances Ketu.',
-    fulfilmentDetails: 'Freshly cooked meal trays served directly to community dogs.'
+    detailedDescription: 'Chawal, haldi, roti aur doodh se bana shuddh aur swasthya-vardhak bhojan besahara street dogs ko pyar aur samman se khilaya jata hai.',
+    vedicSignificance: 'Shwan Bhagwan Bhairav ke sevak maane jate hain. Unhe bhojan karane se ghar-parivar par aane wali badhayein talti hain aur Ketu shubh fal deta hai.',
+    fulfilmentDetails: 'Taaza paka bhojan taiyar karke besahara shwan ko tript bhojan karaya jata hai.'
   }
 ];
 
@@ -271,26 +271,26 @@ export const ASTROLOGERS_EN: Astrologer[] = [
     id: 'nipunjj',
     name: 'Nipunjj',
     title: 'Numerology, Vedic, Tarot & Palmistry Expert',
-    experience: '7+ Years Experience',
+    experience: '7+ Saal ka Anubhav',
     rating: 4.9,
-    reviewsCount: '5239+ Readings',
+    reviewsCount: '5239+ Readings Poorn',
     ratePerMin: 20,
     cropKey: 'astroRohan',
     languages: ['Hindi', 'English'],
-    bio: 'Trusted Numerology, Vedic Astrology, Tarot, and Palmistry specialist with 7+ years of experience and 5239+ readings completed for career, marriage, and life clarity.',
+    bio: 'Numerology, Vedic Jyotish, Tarot reading aur Palmistry mein 7+ saal ke anubhav ke sath 5239+ sateek readings poorn. Career, love, marriage aur jeevan ke faislon ke liye spasht margdarshan.',
     specializations: ['Numerology', 'Vedic', 'Tarot', 'Palmistry']
   },
   {
     id: 'dravina',
     name: 'Dravina',
-    title: 'Senior Vedic & Tarot Expert',
-    experience: '10+ Years Experience',
+    title: 'Varishth Vedic Jyotish & Tarot Expert',
+    experience: '10+ Saal ka Anubhav',
     rating: 4.9,
-    reviewsCount: '7648+ Readings',
+    reviewsCount: '7648+ Readings Poorn',
     ratePerMin: 20,
     cropKey: 'astroSophia',
     languages: ['Hindi', 'English'],
-    bio: 'Seasoned Vedic Astrologer and intuitive Tarot reader with 10+ years of experience and 7648+ readings completed, offering clear Kundali, relationship, and remedial guidance.',
+    bio: '10+ saal ke gehan Vedic aur Tarot paramarsh anubhav ke sath 7648+ safal readings poorn. Janam Kundali vishleshan, rishton mein samanjasya aur saral upayon ki visheshagya.',
     specializations: ['Vedic', 'Tarot']
   }
 ];
@@ -363,47 +363,47 @@ export const JYOTISH_CATEGORIES_HI: JyotishCategory[] = [
 export const JYOTISH_CATEGORIES_EN: JyotishCategory[] = [
   {
     id: 'love-relationship',
-    title: 'Love & Relationship Guidance',
-    subtitle: 'प्रेम एवं संबंध मार्गदर्शन',
+    title: 'Prem aur Sambandh Margdarshan',
+    subtitle: 'Love & Relationship Salah',
     iconName: 'Heart',
-    description: 'Vedic guidance for harmony in love, mutual understanding, resolving misunderstandings, and emotional balance.',
-    topics: ['Resolving Relationship Hurdles', 'Mutual Understanding', 'Partner Compatibility', 'Emotional Stability'],
-    badge: 'Popular Consult'
+    description: 'Prem sambandhon mein samanjasya, aapsi samajh, galatfahmiyon ka samadhan aur bhavnatmak santulan ke liye Vedic paramarsh.',
+    topics: ['Prem mein rukawaton ka samadhan', 'Rishton mein aapsi samajh', 'Partner ka swabhav aur taalmel', 'Bhavnatmak sthirta'],
+    badge: 'Lokpriya Paramarsh'
   },
   {
     id: 'marriage',
-    title: 'Marriage Astrology Consultation',
-    subtitle: 'विवाह संबंधी ज्योतिष परामर्श',
+    title: 'Vivah Sambandhi Jyotish Paramarsh',
+    subtitle: 'Shaadi aur Kundali Milan',
     iconName: 'Users',
-    description: 'Kundali matching, Manglik evaluation, reasons for marriage delay, and authentic remedies for marital bliss.',
-    topics: ['Causes of Marriage Delay', 'Accurate Gun Milan', 'Manglik Dosh Analysis', 'Happy Married Life'],
-    badge: 'Essential'
+    description: 'Kundali milan, Manglik vichar, vivah mein deri ke karan aur dampatya jeevan mein sukh-shanti ke sateek upay.',
+    topics: ['Vivah mein deri ke karan', 'Sateek Kundali & Gun Milan', 'Manglik Dosh vishleshan', 'Sukhi dampatya ke upay'],
+    badge: 'Ati Aavashyak'
   },
   {
     id: 'career-business',
-    title: 'Career & Business Guidance',
-    subtitle: 'करियर एवं व्यवसाय मार्गदर्शन',
+    title: 'Career aur Business Margdarshan',
+    subtitle: 'Naukri & Vyapar Salah',
     iconName: 'Briefcase',
-    description: 'Insights for job promotions, choosing the right industry, business profit analysis, and auspicious investment timing.',
-    topics: ['Job vs Business Choice', 'Promotion & Stability', 'Auspicious Timing', 'Business Remedies'],
-    badge: 'Career Growth'
+    description: 'Naukri mein promotion, sahi karyakshetra ka chayan, vyapar mein labh-hani ka vishleshan aur naye nivesh ke shubh yog.',
+    topics: ['Job vs Naya Business chayan', 'Promotion aur sthayitva', 'Shubh nivesh ka samay', 'Vyaparik badhaon ka Vedic hal'],
+    badge: 'Career Safalta'
   },
   {
     id: 'kundali-analysis',
-    title: 'Birth Chart Analysis (Kundali)',
-    subtitle: 'जन्म कुंडली विश्लेषण',
+    title: 'Janam Kundali Vishleshan',
+    subtitle: 'Poorna Birth Chart Study',
     iconName: 'Compass',
-    description: 'Comprehensive Vedic analysis of Lagna, Rashi, 12 houses, and ongoing Mahadasha & Antardasha for clear life direction.',
-    topics: ['Lagna & Rashi Report', 'Current Mahadasha', '12 Houses Deep Study', 'Gemstones & Timing'],
-    badge: 'Complete Reading'
+    description: 'Lagna, Rashi, 12 bhavon aur vartaman Mahadasha-Antardasha ka samagra aur sateek Vedic vishleshan.',
+    topics: ['Sampurna Lagna aur Rashi fal', 'Vartaman Mahadasha & Antardasha', '12 Bhavon ka gehan adhyayan', 'Anukool ratna aur shubh samay'],
+    badge: 'Poorna Vishleshan'
   },
   {
     id: 'planetary-nakshatra',
-    title: 'Planetary & Nakshatra Analysis',
-    subtitle: 'ग्रह एवं नक्षत्र विश्लेषण',
+    title: 'Grah aur Nakshatra Vishleshan',
+    subtitle: 'Dosh Shanti Margdarshan',
     iconName: 'Sparkles',
-    description: 'Detailed evaluation of Sun, Moon, Mars, Rahu-Ketu, Shani Sade Sati, and birth Nakshatra with Vedic remedies.',
-    topics: ['Shani Sade Sati & Dhaiya', 'Kaal Sarp & Pitra Dosh', 'Nakshatra & Pada Study', 'Simple Grah Shanti'],
+    description: 'Surya, Chandra, Mangal, Rahu-Ketu, Shani Sade Sati aur janam Nakshatra ke prabhav ka vishleshan aur Vedic nivaran.',
+    topics: ['Shani Sade Sati aur Dhaiya prabhav', 'Kaal Sarp aur Pitra Dosh vishleshan', 'Janam Nakshatra aur Pada prabhav', 'Saral Grah Shanti upay'],
     badge: 'Grah Shanti'
   }
 ];
@@ -498,69 +498,69 @@ export const REMEDY_CATEGORIES_HI: RemedyCategory[] = [
 export const REMEDY_CATEGORIES_EN: RemedyCategory[] = [
   {
     id: 'career',
-    title: 'Career Growth & Respect',
-    subtitle: 'करियर व यश वृद्धि',
+    title: 'Career aur Yash Vriddhi',
+    subtitle: 'Safalta & Samman',
     iconName: 'Briefcase',
-    rulingPlanets: 'Sun (Surya) & Saturn (Shani)',
-    description: 'Gau Aahar feed service to remove workplace hurdles, delayed promotions, and strengthen authority.',
+    rulingPlanets: 'Surya aur Shani Grah',
+    description: 'Kaamkaaj mein rukawatein, promotion mein deri aur netritva kshamta badhane ke liye Gau-Aahar seva.',
     recommendedSevaId: 'gau-chara',
-    mantra: 'ॐ घृणि सूर्याय नमः',
-    dosha: 'Surya Dosh / Work Hurdles'
+    mantra: 'Om Ghrini Suryaya Namah',
+    dosha: 'Surya Dosh / Karya Badha'
   },
   {
     id: 'love',
-    title: 'Love & Marriage Harmony',
-    subtitle: 'दांपत्य व प्रेम सौहार्द',
+    title: 'Dampatya aur Prem Sauhardra',
+    subtitle: 'Vivah & Rishton mein Shanti',
     iconName: 'Heart',
-    rulingPlanets: 'Venus (Shukra) & Mars (Mangal)',
-    description: 'Gud-Chana feed service to ease marriage delays, Manglik influences, and restore harmony in relationships.',
+    rulingPlanets: 'Shukra aur Mangal Grah',
+    description: 'Shaadi mein badha, Manglik prabhav aur rishton ki kadwahat door karne ke liye Gud-Chana aahar seva.',
     recommendedSevaId: 'gau-gud-chana',
-    mantra: 'ॐ शुं शुक्राय नमः',
-    dosha: 'Mangal Dosh / Shukra Affliction'
+    mantra: 'Om Shum Shukraya Namah',
+    dosha: 'Mangal Dosh / Shukra Peeda'
   },
   {
     id: 'health',
-    title: 'Mental Peace & Wellness',
-    subtitle: 'मानसिक शांति व स्वास्थ्य',
+    title: 'Mansik Shanti aur Swasthya',
+    subtitle: 'Tanav Mukti & Sehat',
     iconName: 'Leaf',
-    rulingPlanets: 'Moon (Chandra) & Mahamrityunjaya',
-    description: 'Fresh Roti feeding service to calm anxiety, sleeplessness, emotional stress, and promote overall wellbeing.',
+    rulingPlanets: 'Chandra aur Mahamrityunjaya',
+    description: 'Chinta, mansik ashanti, anindra aur swasthya labh ke liye Gaumata ko taazi rotiyon ki seva.',
     recommendedSevaId: 'gau-roti',
-    mantra: 'ॐ सों सोमाय नमः',
-    dosha: 'Chandra Dosh / Mental Stress'
+    mantra: 'Om Som Somaya Namah',
+    dosha: 'Chandra Dosh / Mansik Tanav'
   },
   {
     id: 'finance',
-    title: 'Business & Financial Stability',
-    subtitle: 'व्यापार व आर्थिक समृद्धि',
+    title: 'Vyapar aur Aarthik Samriddhi',
+    subtitle: 'Business Growth & Barkat',
     iconName: 'Coins',
-    rulingPlanets: 'Jupiter (Brihaspati) & Mercury',
-    description: 'Regular Gau Aahar service for steady business growth, relief from debt burden, and prosperity.',
+    rulingPlanets: 'Brihaspati aur Budh Grah',
+    description: 'Vyapar mein vriddhi, karz se mukti aur Maa Lakshmi ki kripa ke liye niyamit Gau-Aahar seva.',
     recommendedSevaId: 'gau-chara',
-    mantra: 'ॐ बृं बृहस्पतये नमः',
-    dosha: 'Financial Blockage'
+    mantra: 'Om Brim Brihaspataye Namah',
+    dosha: 'Guru Chandal / Aarthik Rukawat'
   },
   {
     id: 'negativity',
-    title: 'Protection from Negative Energy',
-    subtitle: 'नकारात्मक ऊर्जा निवारण',
+    title: 'Nakaratmak Urja Nivaran',
+    subtitle: 'Nazar Dosh & Bhay se Suraksha',
     iconName: 'Shield',
-    rulingPlanets: 'Rahu & Ketu',
-    description: 'Stray Dog & Ant feeding service to shield against unknown fears, evil eye, and sudden disruptions.',
+    rulingPlanets: 'Rahu aur Ketu (Chhaya Grah)',
+    description: 'Agyat bhay, nazar dosh aur achanak aane wali rukawaton se suraksha ke liye Shwan aur Cheenti aahar seva.',
     recommendedSevaId: 'street-dogs',
-    mantra: 'ॐ कें केतवे नमः',
+    mantra: 'Om Kem Ketave Namah',
     dosha: 'Kaal Sarp Dosh / Rahu Mahadasha'
   },
   {
     id: 'family',
-    title: 'Family Peace & Harmony',
-    subtitle: 'पारिवारिक सुख व शांति',
+    title: 'Parivarik Sukh aur Shanti',
+    subtitle: 'Ghar mein Prem & Samanjasya',
     iconName: 'Home',
-    rulingPlanets: 'Moon & Jupiter',
-    description: 'Ant aata-kasar feeding service to soothe domestic friction, honor ancestors (Pitra), and restore warmth at home.',
+    rulingPlanets: 'Chandra aur Brihaspati Grah',
+    description: 'Grih-kalesh samapti, Pitra shanti aur parivar mein aapsi prem-sauhardra ke liye Cheenti aahar seva.',
     recommendedSevaId: 'cheenti-aata',
-    mantra: 'ॐ नमो भगवते वासुदेवाय',
-    dosha: 'Domestic Disharmony / Pitra Dosh'
+    mantra: 'Om Namo Bhagavate Vasudevaya',
+    dosha: 'Grih Kalesh / Pitra Dosh'
   }
 ];
 
@@ -589,7 +589,7 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
     sevaTitle: 'गौमाता के लिए चारा व्यवस्था (25 किलो)',
     date: 'आज, प्रातः 07:15',
     time: 'ब्रह्ममुहूर्त सेवा',
-    goshalaName: 'सुरभि गौ सेवा धाम, वृन्दावन',
+    goshalaName: 'गौकृपा प्रमाणित गौशाला',
     certificateId: 'GK-SANKALP-9021'
   },
   {
@@ -609,7 +609,7 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
     sevaTitle: 'गौमाता का गुड़-चना आहार (5 थाली)',
     date: 'कल, सायं 06:45',
     time: 'संध्या बेला',
-    goshalaName: 'सुरभि गौ सेवा धाम, वृन्दावन',
+    goshalaName: 'गौकृपा प्रमाणित गौशाला',
     certificateId: 'GK-SANKALP-9023'
   },
   {
@@ -627,21 +627,21 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
 export const RECENT_PROOFS_EN: SevaProof[] = [
   {
     id: 'PRF-8941',
-    devoteeName: 'Rajesh & Sunita Sharma',
+    devoteeName: 'Rajesh aur Sunita Sharma',
     location: 'Jaipur, Rajasthan',
-    sevaTitle: 'Gaumata Green Fodder Service (25 kg)',
-    date: 'Today, 07:15 AM',
-    time: 'Brahmamuhurta Feed',
-    goshalaName: 'Surabhi Gau Seva Dham, Vrindavan',
+    sevaTitle: 'Gaumata Hara Chara Seva (25 kg)',
+    date: 'Aaj, Subah 07:15 AM',
+    time: 'Brahmamuhurta Seva',
+    goshalaName: 'GauKripa Pramanit Goshala',
     certificateId: 'GK-SANKALP-9021'
   },
   {
     id: 'PRF-8942',
     devoteeName: 'Ananya Deshmukh',
     location: 'Pune, Maharashtra',
-    sevaTitle: 'Gaumata Fresh Roti Service (20 Rotis)',
-    date: 'Today, 08:30 AM',
-    time: 'Morning Gau Aarati',
+    sevaTitle: 'Gaumata Taazi Roti Seva (20 Roti)',
+    date: 'Aaj, Subah 08:30 AM',
+    time: 'Subah Gau Aarati',
     goshalaName: 'Gau Prem Dham, Mathura',
     certificateId: 'GK-SANKALP-9022'
   },
@@ -649,19 +649,19 @@ export const RECENT_PROOFS_EN: SevaProof[] = [
     id: 'PRF-8943',
     devoteeName: 'Vikramaditya Singhania',
     location: 'New Delhi',
-    sevaTitle: 'Gaumata Gud-Chana Feed (5 Thalis)',
-    date: 'Yesterday, 06:45 PM',
-    time: 'Evening Feed',
-    goshalaName: 'Surabhi Gau Seva Dham, Vrindavan',
+    sevaTitle: 'Gaumata Gud-Chana Aahar (5 Thali)',
+    date: 'Kal, Shaam 06:45 PM',
+    time: 'Sandhya Bela',
+    goshalaName: 'GauKripa Pramanit Goshala',
     certificateId: 'GK-SANKALP-9023'
   },
   {
     id: 'PRF-8944',
     devoteeName: 'Meenakshi Iyer',
     location: 'Bengaluru, Karnataka',
-    sevaTitle: 'Pakshi Dana & Cheenti Aata Service',
-    date: 'Yesterday, 07:00 AM',
-    time: 'Sunrise Feed',
+    sevaTitle: 'Pakshi Dana aur Cheenti Aahar Seva',
+    date: 'Kal, Subah 07:00 AM',
+    time: 'Suryoday Pratham Aahar',
     goshalaName: 'Anand Tirtha Van, Haridwar',
     certificateId: 'GK-SANKALP-9024'
   }

@@ -20,7 +20,7 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
         
         {/* Title */}
         <h2 className="text-center font-playfair text-2xl sm:text-3xl font-bold text-[#1b4b32] mb-6">
-          {tr('गौकृपा ही क्यों चुनें?', 'Why Choose GauKripa?')}
+          {tr('गौकृपा ही क्यों चुनें?', 'GauKripa Kyon Chunein?')}
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
@@ -34,9 +34,9 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
                 <Leaf className="w-5 h-5 text-[#2c6947]" />
               </div>
               <span className="text-xs sm:text-sm font-bold text-[#273229] leading-tight">
-                {tr('श्रद्धा एवं करुणा', 'Direct Service with')}
+                {tr('श्रद्धा एवं करुणा', 'Shraddha aur Karuna')}
                 <br />
-                {tr('के साथ प्रत्यक्ष सेवा', 'Devotion & Care')}
+                {tr('के साथ प्रत्यक्ष सेवा', 'ke sath Pratyaksh Seva')}
               </span>
             </div>
 
@@ -46,9 +46,9 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
                 <Check className="w-5 h-5 stroke-[2.5] text-[#2c6947]" />
               </div>
               <span className="text-xs sm:text-sm font-bold text-[#273229] leading-tight">
-                {tr('100% पारदर्शी', '100% Transparent')}
+                {tr('100% पारदर्शी', '100% Pardarshi')}
                 <br />
-                {tr('आहार व्यवस्था', 'Feed Management')}
+                {tr('आहार व्यवस्था', 'Aahar Vyavastha')}
               </span>
             </div>
 
@@ -61,10 +61,10 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
                 <Video className="w-5 h-5 text-[#2c6947]" />
               </div>
               <span className="text-xs sm:text-sm font-bold text-[#273229] leading-tight group-hover:text-[#1b4b32] transition-colors">
-                {tr('आहार वितरण की वीडियो पुष्टि', 'Feed Distribution Video Proof')}
+                {tr('आहार वितरण की वीडियो पुष्टि', 'Aahar Vitaran ka Video Proof')}
                 <br />
                 <span className="text-[11px] font-normal text-[#6f604c]">
-                  {tr('(WhatsApp पर फोटो/वीडियो)', '(Photo/Video on WhatsApp)')}
+                  {tr('(WhatsApp पर फोटो/वीडियो)', '(WhatsApp par Photo/Video)')}
                 </span>
               </span>
             </div>
@@ -75,9 +75,9 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
                 <Heart className="w-5 h-5 text-[#2c6947] fill-[#2c6947]" />
               </div>
               <span className="text-xs sm:text-sm font-bold text-[#273229] leading-tight">
-                {tr('आध्यात्मिक शांति', 'Spiritual Peace')}
+                {tr('आध्यात्मिक शांति', 'Adhyatmik Shanti')}
                 <br />
-                {tr('एवं सुख-समृद्धि', '& Well-being')}
+                {tr('एवं सुख-समृद्धि', 'aur Sukh-Samriddhi')}
               </span>
             </div>
 
@@ -90,16 +90,16 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
               <ImageCrop
                 cropKey="bottomCow"
                 className="w-full h-full object-cover scale-110"
-                alt={tr('गौमाता दर्शन', 'Sacred White Cow')}
+                alt={tr('गौमाता दर्शन', 'Gaumata Darshan')}
               />
             </div>
 
             <div className="text-center sm:text-left space-y-1.5">
               <p className="font-script text-base sm:text-lg text-[#253528] font-semibold leading-tight">
-                {tr('“गौ सेवा से ही जग का कल्याण है...”', '“Serving Gaumata blesses the world...”')}
+                {tr('“गौ सेवा से ही जग का कल्याण है...”', '“Gau Seva se hi jag ka kalyan hai...”')}
                 <br />
                 <span className="font-sans font-bold text-xs sm:text-sm text-[#1b4b32]">
-                  {tr('गौकृपा परिवार से जुड़ें', 'Join the GauKripa Family')}
+                  {tr('गौकृपा परिवार से जुड़ें', 'GauKripa Parivar se Judein')}
                 </span>
               </p>
 
@@ -107,7 +107,7 @@ export const WhyChooseUsStrip: React.FC<WhyChooseUsStripProps> = ({
                 onClick={onJoinParivar}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer whitespace-nowrap"
               >
-                <span>{tr('सेवा परिवार में शामिल हों', 'Join Seva Parivar')}</span>
+                <span>{tr('सेवा परिवार में शामिल हों', 'Seva Parivar Mein Shamil Hon')}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

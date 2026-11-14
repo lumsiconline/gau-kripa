@@ -25,7 +25,7 @@ const INDIA_REVIEWS: Review[] = [
     sevaHi: 'गौ चारा सेवा (5 किलो)',
     sevaEn: 'Gau Chara Seva (5 kg)',
     oneLinerHi: 'व्हाट्सएप पर 2 घंटे में गौमाता को चारा खिलाने की स्पष्ट वीडियो पुष्टि मिल गई, मन को बहुत शांति मिली।',
-    oneLinerEn: 'Received clear WhatsApp video confirmation within 2 hours showing fresh fodder fed to Gaumata. Very peaceful experience!',
+    oneLinerEn: 'WhatsApp par 2 ghante mein Gaumata ko chara khilane ka clear video proof mil gaya, mann ko bahut shanti mili!',
     stars: 5,
   },
   {
@@ -35,9 +35,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'मुंबई',
     cityEn: 'Mumbai',
     sevaHi: 'गौ रोटी व्यवस्था (4 रोटियाँ)',
-    sevaEn: 'Gau Roti Service (4 Rotis)',
+    sevaEn: 'Gau Roti Seva (4 Roti)',
     oneLinerHi: 'गौमाता के लिए रोटी व्यवस्था बुक की थी, गोत्र संकल्प के साथ वीडियो देखकर पूरा परिवार प्रसन्न हो गया।',
-    oneLinerEn: 'Booked the fresh Roti arrangement service; watching the video with our Gotra Sankalp made our entire family very happy.',
+    oneLinerEn: 'Gaumata ke liye roti seva book ki thi, Gotra Sankalp ke sath video dekh kar poora parivar khush ho gaya.',
     stars: 5,
   },
   {
@@ -47,9 +47,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'वाराणसी',
     cityEn: 'Varanasi',
     sevaHi: 'गुड़-चना आहार व्यवस्था',
-    sevaEn: 'Gud-Chana Feed Service',
-    oneLinerHi: 'वृंदावन गौशाला में हमारे नाम व गोत्र के साथ गुड़-चना आहार खिलाया गया, 100% पारदर्शी और विश्वसनीय सेवा है।',
-    oneLinerEn: 'In Vrindavan goshala, Gud-Chana feed was served with our name and Gotra placard. 100% transparent and genuine service.',
+    sevaEn: 'Gud-Chana Aahar Seva',
+    oneLinerHi: 'प्रमाणित गौशाला में हमारे नाम व गोत्र के साथ गुड़-चना आहार खिलाया गया, 100% पारदर्शी और विश्वसनीय सेवा है।',
+    oneLinerEn: 'Pramanit goshala mein hamare naam aur Gotra ke sath Gud-Chana aahar khilaya gaya, 100% genuine aur vishwasniya seva hai.',
     stars: 5,
   },
   {
@@ -59,9 +59,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'पुणे',
     cityEn: 'Pune',
     sevaHi: 'करियर ज्योतिष मार्गदर्शन',
-    sevaEn: 'Career Astrology Guidance',
+    sevaEn: 'Career Jyotish Margdarshan',
     oneLinerHi: 'करियर बदलाव से पहले चारा व्यवस्था व आचार्य जी से कुंडली परामर्श लिया, अत्यंत सकारात्मक मार्गदर्शन मिला।',
-    oneLinerEn: 'Booked fodder arrangement and consulted Acharya ji before switching jobs; received very positive and clear guidance.',
+    oneLinerEn: 'Job switch se pehle chara seva aur Acharya ji se Kundali paramarsh liya, bahut sakaratmak aur sateek margdarshan mila.',
     stars: 5,
   },
   {
@@ -71,9 +71,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'अहमदाबाद',
     cityEn: 'Ahmedabad',
     sevaHi: 'चींटी आटा आहार सेवा',
-    sevaEn: 'Cheenti Aata Feed Service',
+    sevaEn: 'Cheenti Aata Seva',
     oneLinerHi: 'आहार वितरण की साफ एचडी वीडियो फोन पर आई, इतनी पारदर्शी व्यवस्था पहली बार देखी।',
-    oneLinerEn: 'Received clear HD video confirmation on phone; this level of feed distribution transparency is remarkable.',
+    oneLinerEn: 'Aahar vitaran ka saaf HD video phone par aaya, itni pardarshi vyavastha pehli baar dekhi.',
     stars: 5,
   },
   {
@@ -83,9 +83,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'लखनऊ',
     cityEn: 'Lucknow',
     sevaHi: 'गुड़-चना आहार सेवा',
-    sevaEn: 'Gud-Chana Feed Service',
+    sevaEn: 'Gud-Chana Aahar Seva',
     oneLinerHi: 'पिताजी के जन्मदिन पर गौमाता को आहार सेवा करवाई, परिवार के सभी सदस्य वीडियो देखकर बहुत खुश हुए।',
-    oneLinerEn: 'Arranged Gaumata feed service on my father’s birthday; everyone in our family was deeply moved watching the video.',
+    oneLinerEn: 'Pitaji ke janamdin par Gaumata ko aahar seva karwayi, ghar ke sabhi log video dekh kar bahut bhavuk aur khush hue.',
     stars: 5,
   },
   {
@@ -95,9 +95,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'बेंगलुरु',
     cityEn: 'Bengaluru',
     sevaHi: 'गौ रोटी व्यवस्था',
-    sevaEn: 'Gau Roti Service',
+    sevaEn: 'Gau Roti Seva',
     oneLinerHi: 'व्यस्त दिनचर्या में भी घर बैठे गौमाता की नियमित आहार व्यवस्था आसानी से हो जाती है।',
-    oneLinerEn: 'Even with a busy schedule in Bengaluru, arranging daily roti feeding for cows is seamless here.',
+    oneLinerEn: 'Busy schedule mein bhi ghar baithe Gaumata ki niyamit roti seva aasani se ho jati hai.',
     stars: 5,
   },
   {
@@ -107,9 +107,9 @@ const INDIA_REVIEWS: Review[] = [
     cityHi: 'जयपुर',
     cityEn: 'Jaipur',
     sevaHi: 'जन्म कुंडली एवं मंगल परामर्श',
-    sevaEn: 'Kundali & Mangal Guidance',
+    sevaEn: 'Kundali & Mangal Paramarsh',
     oneLinerHi: 'आचार्य जी ने जन्म कुंडली देखकर सरल ग्रह-शांति उपाय बताए, घर में सुख-शांति का अनुभव हुआ।',
-    oneLinerEn: 'Acharya ji analyzed our birth chart and suggested simple Vedic remedies; we experienced immense peace at home.',
+    oneLinerEn: 'Acharya ji ne Janam Kundali dekh kar saral grah-shanti upay bataye, ghar mein sukh-shanti ka anubhav hua.',
     stars: 5,
   },
 ];
@@ -134,10 +134,10 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
               <span>{tr('4.9/5 रेटिंग', '4.9/5 Rating')}</span>
             </span>
             <h3 className="font-playfair text-base sm:text-lg font-bold text-[#1b4b32]">
-              {tr('देशभर से ग्राहकों एवं यजमानों के अनुभव', 'Customer & Devotee Experiences Across India')}
+              {tr('देशभर से ग्राहकों एवं यजमानों के अनुभव', 'Desh Bhar se Bhakton aur Yajmanon ke Anubhav')}
             </h3>
             <span className="text-xs text-[#6e5f4a] font-medium hidden md:inline">
-              {tr('(आहार सेवा एवं ज्योतिष परामर्श समीक्षाएं)', '(Verified Feed Seva & Astrology Reviews)')}
+              {tr('(आहार सेवा एवं ज्योतिष परामर्श समीक्षाएं)', '(Pramanit Aahar Seva aur Jyotish Samiksha)')}
             </span>
           </div>
         </div>
@@ -183,7 +183,7 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
                     </div>
                     <span className="text-[9px] text-emerald-800 font-semibold flex items-center gap-0.5 mt-0.5">
                       <CheckCircle className="w-2.5 h-2.5 text-emerald-700" />
-                      <span>{tr('सत्यापित', 'Verified')}</span>
+                      <span>{tr('सत्यापित', 'Satyapit')}</span>
                     </span>
                   </div>
                 </div>

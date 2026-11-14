@@ -118,16 +118,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     try {
       if (isNewService) {
         await api.createService(editingService);
-        showNotification(tr('नई सेवा सफलतापूर्वक बनाई गई!', 'New Seva Service created successfully!'));
+        showNotification(tr('नई सेवा सफलतापूर्वक बनाई गई!', 'Nayi Seva safaltapoorvak banayi gayi!'));
       } else if (editingService.id) {
         await api.updateService(editingService.id, editingService);
-        showNotification(tr('सेवा सफलतापूर्वक अपडेट की गई!', 'Seva Service updated successfully!'));
+        showNotification(tr('सेवा सफलतापूर्वक अपडेट की गई!', 'Seva safaltapoorvak update ho gayi!'));
       }
       setEditingService(null);
       await loadAllData();
     } catch (err) {
       console.error(err);
-      showNotification(tr('सेवा सहेजने में विफल रहा', 'Failed to save service'));
+      showNotification(tr('सेवा सहेजने में विफल रहा', 'Seva save karne mein samasya aayi'));
     }
   };
 
@@ -135,11 +135,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     try {
       await api.deleteService(id);
       setConfirmDeleteServiceId(null);
-      showNotification(tr('सेवा हटा दी गई', 'Service deleted'));
+      showNotification(tr('सेवा हटा दी गई', 'Seva hata di gayi'));
       await loadAllData();
     } catch (err) {
       console.error(err);
-      showNotification(tr('सेवा हटाने में त्रुटि हुई', 'Failed to delete service'));
+      showNotification(tr('सेवा हटाने में त्रुटि हुई', 'Seva hatane mein samasya aayi'));
     }
   };
 
@@ -148,8 +148,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       await api.updateService(s.id, { isActive: !s.isActive });
       showNotification(
         !s.isActive
-          ? tr('सेवा सक्रिय कर दी गई', 'Service Activated')
-          : tr('सेवा निष्क्रिय कर दी गई', 'Service Deactivated')
+          ? tr('सेवा सक्रिय कर दी गई', 'Seva Chalu Ki Gayi')
+          : tr('सेवा निष्क्रिय कर दी गई', 'Seva Band Ki Gayi')
       );
       await loadAllData();
     } catch (err) {
@@ -164,10 +164,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     try {
       if (isNewAstro) {
         await api.createAstrologer(editingAstro);
-        showNotification(tr('ज्योतिषाचार्य सफलतापूर्वक जोड़े गए!', 'Astrologer added successfully!'));
+        showNotification(tr('ज्योतिषाचार्य सफलतापूर्वक जोड़े गए!', 'Jyotishacharya safaltapoorvak jode gaye!'));
       } else if (editingAstro.id) {
         await api.updateAstrologer(editingAstro.id, editingAstro);
-        showNotification(tr('ज्योतिषाचार्य प्रोफ़ाइल अपडेट हो गई!', 'Astrologer profile updated successfully!'));
+        showNotification(tr('ज्योतिषाचार्य प्रोफ़ाइल अपडेट हो गई!', 'Jyotishacharya profile update ho gayi!'));
       }
       setEditingAstro(null);
       await loadAllData();
@@ -180,7 +180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     try {
       await api.setAstrologerAvailability(astro.id, !astro.isOnline);
       showNotification(
-        `${astro.name} ${!astro.isOnline ? tr('अब ऑनलाइन हैं', 'is now ONLINE') : tr('अब ऑफ़लाइन हैं', 'is now OFFLINE')}`
+        `${astro.name} ${!astro.isOnline ? tr('अब ऑनलाइन हैं', 'ab ONLINE hain') : tr('अब ऑफ़लाइन हैं', 'ab OFFLINE hain')}`
       );
       await loadAllData();
     } catch (err) {
@@ -192,7 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const handleUpdateStatus = async (bookingId: string, status: BookingRecord['status']) => {
     try {
       await api.updateBookingStatus(bookingId, status);
-      showNotification(tr(`बुकिंग स्थिति अपडेट: ${status.toUpperCase()}`, `Booking status updated to ${status.toUpperCase()}`));
+      showNotification(tr(`बुकिंग स्थिति अपडेट: ${status.toUpperCase()}`, `Booking sthiti update: ${status.toUpperCase()}`));
       await loadAllData();
     } catch (err) {
       console.error(err);
@@ -210,7 +210,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       showNotification(
         tr(
           'वीडियो प्रमाण अपलोड हो गया और सेवा पूर्ण चिह्नित हुई! व्हाट्सएप सूचना कतारबद्ध है।',
-          'Video Proof uploaded and marked Completed! WhatsApp notification queued.'
+          'Video proof upload ho gaya aur seva poorn ho gayi! WhatsApp suchna bheji ja rahi hai.'
         )
       );
       setProofModalBooking(null);
@@ -226,7 +226,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     if (!settings) return;
     try {
       await api.updateSettings(settings);
-      showNotification(tr('मूल्य और छूट नियम सफलतापूर्वक अपडेट हुए!', 'Pricing and Discount Rules updated successfully!'));
+      showNotification(tr('मूल्य और छूट नियम सफलतापूर्वक अपडेट हुए!', 'Shulk aur Chhoot niyam safaltapoorvak update hue!'));
       await loadAllData();
     } catch (err) {
       console.error(err);
@@ -244,9 +244,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       } else if (target === 'astrologer' && editingAstro) {
         setEditingAstro({ ...editingAstro, customImageUrl: url });
       }
-      showNotification(tr('मीडिया फ़ाइल सफलतापूर्वक अपलोड हो गई!', 'Media file uploaded successfully!'));
+      showNotification(tr('मीडिया फ़ाइल सफलतापूर्वक अपलोड हो गई!', 'Photo/Media file safaltapoorvak upload ho gayi!'));
     } catch (err: any) {
-      showNotification(tr('अपलोड विफल: ', 'Upload failed: ') + err.message);
+      showNotification(tr('अपलोड विफल: ', 'Upload fail hua: ') + err.message);
     }
   };
 
@@ -259,10 +259,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     try {
       const url = await api.uploadMediaFile(file);
       await api.updateService(serviceId, { customImageUrl: url });
-      showNotification(tr('सेवा की फ़ोटो अपडेट हो गई! वेबसाइट पर तुरंत दिखाई देगी।', 'Service image updated! Reflected live on website.'));
+      showNotification(tr('सेवा की फ़ोटो अपडेट हो गई! वेबसाइट पर तुरंत दिखाई देगी।', 'Seva ki photo update ho gayi! Website par turant dikhegi.'));
       await loadAllData();
     } catch (err: any) {
-      showNotification(tr('फ़ोटो अपलोड विफल: ', 'Image upload failed: ') + (err?.message || 'Error'));
+      showNotification(tr('फ़ोटो अपलोड विफल: ', 'Photo upload fail hua: ') + (err?.message || 'Error'));
     } finally {
       setUploadingServiceImageId(null);
     }
@@ -272,10 +272,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     setUploadingServiceImageId(serviceId);
     try {
       await api.updateService(serviceId, { customImageUrl: '' });
-      showNotification(tr('डिफ़ॉल्ट फ़ोटो पुनर्स्थापित की गई।', 'Default service image restored.'));
+      showNotification(tr('डिफ़ॉल्ट फ़ोटो पुनर्स्थापित की गई।', 'Default photo wapas laga di gayi hai.'));
       await loadAllData();
     } catch (err: any) {
-      showNotification(tr('रीसेट विफल: ', 'Reset failed: ') + (err?.message || 'Error'));
+      showNotification(tr('रीसेट विफल: ', 'Reset fail hua: ') + (err?.message || 'Error'));
     } finally {
       setUploadingServiceImageId(null);
     }
@@ -311,7 +311,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{tr('वेबसाइट पर वापस जाएं', 'Back to Website')}</span>
+              <span>{tr('वेबसाइट पर वापस जाएं', 'Website par Wapas Jayein')}</span>
             </button>
             <div className="h-6 w-px bg-emerald-800" />
             <div className="flex items-center gap-2">
@@ -344,6 +344,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 className={`px-2 py-1 rounded-full transition-all cursor-pointer ${
                   lang === 'en' ? 'bg-amber-400 text-slate-950 shadow-xs' : 'text-amber-100 hover:text-white'
                 }`}
+                title="Hinglish mein dekhein (English)"
               >
                 EN
               </button>
@@ -351,14 +352,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
             <button
               onClick={loadAllData}
-              title={tr('डेटा रीफ़्रेश करें', 'Refresh Data')}
+              title={tr('डेटा रीफ़्रेश करें', 'Data Refresh Karein')}
               className="p-2 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
             <div className="text-right hidden sm:block">
               <div className="text-xs font-bold text-amber-100">{tr('श्री हर्ष भारद्वाज', 'Shri Harsh Bhardwaj')}</div>
-              <div className="text-[10px] text-emerald-300">{tr('वृंदावन धाम केंद्रीय नियंत्रण', 'Vrindavan Dham Central Control')}</div>
+              <div className="text-[10px] text-emerald-300">{tr('गौकृपा केंद्रीय नियंत्रण', 'GauKripa Kendriya Niyantran')}</div>
             </div>
           </div>
         </div>
@@ -370,17 +371,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
         {/* Left Sidebar Navigation */}
         <aside className="w-full md:w-64 shrink-0 space-y-1 bg-[#fffdf8] p-3 rounded-2xl border border-[#ebdcb9] shadow-xs self-start">
           <div className="px-3 py-2 text-[10px] font-bold text-[#887864] uppercase tracking-wider">
-            {tr('प्रबंधन मॉड्यूल', 'Management Modules')}
+            {tr('प्रबंधन मॉड्यूल', 'Prabandhan Modules')}
           </div>
 
           {[
-            { id: 'overview', label: tr('सारांश एवं विश्लेषण', 'Overview & Analytics'), icon: LayoutDashboard },
-            { id: 'services', label: tr('गौमाता आहार सेवाएं', 'Gau Seva Services'), icon: Sparkles },
-            { id: 'astrologers', label: tr('ज्योतिषाचार्य पैनल', 'Astrologer Panel'), icon: Users },
-            { id: 'bookings', label: tr('बुकिंग एवं वीडियो प्रमाण', 'Bookings & Proofs'), icon: CalendarCheck2 },
-            { id: 'pricing', label: tr('शुल्क एवं 50% छूट नियम', 'Pricing & 50% Discount'), icon: Percent },
-            { id: 'reviews', label: tr('श्रद्धालु समीक्षाएं', 'Devotee Reviews'), icon: Star },
-            { id: 'customers', label: tr('ग्राहक वॉलेट', 'Customer Wallets'), icon: DollarSign },
+            { id: 'overview', label: tr('सारांश एवं विश्लेषण', 'Saransh aur Vishleshan'), icon: LayoutDashboard },
+            { id: 'services', label: tr('गौमाता आहार सेवाएं', 'Gaumata Aahar Seva'), icon: Sparkles },
+            { id: 'astrologers', label: tr('ज्योतिषाचार्य पैनल', 'Jyotishacharya Panel'), icon: Users },
+            { id: 'bookings', label: tr('बुकिंग एवं वीडियो प्रमाण', 'Booking aur Video Proof'), icon: CalendarCheck2 },
+            { id: 'pricing', label: tr('शुल्क एवं 50% छूट नियम', 'Shulk aur 50% Chhoot Niyam'), icon: Percent },
+            { id: 'reviews', label: tr('श्रद्धालु समीक्षाएं', 'Bhakt Samikshayein'), icon: Star },
+            { id: 'customers', label: tr('ग्राहक वॉलेट', 'Bhakt Wallets'), icon: DollarSign },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -401,7 +402,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           })}
 
           <div className="pt-4 mt-4 border-t border-[#ebdcb9] px-3 space-y-1.5">
-            <div className="text-[11px] text-[#786a55] font-semibold">{tr('लाइव सिस्टम स्थिति:', 'Live System Status:')}</div>
+            <div className="text-[11px] text-[#786a55] font-semibold">{tr('लाइव सिस्टम स्थिति:', 'Live System Sthiti:')}</div>
             <div className="flex items-center gap-2 text-xs text-emerald-800 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{tr('Express API सर्वर (3000)', 'Express API Server (3000)')}</span>
@@ -410,7 +411,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               <span className={`w-2 h-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
               <span>
                 {tr('Supabase PostgreSQL:', 'Supabase PostgreSQL:')}{' '}
-                {dbStatus?.connected ? tr('कनेक्टेड', 'Connected') : tr('कनेक्ट हो रहा है...', 'Connecting...')}
+                {dbStatus?.connected ? tr('कनेक्टेड', 'Connected') : tr('कनेक्ट हो रहा है...', 'Connect ho raha hai...')}
               </span>
             </div>
           </div>
@@ -422,7 +423,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           {loading ? (
             <div className="py-24 text-center space-y-3">
               <div className="w-8 h-8 border-3 border-[#1b4b32] border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-[#71614e] font-semibold">{tr('गौकृपा कंसोल डेटा लोड हो रहा है...', 'Loading GauKripa Console Data...')}</p>
+              <p className="text-xs text-[#71614e] font-semibold">{tr('गौकृपा कंसोल डेटा लोड हो रहा है...', 'GauKripa Console Data load ho raha hai...')}</p>
             </div>
           ) : (
             <>
@@ -450,7 +451,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-[11px] font-semibold text-emerald-200 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                        {tr('सिंक: स्थायी क्लाउड', 'Sync: Persistent Cloud')}
+                        {tr('सिंक: स्थायी क्लाउड', 'Sync: Surakshit Cloud')}
                       </span>
                     </div>
                   </div>
@@ -458,14 +459,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                        {tr('डैशबोर्ड सारांश', 'Dashboard Overview')}
+                        {tr('डैशबोर्ड सारांश', 'Dashboard Saransh')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('रियल-टाइम सेवा शुल्क, सक्रिय ज्योतिषाचार्य और गौ-आहार सेवा वितरण आँकड़े।', 'Real-time service fee metrics, active astrologers, and Gau Seva fulfillment stats.')}
+                        {tr('रियल-टाइम सेवा शुल्क, सक्रिय ज्योतिषाचार्य और गौ-आहार सेवा वितरण आँकड़े।', 'Real-time seva shulk, sakriya jyotishacharya aur Gau Seva vitaran ke aankde.')}
                       </p>
                     </div>
                     <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                      {tr('ऑटो-सिंक सक्रिय', 'Auto-syncing')}
+                      {tr('ऑटो-सिंक सक्रिय', 'Auto-sync Chalu')}
                     </span>
                   </div>
 
@@ -473,38 +474,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] space-y-1">
                       <div className="flex items-center justify-between text-xs text-[#786a55]">
-                        <span>{tr('कुल सेवा शुल्क', 'Total Service Fee')}</span>
+                        <span>{tr('कुल सेवा शुल्क', 'Kul Seva Shulk')}</span>
                         <DollarSign className="w-4 h-4 text-emerald-700" />
                       </div>
                       <div className="text-2xl font-black text-[#1b4b32]">₹{totalRevenue.toLocaleString('en-IN')}</div>
-                      <div className="text-[10px] text-emerald-700 font-bold">{tr('100% सत्यापित UPI/बैंक भुगतान', '100% Verified Bank/UPI')}</div>
+                      <div className="text-[10px] text-emerald-700 font-bold">{tr('100% सत्यापित UPI/बैंक भुगतान', '100% Satyapit Bank/UPI')}</div>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] space-y-1">
                       <div className="flex items-center justify-between text-xs text-[#786a55]">
-                        <span>{tr('कुल सेवा संकल्प', 'Total Seva Sankalps')}</span>
+                        <span>{tr('कुल सेवा संकल्प', 'Kul Seva Sankalp')}</span>
                         <CalendarCheck2 className="w-4 h-4 text-emerald-700" />
                       </div>
                       <div className="text-2xl font-black text-[#1b4b32]">{bookings.length}</div>
-                      <div className="text-[10px] text-emerald-700 font-bold">{completedBookings} {tr('वीडियो प्रमाण सहित पूर्ण', 'Completed with Video')}</div>
+                      <div className="text-[10px] text-emerald-700 font-bold">{completedBookings} {tr('वीडियो प्रमाण सहित पूर्ण', 'Video Proof ke Saath Poorn')}</div>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] space-y-1">
                       <div className="flex items-center justify-between text-xs text-[#786a55]">
-                        <span>{tr('सक्रिय ज्योतिषाचार्य', 'Active Astrologers')}</span>
+                        <span>{tr('सक्रिय ज्योतिषाचार्य', 'Sakriya Jyotishacharya')}</span>
                         <Users className="w-4 h-4 text-emerald-700" />
                       </div>
                       <div className="text-2xl font-black text-[#1b4b32]">{activeAstros} / {astrologers.length}</div>
-                      <div className="text-[10px] text-emerald-700 font-bold">{tr('लाइव परामर्श हेतु उपलब्ध', 'Live Consultation Ready')}</div>
+                      <div className="text-[10px] text-emerald-700 font-bold">{tr('लाइव परामर्श हेतु उपलब्ध', 'Live Paramarsh ke Liye Taiyar')}</div>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] space-y-1">
                       <div className="flex items-center justify-between text-xs text-[#786a55]">
-                        <span>{tr('सक्रिय सेवाएं', 'Active Services')}</span>
+                        <span>{tr('सक्रिय सेवाएं', 'Sakriya Seva')}</span>
                         <Sparkles className="w-4 h-4 text-emerald-700" />
                       </div>
                       <div className="text-2xl font-black text-[#1b4b32]">{services.filter((s) => s.isActive).length}</div>
-                      <div className="text-[10px] text-amber-800 font-bold">{tr('गौमाता, पक्षी, चींटी, श्वान आहार', 'Cows, Birds, Ants, Dogs')}</div>
+                      <div className="text-[10px] text-amber-800 font-bold">{tr('गौमाता, पक्षी, चींटी, श्वान आहार', 'Gaumata, Pakshi, Cheenti, Shwan')}</div>
                     </div>
                   </div>
 
@@ -512,13 +513,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-playfair text-base font-bold text-[#1b4b32]">
-                        {tr('हाल के श्रद्धालु संकल्प', 'Recent Devotee Sankalps')}
+                        {tr('हाल के श्रद्धालु संकल्प', 'Haal ke Bhakt Sankalp')}
                       </h3>
                       <button
                         onClick={() => setActiveTab('bookings')}
                         className="text-xs font-bold text-[#1b4b32] hover:underline cursor-pointer"
                       >
-                        {tr('सभी बुकिंग देखें →', 'View All Bookings →')}
+                        {tr('सभी बुकिंग देखें →', 'Sabhi Bookings Dekhein →')}
                       </button>
                     </div>
 
@@ -527,10 +528,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                         <thead className="bg-[#fbf4e2] text-[#483c2e] font-bold border-b border-[#ebdcb9]">
                           <tr>
                             <th className="p-3">{tr('बुकिंग आईडी', 'Booking ID')}</th>
-                            <th className="p-3">{tr('श्रद्धालु', 'Devotee')}</th>
-                            <th className="p-3">{tr('सेवा का नाम', 'Seva Title')}</th>
-                            <th className="p-3">{tr('सेवा शुल्क', 'Service Fee')}</th>
-                            <th className="p-3">{tr('स्थिति', 'Status')}</th>
+                            <th className="p-3">{tr('श्रद्धालु', 'Bhakt')}</th>
+                            <th className="p-3">{tr('सेवा का नाम', 'Seva ka Naam')}</th>
+                            <th className="p-3">{tr('सेवा शुल्क', 'Seva Shulk')}</th>
+                            <th className="p-3">{tr('स्थिति', 'Sthiti')}</th>
                             <th className="p-3">{tr('वीडियो प्रमाण', 'Video Proof')}</th>
                           </tr>
                         </thead>
@@ -555,16 +556,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                   }`}
                                 >
                                   {b.status === 'completed'
-                                    ? tr('पूर्ण', 'completed')
+                                    ? tr('पूर्ण', 'Poorn')
                                     : b.status === 'in_progress'
-                                    ? tr('प्रगति पर', 'in progress')
-                                    : tr('पुष्ट', 'confirmed')}
+                                    ? tr('प्रगति पर', 'Pragati Par')
+                                    : tr('पुष्ट', 'Pusht')}
                                 </span>
                               </td>
                               <td className="p-3">
                                 {b.videoProofUrl ? (
                                   <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-                                    <Video className="w-3.5 h-3.5" /> {tr('व्हाट्सएप पर भेजा गया', 'Sent on WhatsApp')}
+                                    <Video className="w-3.5 h-3.5" /> {tr('व्हाट्सएप पर भेजा गया', 'WhatsApp par Bheja Gaya')}
                                   </span>
                                 ) : (
                                   <button
@@ -574,7 +575,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                     }}
                                     className="text-[11px] font-bold text-amber-700 underline cursor-pointer"
                                   >
-                                    {tr('+ प्रमाण अपलोड करें', '+ Upload Proof')}
+                                    {tr('+ प्रमाण अपलोड करें', '+ Proof Upload Karein')}
                                   </button>
                                 )}
                               </td>
@@ -593,10 +594,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                        {tr('गौमाता आहार एवं सेवा प्रबंधन', 'Manage Gau Seva & Feeding Services')}
+                        {tr('गौमाता आहार एवं सेवा प्रबंधन', 'Gaumata Aahar aur Seva Prabandhan')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('सेवाओं के शुल्क, विवरण, ग्रह-दोष लाभ जोड़ें/संपादित करें और वास्तविक सेवा फोटो बदलें।', 'Add, edit prices, descriptions, grah dosha associations and replace real seva photos.')}
+                        {tr('सेवाओं के शुल्क, विवरण, ग्रह-दोष लाभ जोड़ें/संपादित करें और वास्तविक सेवा फोटो बदलें।', 'Sevaon ke shulk, vivaran, grah-dosh labh jodein/badlein aur asli seva photo upload karein.')}
                       </p>
                     </div>
 
@@ -620,7 +621,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       className="px-4 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>{tr('नई सेवा जोड़ें', 'Add New Service')}</span>
+                      <span>{tr('नई सेवा जोड़ें', 'Nayi Seva Jodein')}</span>
                     </button>
                   </div>
 
@@ -646,7 +647,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                   s.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                                 }`}
                               >
-                                {s.isActive ? tr('सक्रिय', 'Active') : tr('निष्क्रिय', 'Disabled')}
+                                {s.isActive ? tr('सक्रिय', 'Sakriya') : tr('निष्क्रिय', 'Band')}
                               </span>
                             </div>
                           </div>
@@ -659,13 +660,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                             )}
                             <label
                               className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1b4b32]/90 hover:bg-[#153e29] text-white text-[10px] font-bold shadow-md cursor-pointer backdrop-blur-xs"
-                              title={tr('वेबसाइट पर सेवा फ़ोटो बदलें', 'Upload & replace Seva image on website')}
+                              title={tr('वेबसाइट पर सेवा फ़ोटो बदलें', 'Website par Seva photo badlein')}
                             >
                               <Upload className="w-3 h-3 text-amber-300" />
                               <span>
                                 {uploadingServiceImageId === s.id
-                                  ? tr('अपलोड हो रहा है...', 'Uploading...')
-                                  : tr('फ़ोटो बदलें', 'Upload Image')}
+                                  ? tr('अपलोड हो रहा है...', 'Upload ho raha hai...')
+                                  : tr('फ़ोटो बदलें', 'Photo Badlein')}
                               </span>
                               <input
                                 type="file"
@@ -688,7 +689,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
                           <div>
                             <h3 className="font-playfair text-base font-bold text-[#1b4b32]">{s.title}</h3>
-                            <div className="text-sm font-black text-[#8b5a0a]">{s.priceDisplay} ({tr('आधार:', 'Base:')} ₹{s.basePrice})</div>
+                            <div className="text-sm font-black text-[#8b5a0a]">{s.priceDisplay} ({tr('आधार:', 'Aadhar:')} ₹{s.basePrice})</div>
                             <p className="text-xs text-[#524434] line-clamp-2 mt-1">{s.benefit}</p>
                           </div>
                         </div>
@@ -701,7 +702,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               s.isActive ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-emerald-50 text-emerald-900 border-emerald-300'
                             }`}
                           >
-                            {s.isActive ? tr('निष्क्रिय करें', 'Deactivate') : tr('सक्रिय करें', 'Activate')}
+                            {s.isActive ? tr('निष्क्रिय करें', 'Band Karein') : tr('सक्रिय करें', 'Chalu Karein')}
                           </button>
 
                           {confirmDeleteServiceId === s.id ? (
@@ -710,13 +711,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                 onClick={() => handleDeleteService(s.id)}
                                 className="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold hover:bg-red-700 cursor-pointer"
                               >
-                                {tr('हटाएं?', 'Confirm')}
+                                {tr('हटाएं?', 'Hatayein?')}
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteServiceId(null)}
                                 className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold hover:bg-slate-200 cursor-pointer"
                               >
-                                {tr('रद्द', 'Cancel')}
+                                {tr('रद्द', 'Radd')}
                               </button>
                             </div>
                           ) : (
@@ -727,14 +728,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                   setEditingService({ ...s });
                                 }}
                                 className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
-                                title={tr('सेवा संपादित करें', 'Edit Service')}
+                                title={tr('सेवा संपादित करें', 'Seva Edit Karein')}
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteServiceId(s.id)}
                                 className="p-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 cursor-pointer"
-                                title={tr('सेवा हटाएं', 'Delete Service')}
+                                title={tr('सेवा हटाएं', 'Seva Hatayein')}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -753,10 +754,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                        {tr('ज्योतिषाचार्य प्रोफ़ाइल एवं परामर्श', 'Astrologer Profiles & Consultations')}
+                        {tr('ज्योतिषाचार्य प्रोफ़ाइल एवं परामर्श', 'Jyotishacharya Profile aur Paramarsh')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('ज्योतिषाचार्यों का परिचय, परामर्श शुल्क, फोटो और लाइव ऑनलाइन/ऑफ़लाइन स्थिति प्रबंधित करें।', 'Manage astrologer bios, consultation charges, photos, and live online/offline status.')}
+                        {tr('ज्योतिषाचार्यों का परिचय, परामर्श शुल्क, फोटो और लाइव ऑनलाइन/ऑफ़लाइन स्थिति प्रबंधित करें।', 'Jyotishacharyon ka parichay, paramarsh shulk, photo aur live online/offline sthiti manage karein.')}
                       </p>
                     </div>
 
@@ -778,7 +779,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       className="px-4 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>{tr('नए ज्योतिषाचार्य जोड़ें', 'Add New Astrologer')}</span>
+                      <span>{tr('नए ज्योतिषाचार्य जोड़ें', 'Naye Jyotishacharya Jodein')}</span>
                     </button>
                   </div>
 
@@ -811,7 +812,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           <p className="text-xs text-[#524434] line-clamp-2">{a.bio}</p>
 
                           <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#fcf6e8] border border-[#ebdcb9]">
-                            <span className="font-semibold text-[#6d5b43]">{tr('लाइव उपलब्धता:', 'Live Availability:')}</span>
+                            <span className="font-semibold text-[#6d5b43]">{tr('लाइव उपलब्धता:', 'Live Uplabdhata:')}</span>
                             <button
                               onClick={() => handleToggleAstroOnline(a)}
                               className={`px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors ${
@@ -827,7 +828,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
                         <div className="pt-2 border-t border-[#ebdcb9] flex items-center justify-between">
                           <div className="text-[11px] text-[#71614e]">
-                            <strong>{a.totalConsultations}</strong> {tr('परामर्श', 'chats')} • <strong>₹{a.totalEarnings}</strong> {tr('अर्जित', 'earned')}
+                            <strong>{a.totalConsultations}</strong> {tr('परामर्श', 'paramarsh')} • <strong>₹{a.totalEarnings}</strong> {tr('अर्जित', 'kamayi')}
                           </div>
 
                           <div className="flex items-center gap-1">
@@ -837,7 +838,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                 setEditingAstro({ ...a });
                               }}
                               className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
-                              title={tr('ज्योतिषाचार्य संपादित करें', 'Edit Astrologer')}
+                              title={tr('ज्योतिषाचार्य संपादित करें', 'Jyotishacharya Edit Karein')}
                             >
                               <Edit className="w-3.5 h-3.5" />
                             </button>
@@ -855,10 +856,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                        {tr('श्रद्धालु सेवा बुकिंग एवं वीडियो प्रमाण', 'Customer Seva Bookings & Video Proofs')}
+                        {tr('श्रद्धालु सेवा बुकिंग एवं वीडियो प्रमाण', 'Shraddhalu Seva Booking aur Video Proof')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('संकल्प स्थिति ट्रैक करें, वैदिक गौशाला पुरोहित नियुक्त करें, और वास्तविक वीडियो व फोटो प्रमाण अपलोड करें।', 'Track sankalp status, assign Vedic goshala priests, and upload actual video & photo proofs.')}
+                        {tr('संकल्प स्थिति ट्रैक करें, वैदिक गौशाला पुरोहित नियुक्त करें, और वास्तविक वीडियो व फोटो प्रमाण अपलोड करें।', 'Sankalp status track karein, Vedic goshala purohit niyukt karein aur asli video/photo proof upload karein.')}
                       </p>
                     </div>
 
@@ -873,12 +874,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           }`}
                         >
                           {st === 'all'
-                            ? tr('सभी', 'All')
+                            ? tr('सभी', 'Sabhi')
                             : st === 'confirmed'
                             ? tr('पुष्ट', 'Confirmed')
                             : st === 'in_progress'
-                            ? tr('प्रगति पर', 'In Progress')
-                            : tr('पूर्ण', 'Completed')}
+                            ? tr('प्रगति पर', 'Chalu Hai')
+                            : tr('पूर्ण', 'Poorn')}
                         </button>
                       ))}
                     </div>
@@ -889,7 +890,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     <Search className="w-4 h-4 text-[#8b7964] absolute left-3 top-2.5" />
                     <input
                       type="text"
-                      placeholder={tr('श्रद्धालु का नाम, फ़ोन नंबर, गोत्र या सेवा के नाम से खोजें...', 'Search bookings by devotee name, phone number, gotra, or seva title...')}
+                      placeholder={tr('श्रद्धालु का नाम, फ़ोन नंबर, गोत्र या सेवा के नाम से खोजें...', 'Shraddhalu ka naam, phone number, gotra ya seva se khojein...')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffdf9] text-xs font-medium focus:outline-hidden focus:border-[#1b4b32]"
@@ -902,13 +903,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       <thead className="bg-[#fbf4e2] text-[#483c2e] font-bold border-b border-[#ebdcb9]">
                         <tr>
                           <th className="p-3">{tr('बुकिंग आईडी', 'Booking ID')}</th>
-                          <th className="p-3">{tr('श्रद्धालु विवरण', 'Devotee Info')}</th>
-                          <th className="p-3">{tr('सेवा एवं अवधि', 'Seva & Duration')}</th>
-                          <th className="p-3">{tr('अवसर', 'Occasion')}</th>
-                          <th className="p-3">{tr('सेवा शुल्क', 'Service Fee')}</th>
+                          <th className="p-3">{tr('श्रद्धालु विवरण', 'Shraddhalu Details')}</th>
+                          <th className="p-3">{tr('सेवा एवं अवधि', 'Seva aur Avadhi')}</th>
+                          <th className="p-3">{tr('अवसर', 'Avsar')}</th>
+                          <th className="p-3">{tr('सेवा शुल्क', 'Seva Shulk')}</th>
                           <th className="p-3">{tr('स्थिति', 'Status')}</th>
-                          <th className="p-3">{tr('प्रमाण एवं व्हाट्सएप', 'Proof & WhatsApp')}</th>
-                          <th className="p-3 text-right">{tr('कार्रवाई', 'Actions')}</th>
+                          <th className="p-3">{tr('प्रमाण एवं व्हाट्सएप', 'Proof aur WhatsApp')}</th>
+                          <th className="p-3 text-right">{tr('कार्रवाई', 'Action')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#f2e5cc]">
@@ -933,7 +934,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                             <td className="p-3">
                               <div className="font-bold text-[#1b4b32]">₹{b.amount}</div>
                               {b.extraFee > 0 && (
-                                <span className="text-[9px] text-[#c4821a] font-bold block">{tr('+₹21 विशेष अवसर', '+₹21 Occasion')}</span>
+                                <span className="text-[9px] text-[#c4821a] font-bold block">{tr('+₹21 विशेष अवसर', '+₹21 Vishesh Avsar')}</span>
                               )}
                             </td>
                             <td className="p-3">
@@ -942,10 +943,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                 onChange={(e) => handleUpdateStatus(b.id, e.target.value as any)}
                                 className="px-2 py-1 rounded-lg border border-[#ebdcb9] text-[10px] font-bold bg-white"
                               >
-                                <option value="confirmed">{tr('पुष्ट (Confirmed)', 'Confirmed')}</option>
-                                <option value="in_progress">{tr('प्रगति पर (In Progress)', 'In Progress')}</option>
-                                <option value="completed">{tr('पूर्ण (Completed)', 'Completed')}</option>
-                                <option value="cancelled">{tr('रद्द (Cancelled)', 'Cancelled')}</option>
+                                <option value="confirmed">{tr('पुष्ट (Confirmed)', 'Pusht (Confirmed)')}</option>
+                                <option value="in_progress">{tr('प्रगति पर (In Progress)', 'Pragati Par (In Progress)')}</option>
+                                <option value="completed">{tr('पूर्ण (Completed)', 'Poorn (Completed)')}</option>
+                                <option value="cancelled">{tr('रद्द (Cancelled)', 'Radd (Cancelled)')}</option>
                               </select>
                             </td>
                             <td className="p-3">
@@ -957,14 +958,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                     rel="noreferrer"
                                     className="text-[11px] text-emerald-700 font-bold underline flex items-center gap-1"
                                   >
-                                    <Video className="w-3.5 h-3.5" /> {tr('वीडियो देखें', 'View Video')}
+                                    <Video className="w-3.5 h-3.5" /> {tr('वीडियो देखें', 'Video Dekhein')}
                                   </a>
                                   <span className="text-[9px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold block">
-                                    {tr('व्हाट्सएप पर भेजा गया ✓', 'WhatsApp Shared ✓')}
+                                    {tr('व्हाट्सएप पर भेजा गया ✓', 'WhatsApp Par Bheja Gaya ✓')}
                                   </span>
                                 </div>
                               ) : (
-                                <span className="text-[10px] text-amber-800 italic">{tr('अपलोड लंबित', 'Pending Upload')}</span>
+                                <span className="text-[10px] text-amber-800 italic">{tr('अपलोड लंबित', 'Upload Baaki Hai')}</span>
                               )}
                             </td>
                             <td className="p-3 text-right">
@@ -977,7 +978,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                 className="px-2.5 py-1 rounded-lg bg-[#1b4b32] text-white text-[11px] font-bold hover:bg-[#153e29] cursor-pointer inline-flex items-center gap-1"
                               >
                                 <Upload className="w-3 h-3" />
-                                <span>{tr('प्रमाण अपलोड करें', 'Upload Proof')}</span>
+                                <span>{tr('प्रमाण अपलोड करें', 'Proof Upload Karein')}</span>
                               </button>
                             </td>
                           </tr>
@@ -993,10 +994,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 <div className="max-w-2xl space-y-6">
                   <div>
                     <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                      {tr('शुल्क, छूट एवं प्रचार बैनर', 'Pricing, Discounts & Promotional Banners')}
+                      {tr('शुल्क, छूट एवं प्रचार बैनर', 'Shulk, Chhoot aur Prachar Banner')}
                     </h2>
                     <p className="text-xs text-[#71614e]">
-                      {tr('ज्योतिषाचार्य प्रति-मिनट दरें, सेवा छूट नियम और विशेष अवसर शुल्क निर्धारित करें।', 'Configure per-minute astrologer rates, seva discount triggers, and occasion fees.')}
+                      {tr('ज्योतिषाचार्य प्रति-मिनट दरें, सेवा छूट नियम और विशेष अवसर शुल्क निर्धारित करें।', 'Jyotishacharya per-minute rate, seva chhoot niyam aur vishesh avsar shulk set karein.')}
                     </p>
                   </div>
 
@@ -1004,7 +1005,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-[#453728] mb-1">
-                          {tr('मानक ज्योतिषाचार्य शुल्क (₹ / मिनट)', 'Standard Astrologer Rate (₹ / min)')}
+                          {tr('मानक ज्योतिषाचार्य शुल्क (₹ / मिनट)', 'Samanya Jyotishacharya Shulk (₹ / min)')}
                         </label>
                         <input
                           type="number"
@@ -1012,12 +1013,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           onChange={(e) => setSettings({ ...settings, standardRatePerMin: Number(e.target.value) })}
                           className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-bold focus:outline-hidden focus:border-[#1b4b32]"
                         />
-                        <span className="text-[10px] text-[#786a55]">{tr('पूर्ण गौ-सेवा रहित श्रद्धालुओं के लिए सामान्य दर।', 'Default rate for devotees without completed seva.')}</span>
+                        <span className="text-[10px] text-[#786a55]">{tr('पूर्ण गौ-सेवा रहित श्रद्धालुओं के लिए सामान्य दर।', 'Bina Gau-Seva wale shraddhaluon ke liye samanya rate.')}</span>
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-[#453728] mb-1">
-                          {tr('रियायती ज्योतिषाचार्य शुल्क (₹ / मिनट)', 'Discounted Astrologer Rate (₹ / min)')}
+                          {tr('रियायती ज्योतिषाचार्य शुल्क (₹ / मिनट)', 'Chhoot Wala Jyotish Shulk (₹ / min)')}
                         </label>
                         <input
                           type="number"
@@ -1025,12 +1026,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           onChange={(e) => setSettings({ ...settings, discountedRatePerMin: Number(e.target.value) })}
                           className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-bold text-emerald-800 focus:outline-hidden focus:border-[#1b4b32]"
                         />
-                        <span className="text-[10px] text-emerald-700 font-medium">{tr('सेवा संकल्प के पश्चात 50% छूट दर।', '50% discount rate after seva sankalp.')}</span>
+                        <span className="text-[10px] text-emerald-700 font-medium">{tr('सेवा संकल्प के पश्चात 50% छूट दर।', 'Seva sankalp ke baad 50% chhoot wala rate.')}</span>
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-[#453728] mb-1">
-                          {tr('विशेष अवसर अतिरिक्त शुल्क (₹)', 'Extra Occasion Fee (₹)')}
+                          {tr('विशेष अवसर अतिरिक्त शुल्क (₹)', 'Vishesh Avsar Extra Shulk (₹)')}
                         </label>
                         <input
                           type="number"
@@ -1038,7 +1039,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           onChange={(e) => setSettings({ ...settings, extraOccasionFee: Number(e.target.value) })}
                           className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-bold focus:outline-hidden focus:border-[#1b4b32]"
                         />
-                        <span className="text-[10px] text-[#786a55]">{tr('विशेष अवसर चुनने पर जोड़ा जाने वाला शुल्क।', 'Added when devotee selects a special occasion.')}</span>
+                        <span className="text-[10px] text-[#786a55]">{tr('विशेष अवसर चुनने पर जोड़ा जाने वाला शुल्क।', 'Vishesh avsar chunne par joda jaane wala shulk.')}</span>
                       </div>
 
                       <div className="flex flex-col justify-center">
@@ -1050,7 +1051,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                             className="w-4 h-4 text-[#1b4b32] rounded-md"
                           />
                           <span className="text-xs font-bold text-[#1b4b32]">
-                            {tr('50% ज्योतिषाचार्य छूट नियम सक्रिय करें', 'Enable 50% Astrologer Discount Rule')}
+                            {tr('50% ज्योतिषाचार्य छूट नियम सक्रिय करें', '50% Jyotishacharya Chhoot Niyam Chalu Karein')}
                           </span>
                         </label>
                       </div>
@@ -1058,7 +1059,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
                     <div className="pt-2 border-t border-[#ebdcb9] space-y-2">
                       <label className="block text-xs font-bold text-[#453728]">
-                        {tr('प्रचार ऑफ़र बैनर संदेश', 'Promotional Offer Banner Message')}
+                        {tr('प्रचार ऑफ़र बैनर संदेश', 'Prachar Offer Banner Sandesh')}
                       </label>
                       <input
                         type="text"
@@ -1073,7 +1074,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                           onChange={(e) => setSettings({ ...settings, bannerEnabled: e.target.checked })}
                           className="w-4 h-4 text-[#1b4b32] rounded-md"
                         />
-                        <span className="text-xs text-[#524434] font-medium">{tr('होमपेज पर बैनर प्रदर्शित करें', 'Display banner across homepage')}</span>
+                        <span className="text-xs text-[#524434] font-medium">{tr('होमपेज पर बैनर प्रदर्शित करें', 'Homepage par banner dikhayein')}</span>
                       </label>
                     </div>
 
@@ -1082,7 +1083,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       className="px-6 py-2.5 rounded-full bg-[#1b4b32] text-white font-bold text-xs flex items-center gap-2 shadow-xs hover:bg-[#153e29] cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
-                      <span>{tr('शुल्क एवं छूट विन्यास सहेजें', 'Save Pricing & Discount Configuration')}</span>
+                      <span>{tr('शुल्क एवं छूट विन्यास सहेजें', 'Shulk aur Chhoot Settings Save Karein')}</span>
                     </button>
                   </form>
                 </div>
@@ -1094,10 +1095,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                        {tr('संपूर्ण भारत की श्रद्धालु समीक्षाएं प्रबंधित करें', 'Manage Devotee Reviews across India')}
+                        {tr('संपूर्ण भारत की श्रद्धालु समीक्षाएं प्रबंधित करें', 'Poore Bharat ki Shraddhalu Reviews Manage Karein')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('वेबसाइट पर प्रदर्शित वास्तविक श्रद्धालु अनुभवों की समीक्षा एवं प्रबंधन करें।', 'Moderate authentic devotee reviews displayed on the website.')}
+                        {tr('वेबसाइट पर प्रदर्शित वास्तविक श्रद्धालु अनुभवों की समीक्षा एवं प्रबंधन करें।', 'Website par dikhne wale asli shraddhalu anubhav aur reviews manage karein.')}
                       </p>
                     </div>
                   </div>
@@ -1119,17 +1120,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               r.isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                             }`}
                           >
-                            {r.isApproved ? tr('स्वीकृत एवं दृश्यमान', 'Approved & Visible') : tr('समीक्षा लंबित', 'Pending Review')}
+                            {r.isApproved ? tr('स्वीकृत एवं दृश्यमान', 'Sweekrit aur Dikhai De Raha Hai') : tr('समीक्षा लंबित', 'Review Baaki Hai')}
                           </span>
                           <button
                             onClick={async () => {
                               await api.deleteReview(r.id);
-                              showNotification(tr('समीक्षा हटा दी गई', 'Review deleted'));
+                              showNotification(tr('समीक्षा हटा दी गई', 'Review hata diya gaya'));
                               await loadAllData();
                             }}
                             className="text-red-700 text-xs font-bold hover:underline cursor-pointer"
                           >
-                            {tr('हटाएं', 'Delete')}
+                            {tr('हटाएं', 'Hatayein')}
                           </button>
                         </div>
                       </div>
@@ -1143,26 +1144,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 <div className="space-y-4">
                   <div>
                     <h2 className="font-playfair text-xl sm:text-2xl font-bold text-[#1b4b32]">
-                      {tr('पंजीकृत श्रद्धालु एवं वॉलेट शेष राशि', 'Registered Devotees & Wallet Balances')}
+                      {tr('पंजीकृत श्रद्धालु एवं वॉलेट शेष राशि', 'Registered Shraddhalu aur Wallet Balance')}
                     </h2>
                     <p className="text-xs text-[#71614e]">
-                      {tr('श्रद्धालु प्रोफ़ाइल, वॉलेट शेष और परामर्श शुल्क कटौती देखें।', 'View devotee profiles, wallet balances, and automatic consultation deductions.')}
+                      {tr('श्रद्धालु प्रोफ़ाइल, वॉलेट शेष और परामर्श शुल्क कटौती देखें।', 'Shraddhalu profile, wallet balance aur consultation deduction dekhein.')}
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#fcf8ee] border border-[#ebdcb9] flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-sm text-[#1b4b32]">{tr('श्री हर्ष भारद्वाज (नमूना श्रद्धालु)', 'Shri Harsh Bhardwaj (Sample Devotee)')}</h4>
+                      <h4 className="font-bold text-sm text-[#1b4b32]">{tr('श्री हर्ष भारद्वाज (नमूना श्रद्धालु)', 'Shri Harsh Bhardwaj (Namoona Shraddhalu)')}</h4>
                       <p className="text-xs text-[#71614e]">+91 9876543210 • {tr('गोत्र: कश्यप', 'Gotra: Kashyap')}</p>
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-1">
-                        {tr('50% ज्योतिषाचार्य छूट हेतु पात्र (पूर्ण सेवा सत्यापित)', 'Eligible for 50% Astrologer Discount (Completed Seva Verified)')}
+                        {tr('50% ज्योतिषाचार्य छूट हेतु पात्र (पूर्ण सेवा सत्यापित)', '50% Jyotish Chhoot ke liye Patra (Poorn Seva Verified)')}
                       </span>
                     </div>
 
                     <div className="text-right">
                       <div className="text-xs text-[#786a55] font-semibold">{tr('वॉलेट शेष', 'Wallet Balance')}</div>
                       <div className="text-2xl font-black text-[#1b4b32]">₹250</div>
-                      <div className="text-[10px] text-emerald-700 font-bold">{tr('25 मिनट परामर्श क्रेडिट', '25 min consultation credit')}</div>
+                      <div className="text-[10px] text-emerald-700 font-bold">{tr('25 मिनट परामर्श क्रेडिट', '25 minute paramarsh credit')}</div>
                     </div>
                   </div>
                 </div>
@@ -1179,7 +1180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           <div className="bg-[#fffdf9] rounded-3xl max-w-xl w-full border-2 border-[#ebdcb9] shadow-2xl p-6 space-y-4 my-8">
             <div className="flex items-center justify-between border-b border-[#ebdcb9] pb-3">
               <h3 className="font-playfair text-lg font-bold text-[#1b4b32]">
-                {isNewService ? tr('नई सेवा जोड़ें', 'Add New Seva Service') : `${tr('संपादित करें:', 'Edit')} ${editingService.title}`}
+                {isNewService ? tr('नई सेवा जोड़ें', 'Nayi Seva Jodein') : `${tr('संपादित करें:', 'Edit Karein:')} ${editingService.title}`}
               </h3>
               <button onClick={() => setEditingService(null)} className="p-1 text-[#786a55] hover:text-black cursor-pointer">
                 ✕
@@ -1189,7 +1190,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <form onSubmit={handleSaveService} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('सेवा का नाम *', 'Seva Title *')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('सेवा का नाम *', 'Seva ka Naam *')}</label>
                   <input
                     type="text"
                     required
@@ -1200,7 +1201,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('आधार सेवा शुल्क (₹) *', 'Base Price (₹) *')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('आधार सेवा शुल्क (₹) *', 'Aadhar Seva Shulk (₹) *')}</label>
                   <input
                     type="number"
                     required
@@ -1217,29 +1218,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('प्रदर्शित शुल्क लेबल', 'Price Display Label')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('प्रदर्शित शुल्क लेबल', 'Dikhne Wala Shulk Label')}</label>
                   <input
                     type="text"
                     value={editingService.priceDisplay || ''}
                     onChange={(e) => setEditingService({ ...editingService, priceDisplay: e.target.value })}
-                    placeholder={tr('जैसे ₹251 (5 किग्रा)', 'e.g. ₹251 (5 kg)')}
+                    placeholder={tr('जैसे ₹251 (5 किग्रा)', 'Jaise ₹251 (5 kg)')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('सेवा इकाई', 'Unit of Service')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('सेवा इकाई', 'Seva Ikai (Unit)')}</label>
                   <input
                     type="text"
                     value={editingService.unit || 'lot'}
                     onChange={(e) => setEditingService({ ...editingService, unit: e.target.value })}
-                    placeholder={tr('जैसे 5 किग्रा या थाली', 'e.g. lot (5 kg) or thali')}
+                    placeholder={tr('जैसे 5 किग्रा या थाली', 'Jaise 5 kg ya thali')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('ग्रह / देवता संबंध', 'Grah / Deity Association')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('ग्रह / देवता संबंध', 'Grah / Devta Sambandh')}</label>
                   <input
                     type="text"
                     value={editingService.planetTag || '☀️ Surya Grah'}
@@ -1249,34 +1250,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('श्रेणी', 'Category')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('श्रेणी', 'Shreni (Category)')}</label>
                   <select
                     value={editingService.category || 'cow'}
                     onChange={(e) => setEditingService({ ...editingService, category: e.target.value as any })}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                   >
-                    <option value="cow">{tr('गौमाता आहार सेवा', 'Cow / Gaumata Seva')}</option>
-                    <option value="bird">{tr('पक्षी दाना व्यवस्था', 'Pakshi Dana (Bird Feeding)')}</option>
-                    <option value="ant">{tr('चींटी आटा व्यवस्था', 'Cheenti Aata (Ant Feeding)')}</option>
-                    <option value="dog">{tr('श्वान आहार व्यवस्था', 'Street Dogs Feeding')}</option>
-                    <option value="combo">{tr('विशेष उत्सव संयुक्त सेवा', 'Combo / Special Festival Seva')}</option>
+                    <option value="cow">{tr('गौमाता आहार सेवा', 'Gaumata Aahar Seva')}</option>
+                    <option value="bird">{tr('पक्षी दाना व्यवस्था', 'Pakshi Dana Vyavastha')}</option>
+                    <option value="ant">{tr('चींटी आटा व्यवस्था', 'Cheenti Aata Vyavastha')}</option>
+                    <option value="dog">{tr('श्वान आहार व्यवस्था', 'Shwan Aahar Vyavastha')}</option>
+                    <option value="combo">{tr('विशेष उत्सव संयुक्त सेवा', 'Vishesh Utsav Sanyukt Seva')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('आध्यात्मिक लाभ (संक्षिप्त)', 'Spiritual Benefit (Short)')}</label>
+                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('आध्यात्मिक लाभ (संक्षिप्त)', 'Adhyatmik Labh (Sankshipt)')}</label>
                 <input
                   type="text"
                   value={editingService.benefit || ''}
                   onChange={(e) => setEditingService({ ...editingService, benefit: e.target.value })}
-                  placeholder={tr('जैसे सूर्य दोष शांति व आत्मविश्वास में सहायक।', 'e.g. Helps reduce Surya Dosh & brings confidence & success.')}
+                  placeholder={tr('जैसे सूर्य दोष शांति व आत्मविश्वास में सहायक।', 'Jaise Surya Dosh shanti aur aatmvishwas mein sahayak.')}
                   className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('विस्तृत विवरण', 'Detailed Description')}</label>
+                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('विस्तृत विवरण', 'Poora Vivaran')}</label>
                 <textarea
                   rows={2}
                   value={editingService.detailedDescription || ''}
@@ -1289,7 +1290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               <div className="p-3 rounded-xl bg-[#fcf6ea] border border-[#ebdcb9] space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-bold text-[#1b4b32]">
-                    {tr('वास्तविक सेवा फोटो अपलोड / बदलें (सीधे वेबसाइट पर दिखेगा)', 'Upload / Replace Real Seva Photo (Reflects Live on Website)')}
+                    {tr('वास्तविक सेवा फोटो अपलोड / बदलें (सीधे वेबसाइट पर दिखेगा)', 'Asli Seva Photo Upload / Badlein (Seedhe Website par Dikhega)')}
                   </label>
                   {editingService.customImageUrl && (
                     <button
@@ -1297,7 +1298,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       onClick={() => setEditingService({ ...editingService, customImageUrl: '' })}
                       className="text-[11px] font-bold text-red-600 hover:text-red-700 cursor-pointer"
                     >
-                      {tr('कस्टम फ़ोटो हटाएं', 'Remove Custom Image')}
+                      {tr('कस्टम फ़ोटो हटाएं', 'Custom Photo Hatayein')}
                     </button>
                   )}
                 </div>
@@ -1327,7 +1328,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     />
                     {editingService.customImageUrl && (
                       <span className="block text-[11px] text-emerald-700 font-bold">
-                        {tr('✓ कस्टम फ़ोटो संलग्न — सहेजें पर क्लिक करें', '✓ Custom Image Attached — click Save Service')}
+                        {tr('✓ कस्टम फ़ोटो संलग्न — सहेजें पर क्लिक करें', '✓ Custom Photo Jod Di Gayi — Seva Save Karein par click karein')}
                       </span>
                     )}
                   </div>
@@ -1340,13 +1341,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   onClick={() => setEditingService(null)}
                   className="px-4 py-2 rounded-full border border-[#ebdcb9] text-xs font-semibold cursor-pointer"
                 >
-                  {tr('रद्द करें', 'Cancel')}
+                  {tr('रद्द करें', 'Radd Karein')}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-bold hover:bg-[#153e29] cursor-pointer"
                 >
-                  {tr('सेवा सहेजें', 'Save Service')}
+                  {tr('सेवा सहेजें', 'Seva Save Karein')}
                 </button>
               </div>
             </form>
@@ -1360,7 +1361,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           <div className="bg-[#fffdf9] rounded-3xl max-w-xl w-full border-2 border-[#ebdcb9] shadow-2xl p-6 space-y-4 my-8">
             <div className="flex items-center justify-between border-b border-[#ebdcb9] pb-3">
               <h3 className="font-playfair text-lg font-bold text-[#1b4b32]">
-                {isNewAstro ? tr('नए ज्योतिषाचार्य जोड़ें', 'Add New Astrologer') : `${tr('संपादित करें:', 'Edit')} ${editingAstro.name}`}
+                {isNewAstro ? tr('नए ज्योतिषाचार्य जोड़ें', 'Naye Jyotishacharya Jodein') : `${tr('संपादित करें:', 'Edit Karein:')} ${editingAstro.name}`}
               </h3>
               <button onClick={() => setEditingAstro(null)} className="p-1 text-[#786a55] hover:text-black cursor-pointer">
                 ✕
@@ -1370,7 +1371,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <form onSubmit={handleSaveAstrologer} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('ज्योतिषाचार्य नाम *', 'Astrologer Name *')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('ज्योतिषाचार्य नाम *', 'Jyotishacharya Naam *')}</label>
                   <input
                     type="text"
                     required
@@ -1381,29 +1382,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('पद / उपाधि', 'Title / Designation')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('पद / उपाधि', 'Pad / Visheshagya')}</label>
                   <input
                     type="text"
                     value={editingAstro.title || ''}
                     onChange={(e) => setEditingAstro({ ...editingAstro, title: e.target.value })}
-                    placeholder={tr('जैसे वैदिक ज्योतिष एवं वास्तु विशेषज्ञ', 'e.g. Tarot & Vedic Expert')}
+                    placeholder={tr('जैसे वैदिक ज्योतिष एवं वास्तु विशेषज्ञ', 'Jaise Tarot & Vedic Expert')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('अनुभव', 'Experience')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('अनुभव', 'Anubhav')}</label>
                   <input
                     type="text"
                     value={editingAstro.experience || ''}
                     onChange={(e) => setEditingAstro({ ...editingAstro, experience: e.target.value })}
-                    placeholder={tr('जैसे 15+ वर्षों का अनुभव', 'e.g. 15+ Years Experience')}
+                    placeholder={tr('जैसे 15+ वर्षों का अनुभव', 'Jaise 15+ Saal ka Anubhav')}
                     className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('प्रति मिनट शुल्क (₹) *', 'Rate Per Minute (₹) *')}</label>
+                  <label className="block text-xs font-bold text-[#453728] mb-1">{tr('प्रति मिनट शुल्क (₹) *', 'Prati Minute Shulk (₹) *')}</label>
                   <input
                     type="number"
                     required
@@ -1415,7 +1416,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('परिचय / वैदिक परंपरा', 'Biography / Vedic Lineage')}</label>
+                <label className="block text-xs font-bold text-[#453728] mb-1">{tr('परिचय / वैदिक परंपरा', 'Parichay / Vedic Parampara')}</label>
                 <textarea
                   rows={2}
                   value={editingAstro.bio || ''}
@@ -1427,7 +1428,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               {/* Upload Profile Photo */}
               <div className="p-3 rounded-xl bg-[#fcf6ea] border border-[#ebdcb9] space-y-2">
                 <label className="block text-xs font-bold text-[#1b4b32]">
-                  {tr('ज्योतिषाचार्य प्रोफ़ाइल फ़ोटो अपलोड करें', 'Upload Astrologer Profile Photo')}
+                  {tr('ज्योतिषाचार्य प्रोफ़ाइल फ़ोटो अपलोड करें', 'Jyotishacharya Profile Photo Upload Karein')}
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -1437,7 +1438,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     className="text-xs text-[#524434] file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1b4b32] file:text-white hover:file:bg-[#153e29]"
                   />
                   {editingAstro.customImageUrl && (
-                    <span className="text-[11px] text-emerald-700 font-bold">{tr('✓ कस्टम फ़ोटो संलग्न', '✓ Custom Photo Attached')}</span>
+                    <span className="text-[11px] text-emerald-700 font-bold">{tr('✓ कस्टम फ़ोटो संलग्न', '✓ Custom Photo Jod Di Gayi')}</span>
                   )}
                 </div>
               </div>
@@ -1448,13 +1449,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   onClick={() => setEditingAstro(null)}
                   className="px-4 py-2 rounded-full border border-[#ebdcb9] text-xs font-semibold cursor-pointer"
                 >
-                  {tr('रद्द करें', 'Cancel')}
+                  {tr('रद्द करें', 'Radd Karein')}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-bold hover:bg-[#153e29] cursor-pointer"
                 >
-                  {tr('ज्योतिषाचार्य सहेजें', 'Save Astrologer')}
+                  {tr('ज्योतिषाचार्य सहेजें', 'Jyotishacharya Save Karein')}
                 </button>
               </div>
             </form>
@@ -1469,10 +1470,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <div className="flex items-center justify-between border-b border-[#ebdcb9] pb-3">
               <div>
                 <h3 className="font-playfair text-lg font-bold text-[#1b4b32]">
-                  {tr('सेवा पूर्णता वीडियो प्रमाण अपलोड करें', 'Upload Seva Completion Proof')}
+                  {tr('सेवा पूर्णता वीडियो प्रमाण अपलोड करें', 'Seva Poornta Video Proof Upload Karein')}
                 </h3>
                 <p className="text-xs text-[#786a55]">
-                  {tr('श्रद्धालु:', 'Devotee:')} <strong>{proofModalBooking.devoteeName}</strong> • {proofModalBooking.bookingId}
+                  {tr('श्रद्धालु:', 'Shraddhalu:')} <strong>{proofModalBooking.devoteeName}</strong> • {proofModalBooking.bookingId}
                 </p>
               </div>
               <button onClick={() => setProofModalBooking(null)} className="p-1 text-[#786a55] hover:text-black cursor-pointer">
@@ -1493,13 +1494,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   className="w-full px-3 py-2 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs font-medium"
                 />
                 <span className="text-[10px] text-[#786a55]">
-                  {tr('डिफ़ॉल्ट सत्यापित वृंदावन HD गौ-सेवा वीडियो उपयोग करने हेतु खाली छोड़ें।', 'Leave blank to use default certified Vrindavan HD Gau Puja video proof.')}
+                  {tr('डिफ़ॉल्ट सत्यापित HD गौ-सेवा वीडियो उपयोग करने हेतु खाली छोड़ें।', 'Default satyapit HD Gau-Seva video ke liye khaali chhodein.')}
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-[#453728] mb-1">
-                  {tr('गौशाला प्रमुख / पुरोहित का नाम', 'Officiating Goshala Priest Name')}
+                  {tr('गौशाला प्रमुख / पुरोहित का नाम', 'Goshala Pramukh / Purohit ka Naam')}
                 </label>
                 <input
                   type="text"
@@ -1512,12 +1513,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               {/* WhatsApp Message Preview */}
               <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-1">
                 <div className="font-bold flex items-center gap-1.5 text-emerald-800">
-                  <span>📱 {tr(`व्हाट्सएप प्रमाण संदेश पूर्वावलोकन (+91 ${proofModalBooking.phone}):`, `WhatsApp Proof Notification Preview (+91 ${proofModalBooking.phone}):`)}</span>
+                  <span>📱 {tr(`व्हाट्सएप प्रमाण संदेश पूर्वावलोकन (+91 ${proofModalBooking.phone}):`, `WhatsApp Proof Sandesh Preview (+91 ${proofModalBooking.phone}):`)}</span>
                 </div>
                 <p className="text-[11px] text-emerald-900 leading-relaxed font-mono">
                   {tr(
                     `“हरि ओम ${proofModalBooking.devoteeName} जी! आपकी ${proofModalBooking.sevaTitle} व्यवस्था आपके गोत्र (${proofModalBooking.gotra}) के नाम से ${proofModalBooking.goshala} में संपन्न हो गई है। वीडियो प्रमाण यहाँ देखें: [संलग्न HD वीडियो]। जय गौमाता!”`,
-                    `“Hari Om ${proofModalBooking.devoteeName} ji! Your sacred ${proofModalBooking.sevaTitle} sankalp has been performed with your Gotra (${proofModalBooking.gotra}) at ${proofModalBooking.goshala}. Watch your video proof here: [Attached HD Video]. Jai Gaumata!”`
+                    `“Hari Om ${proofModalBooking.devoteeName} ji! Aapki ${proofModalBooking.sevaTitle} vyavastha aapke Gotra (${proofModalBooking.gotra}) ke naam se ${proofModalBooking.goshala} mein sampann ho gayi hai. Video proof yahan dekhein: [Attached HD Video]. Jai Gaumata!”`
                   )}
                 </p>
               </div>
@@ -1529,14 +1530,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 onClick={() => setProofModalBooking(null)}
                 className="px-4 py-2 rounded-full border border-[#ebdcb9] text-xs font-semibold cursor-pointer"
               >
-                {tr('रद्द करें', 'Cancel')}
+                {tr('रद्द करें', 'Radd Karein')}
               </button>
               <button
                 type="button"
                 onClick={handleSaveProof}
                 className="px-6 py-2 rounded-full bg-[#1b4b32] text-white text-xs font-bold hover:bg-[#153e29] cursor-pointer"
               >
-                {tr('पुष्टि करें एवं व्हाट्सएप प्रमाण भेजें', 'Confirm & Send WhatsApp Proof')}
+                {tr('पुष्टि करें एवं व्हाट्सएप प्रमाण भेजें', 'Confirm Karein aur WhatsApp Proof Bhejein')}
               </button>
             </div>
           </div>

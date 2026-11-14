@@ -146,7 +146,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      setErrorMsg(err.message || tr('लॉगिन विफल रहा। कृपया अपनी जानकारी जाँचें।', 'Login failed. Please verify your credentials.'));
+      setErrorMsg(err.message || tr('लॉगिन विफल रहा। कृपया अपनी जानकारी जाँचें।', 'Login asafal raha. Kripaya apni jankari check karein.'));
     } finally {
       setLoading(false);
     }
@@ -159,23 +159,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setSuccessMsg(null);
 
     if (!name.trim()) {
-      setErrorMsg(tr('कृपया अपना पूरा नाम दर्ज करें।', 'Please enter your full name.'));
+      setErrorMsg(tr('कृपया अपना पूरा नाम दर्ज करें।', 'Kripaya apna poora naam darj karein.'));
       return;
     }
     if (!email.trim()) {
-      setErrorMsg(tr('कृपया अपना ईमेल पता दर्ज करें।', 'Please enter your email address.'));
+      setErrorMsg(tr('कृपया अपना ईमेल पता दर्ज करें।', 'Kripaya apna email pata darj karein.'));
       return;
     }
     if (password.length < 8) {
-      setErrorMsg(tr('पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।', 'Password must be at least 8 characters long.'));
+      setErrorMsg(tr('पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।', 'Password kam se kam 8 aksharon ka hona chahiye.'));
       return;
     }
     if (normalizePhone(phone, '').length !== 10) {
-      setErrorMsg(tr('कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।', 'Please enter a valid 10-digit mobile number for secure payments and consultations.'));
+      setErrorMsg(tr('कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।', 'Kripaya sahi 10-digit mobile number darj karein.'));
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMsg(tr('दोनों पासवर्ड मेल नहीं खा रहे हैं। कृपया पुनः लिखें।', 'Passwords do not match. Please re-enter.'));
+      setErrorMsg(tr('दोनों पासवर्ड मेल नहीं खा रहे हैं। कृपया पुनः लिखें।', 'Dono password match nahi kar rahe hain. Kripaya dobara likhein.'));
       return;
     }
 
@@ -192,7 +192,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setSuccessMsg(
           tr(
             'खाता सफलतापूर्वक बन गया! कृपया अपने ईमेल और पासवर्ड से लॉगिन करें।',
-            'Account created successfully! Please sign in with your email and password.'
+            'Account safaltapoorvak ban gaya! Kripaya apne email aur password se login karein.'
           )
         );
         setAuthMode('login');
@@ -200,7 +200,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setConfirmPassword('');
       }
     } catch (err: any) {
-      setErrorMsg(err.message || tr('खाता बनाने में समस्या आई। कृपया पुनः प्रयास करें।', 'Failed to create account. Please try again.'));
+      setErrorMsg(err.message || tr('खाता बनाने में समस्या आई। कृपया पुनः प्रयास करें।', 'Account banane mein samasya aayi. Kripaya dobara koshish karein.'));
     } finally {
       setLoading(false);
     }
@@ -211,14 +211,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const userPhone = currentUser?.phone || '';
     const cleanPhone = normalizePhone(userPhone, '');
     if (!Number.isInteger(amount) || amount < 50 || amount > 100000) {
-      setErrorMsg(tr('न्यूनतम वॉलेट रिचार्ज ₹50 है। कृपया सही राशि दर्ज करें।', 'Minimum wallet recharge is ₹50. Enter a whole-rupee amount.'));
+      setErrorMsg(tr('न्यूनतम वॉलेट रिचार्ज ₹50 है। कृपया सही राशि दर्ज करें।', 'Kam se kam wallet recharge ₹50 hai. Kripaya sahi rashi darj karein.'));
       return;
     }
     if (cleanPhone.length < 10) {
       setErrorMsg(
         tr(
           'रिचार्ज करने से पहले कृपया प्रोफ़ाइल में वैध 10-अंकीय मोबाइल नंबर जोड़ें।',
-          'Please update your profile with a valid 10-digit mobile number before recharging.'
+          'Recharge karne se pehle kripaya profile mein sahi 10-digit mobile number jodein.'
         )
       );
       return;
@@ -228,22 +228,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setTopupSuccess(null);
     setTopupLoading(true);
     try {
-      const order = await api.createWalletOrder(cleanPhone, amount, currentUser?.name || tr('भक्त', 'Devotee'), currentUser?.email || '');
+      const order = await api.createWalletOrder(cleanPhone, amount, currentUser?.name || tr('भक्त', 'Bhakt'), currentUser?.email || '');
       if (!(window as any).Razorpay) {
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => resolve();
-          script.onerror = () => reject(new Error(tr('Razorpay चेकआउट लोड नहीं हो सका।', 'Unable to load secure Razorpay Checkout.')));
+          script.onerror = () => reject(new Error(tr('Razorpay चेकआउट लोड नहीं हो सका।', 'Surakshit Razorpay Checkout load nahi ho saka.')));
           document.body.appendChild(script);
         });
       }
       const RazorpayCheckout = (window as any).Razorpay;
-      if (!RazorpayCheckout) throw new Error(tr('Razorpay चेकआउट उपलब्ध नहीं है। पुनः प्रयास करें।', 'Razorpay Checkout is unavailable. Please try again.'));
+      if (!RazorpayCheckout) throw new Error(tr('Razorpay चेकआउट उपलब्ध नहीं है। पुनः प्रयास करें।', 'Razorpay Checkout abhi uplabdh nahi hai. Dobara koshish karein.'));
 
       const keyId = order.key_id;
       if (!keyId) {
-        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID is not configured.'));
+        throw new Error(tr('Razorpay LIVE कुंजी कॉन्फ़िगर नहीं है।', 'Razorpay LIVE Key ID configure nahi hai.'));
       }
 
       const checkoutOptions: any = {
@@ -251,8 +251,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'GauKripa',
-        description: tr('गौकृपा सुरक्षित वॉलेट रिचार्ज', 'GauKripa Wallet Recharge'),
-        prefill: { name: currentUser?.name || tr('भक्त', 'Devotee'), email: currentUser?.email || '', contact: cleanPhone },
+        description: tr('गौकृपा सुरक्षित वॉलेट रिचार्ज', 'GauKripa Surakshit Wallet Recharge'),
+        prefill: { name: currentUser?.name || tr('भक्त', 'Bhakt'), email: currentUser?.email || '', contact: cleanPhone },
         notes: { purpose: 'GauKripa wallet recharge', phone: cleanPhone },
         theme: { color: '#1b4b32' },
         handler: async (response: any) => {
@@ -268,14 +268,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             setWallet(freshWallet);
             setTopupSuccess(
               result.credited
-                ? tr(`भुगतान सफल! आपके वॉलेट में ₹${amount} जोड़ दिए गए हैं।`, `Payment successful! ₹${amount} added to your wallet.`)
-                : tr('यह भुगतान पहले ही आपके वॉलेट में जोड़ा जा चुका है।', 'This payment was already added to your wallet.')
+                ? tr(`भुगतान सफल! आपके वॉलेट में ₹${amount} जोड़ दिए गए हैं।`, `Payment safal! Aapke wallet mein ₹${amount} jod diye gaye hain.`)
+                : tr('यह भुगतान पहले ही आपके वॉलेट में जोड़ा जा चुका है।', 'Yeh payment pehle hi aapke wallet mein joda ja chuka hai.')
             );
             setErrorMsg(null);
           } catch (verificationError: any) {
             setErrorMsg(
               verificationError.message ||
-                tr('Razorpay भुगतान सत्यापन लंबित है। पुनः प्रयास करने से पहले सहायता से संपर्क करें।', 'Razorpay payment verification is pending. Please contact support before retrying.')
+                tr('Razorpay भुगतान सत्यापन लंबित है। पुनः प्रयास करने से पहले सहायता से संपर्क करें।', 'Razorpay payment verification baki hai. Dobara koshish se pehle sahayata se sampark karein.')
             );
           } finally {
             setTopupLoading(false);
@@ -296,13 +296,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       const checkout = new RazorpayCheckout(checkoutOptions);
       checkout.on('payment.failed', (response: any) => {
-        setErrorMsg(response?.error?.description || tr('Razorpay भुगतान असफल रहा। कृपया पुनः प्रयास करें।', 'Razorpay payment failed. You can try again.'));
+        setErrorMsg(response?.error?.description || tr('Razorpay भुगतान असफल रहा। कृपया पुनः प्रयास करें।', 'Razorpay payment fail ho gaya. Kripaya dobara koshish karein.'));
         setTopupLoading(false);
       });
       setTopupLoading(false);
       checkout.open();
     } catch (error: any) {
-      const msg = error?.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Unable to start Razorpay wallet recharge.');
+      const msg = error?.message || tr('वॉलेट रिचार्ज प्रारंभ नहीं हो सका।', 'Wallet recharge shuru nahi ho saka.');
       if (msg.toLowerCase().includes('session') || msg.toLowerCase().includes('sign in')) {
         setSessionNeedsRefresh(true);
       }
@@ -325,20 +325,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <h3 className="font-playfair text-lg font-bold text-amber-200">
               {currentUser
                 ? isSuperAdmin
-                  ? tr('सुपर एडमिन कंसोल एवं प्रोफ़ाइल', 'Super Admin Console & Profile')
+                  ? tr('सुपर एडमिन कंसोल एवं प्रोफ़ाइल', 'Super Admin Console aur Profile')
                   : isAstrologer
-                    ? tr('ज्योतिषाचार्य डेस्क', 'Astrologer Desk')
-                  : tr('मेरी भक्त प्रोफ़ाइल', 'My Devotee Profile')
+                    ? tr('ज्योतिषाचार्य डेस्क', 'Jyotishacharya Desk')
+                  : tr('मेरी भक्त प्रोफ़ाइल', 'Meri Bhakt Profile')
                 : authMode === 'login'
-                ? tr('गौकृपा में साइन इन करें', 'Sign In to GauKripa')
-                : tr('नया भक्त खाता बनाएँ', 'Create Devotee Account')}
+                ? tr('गौकृपा में साइन इन करें', 'GauKripa mein Sign In Karein')
+                : tr('नया भक्त खाता बनाएँ', 'Naya Bhakt Khata Banayein')}
             </h3>
           </div>
 
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
-            aria-label={tr('बंद करें', 'Close')}
+            aria-label={tr('बंद करें', 'Band Karein')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -383,7 +383,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'border-transparent text-[#7c6a53] hover:text-[#1b4b32]'
               }`}
             >
-              <span>{tr('नया खाता बनाएँ (Sign Up)', 'Create Account (Sign Up)')}</span>
+              <span>{tr('नया खाता बनाएँ (Sign Up)', 'Naya Khata Banayein (Sign Up)')}</span>
             </button>
           </div>
         )}
@@ -414,7 +414,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       </span>
                     ) : (
                       <span className="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 shrink-0">
-                        {tr('सत्यापित भक्त', 'Verified Devotee')}
+                        {tr('सत्यापित भक्त', 'Satyapit Bhakt')}
                       </span>
                     )}
                   </div>
@@ -430,14 +430,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[#1b4b32] font-bold text-sm">
                       <Coins className="w-4 h-4 text-amber-600" />
-                      <span>{tr('मेरा गौकृपा वॉलेट', 'My GauKripa Wallet')}</span>
+                      <span>{tr('मेरा गौकृपा वॉलेट', 'Mera GauKripa Wallet')}</span>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-1">
-                      {tr('सुरक्षित', 'Secure')}
+                      {tr('सुरक्षित', 'Surakshit')}
                     </span>
                   </div>
                   <div className="rounded-xl bg-[#1b4b32] text-white p-4">
-                    <p className="text-[11px] text-emerald-100">{tr('उपलब्ध शेष राशि', 'Available Balance')}</p>
+                    <p className="text-[11px] text-emerald-100">{tr('उपलब्ध शेष राशि', 'Uplabdh Balance')}</p>
                     <p className="text-3xl font-black tracking-tight">₹{(wallet?.balance || 0).toFixed(2)}</p>
                   </div>
                   <div>
@@ -453,14 +453,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                      {tr('अन्य राशि दर्ज करें (₹)', 'Custom Amount (₹)')}
+                      {tr('अन्य राशि दर्ज करें (₹)', 'Anya Rashi Darj Karein (₹)')}
                     </label>
                     <input type="number" min="50" max="100000" step="1" value={customTopup}
                       onChange={(e) => { setCustomTopup(e.target.value); setErrorMsg(null); }}
-                      placeholder={tr('₹50 या अधिक दर्ज करें', 'Enter ₹50 or more')}
+                      placeholder={tr('₹50 या अधिक दर्ज करें', '₹50 ya adhik darj karein')}
                       className="w-full px-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-sm font-semibold focus:outline-hidden focus:border-[#1b4b32]" />
                     <p className="text-[10px] text-[#8a7a67] mt-1">
-                      {tr('न्यूनतम रिचार्ज ₹50। अधिकतम ₹1,00,000 तक।', 'Minimum recharge ₹50. Custom amount up to ₹1,00,000.')}
+                      {tr('न्यूनतम रिचार्ज ₹50। अधिकतम ₹1,00,000 तक।', 'Kam se kam recharge ₹50. Adhiktam ₹1,00,000 tak.')}
                     </p>
                   </div>
                   {sessionNeedsRefresh && (
@@ -468,7 +468,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <p className="font-semibold">
                         {tr(
                           'सुरक्षित लाइव भुगतान सर्वर से जुड़ने के लिए कृपया एक बार पुनः साइन इन करें।',
-                          'To connect with the live Razorpay payment server, please sign in again once.'
+                          'Live Razorpay payment server se judne ke liye kripaya ek baar dobara Sign In karein.'
                         )}
                       </p>
                       <button
@@ -485,7 +485,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         }}
                         className="px-3 py-1.5 rounded-lg bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 font-bold text-xs cursor-pointer"
                       >
-                        {tr('पुनः साइन इन करें', 'Sign In Again')}
+                        {tr('पुनः साइन इन करें', 'Dobara Sign In Karein')}
                       </button>
                     </div>
                   )}
@@ -495,15 +495,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="w-full py-3 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-sm shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
                     <PlusCircle className="w-4 h-4" />
                     {topupLoading
-                      ? tr('सुरक्षित भुगतान प्रक्रिया जारी…', 'Processing Secure Payment…')
+                      ? tr('सुरक्षित भुगतान प्रक्रिया जारी…', 'Surakshit Payment Jaari Hai…')
                       : tr(
                           `₹${customTopup.trim() ? (Number(customTopup) || 0) : topupAmount} रिचार्ज करें`,
-                          `Recharge ₹${customTopup.trim() ? (Number(customTopup) || 0) : topupAmount}`
+                          `₹${customTopup.trim() ? (Number(customTopup) || 0) : topupAmount} Recharge Karein`
                         )}
                   </button>
                   <div className="border-t border-[#f0e4cc] pt-2">
                     <p className="text-xs font-bold text-[#5c4e3b] mb-2">
-                      {tr('हाल के वॉलेट लेनदेन', 'Recent Wallet Transactions')}
+                      {tr('हाल के वॉलेट लेनदेन', 'Haal ke Wallet Transactions')}
                     </p>
                     {wallet?.transactions?.length ? wallet.transactions.slice(0, 4).map((transaction) => {
                       const isDebit = transaction.type === 'debit';
@@ -515,7 +515,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           </span>
                         </div>
                       );
-                    }) : <p className="text-[11px] text-[#8a7a67]">{tr('अभी कोई वॉलेट लेनदेन नहीं है।', 'No wallet transactions yet.')}</p>}
+                    }) : <p className="text-[11px] text-[#8a7a67]">{tr('अभी कोई वॉलेट लेनदेन नहीं है।', 'Abhi koi wallet transaction nahi hai.')}</p>}
                   </div>
                 </div>
 
@@ -525,16 +525,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-amber-400" />
-                      {tr('सुपर एडमिन पोर्टल', 'Super Admin Portals')}
+                      {tr('सुपर एडमिन पोर्टल', 'Super Admin Portal')}
                     </span>
                     <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full">
-                      {tr('पूर्ण अधिकार', 'FULL PRIVILEGES')}
+                      {tr('पूर्ण अधिकार', 'POORN ADHIKAR')}
                     </span>
                   </div>
                   <p className="text-[11px] text-amber-100/80">
                     {tr(
                       'सेवा सूची, वीडियो प्रमाण, ज्योतिषी भुगतान और लाइव चैट कतार प्रबंधन का पूरा नियंत्रण आपके पास है।',
-                      'You have master control to manage Seva catalogs, live video proofs, astrologer payouts, and chat queues.'
+                      'Seva suchi, video proof, jyotish bhugtan aur live chat prabandhan ka poora niyantran aapke paas hai.'
                     )}
                   </p>
                   <div className="grid grid-cols-2 gap-2 pt-1">
@@ -561,7 +561,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         className="py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-amber-200 border border-white/20 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                       >
                         <span>🔮</span>
-                        <span>{tr('ज्योतिषी डेस्क', 'Astrologer Desk')}</span>
+                        <span>{tr('ज्योतिषी डेस्क', 'Jyotishi Desk')}</span>
                       </button>
                     )}
                   </div>
@@ -572,9 +572,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-[#5c4e3b]">
                   <span className="flex items-center gap-1">
-                    <History className="w-3.5 h-3.5" /> {tr('हाल की सेवा बुकिंग एवं संकल्प', 'Recent Seva Bookings & Sankalps')}
+                    <History className="w-3.5 h-3.5" /> {tr('हाल की सेवा बुकिंग एवं संकल्प', 'Haal ki Seva Booking aur Sankalp')}
                   </span>
-                  <span className="text-[#c4821a]">{tr('वृन्दावन धाम', 'Vrindavan Dham')}</span>
+                  <span className="text-[#c4821a]">{tr('गौकृपा प्रमाणित सेवा', 'GauKripa Pramanit Seva')}</span>
                 </div>
                 {recentBookings.length > 0 ? (
                   <div className="space-y-1.5">
@@ -586,13 +586,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         <div>
                           <div className="font-bold text-[#1b4b32]">{b.sevaTitle}</div>
                           <div className="text-[11px] text-[#71614e]">
-                            {tr('गोत्र:', 'Gotra:')} {b.gotra || tr('कश्यप', 'Kashyap')} • {b.date || tr('हाल ही में', 'Recent')}
+                            {tr('गोत्र:', 'Gotra:')} {b.gotra || tr('कश्यप', 'Kashyap')} • {b.date || tr('हाल ही में', 'Haal hi mein')}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-amber-700">₹{b.amount}</div>
                           <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                            {b.status === 'completed' ? tr('सत्यापित', 'Verified') : tr('सक्रिय', 'Active')}
+                            {b.status === 'completed' ? tr('सत्यापित', 'Satyapit') : tr('सक्रिय', 'Sakriya')}
                           </span>
                         </div>
                       </div>
@@ -603,7 +603,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <span>
                       {tr(
                         'अभी कोई बुकिंग नहीं है। नीचे दी गई गौ-आहार सेवाओं से शुरुआत करें।',
-                        'No bookings yet. Explore our Gau-Aahar Sevas on the homepage to begin.'
+                        'Abhi koi booking nahi hai. Homepage par Gau-Aahar Sevaon se shuruat karein.'
                       )}
                     </span>
                   </div>
@@ -622,7 +622,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold text-rose-700 hover:text-rose-900 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
                 >
                   <LogOut className="w-4 h-4 text-rose-600" />
-                  <span>{tr('खाते से लॉग आउट करें', 'Log Out of Account')}</span>
+                  <span>{tr('खाते से लॉग आउट करें', 'Khaate se Log Out Karein')}</span>
                 </button>
 
                 <button
@@ -630,7 +630,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   onClick={onClose}
                   className="px-6 py-2 rounded-full bg-[#1b4b32] text-white font-bold text-xs hover:bg-[#153e29] cursor-pointer shadow-xs transition-colors"
                 >
-                  {tr('पूर्ण', 'Done')}
+                  {tr('पूर्ण', 'Poorn')}
                 </button>
               </div>
 
@@ -643,7 +643,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <p className="text-xs text-[#6e5d48] text-center">
                 {tr(
                   'गौ-आहार सेवा बुक करने, लाइव ज्योतिष परामर्श लेने और अपना वॉलेट प्रबंधित करने के लिए अपने ईमेल और पासवर्ड से लॉगिन करें।',
-                  'Sign in with your registered email and password to book Gau Sevas, access live astrologer consultations, and manage your wallet.'
+                  'Gau-Aahar Seva book karne, live jyotish paramarsh lene aur apna wallet manage karne ke liye email aur password se Sign In karein.'
                 )}
               </p>
 
@@ -664,7 +664,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <form onSubmit={handleLoginSubmit} className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                    {tr('ईमेल पता (Email Address)', 'Email Address')}
+                    {tr('ईमेल पता (Email Address)', 'Email Pata (Email Address)')}
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
@@ -674,7 +674,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. devotee@example.com"
+                      placeholder="jaise: bhakt@example.com"
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                     />
                   </div>
@@ -705,8 +705,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <KeyRound className="w-4 h-4" />
                   <span>
                     {loading
-                      ? tr('सत्यापित किया जा रहा है...', 'Authenticating...')
-                      : tr('ईमेल और पासवर्ड से लॉगिन करें', 'Sign In with Email & Password')}
+                      ? tr('सत्यापित किया जा रहा है...', 'Satyapit kiya ja raha hai...')
+                      : tr('ईमेल और पासवर्ड से लॉगिन करें', 'Email aur Password se Sign In Karein')}
                   </span>
                 </button>
               </form>
@@ -714,7 +714,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {/* Link to Switch to Sign Up */}
               <div className="pt-3 border-t border-[#ebdcb9] text-center">
                 <p className="text-xs text-[#71614e]">
-                  {tr('क्या आपका खाता नहीं है?', "Don't have an account yet?")}{' '}
+                  {tr('क्या आपका खाता नहीं है?', 'Kya aapka khata nahi hai?')}{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -724,7 +724,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     }}
                     className="font-bold text-[#1b4b32] underline hover:text-[#0e2c1d] cursor-pointer ml-1"
                   >
-                    {tr('नया खाता बनाएँ', 'Create Account (Sign Up)')}
+                    {tr('नया खाता बनाएँ', 'Naya Khata Banayein (Sign Up)')}
                   </button>
                 </p>
               </div>
@@ -740,7 +740,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <p className="text-xs text-[#684b16] font-medium leading-relaxed">
                   {tr(
                     'सुरक्षित वॉलेट भुगतान, ज्योतिष परामर्श पर 50% विशेष छूट और सेवा वीडियो पुष्टि पाने के लिए गौकृपा परिवार से जुड़ें।',
-                    'Join GauKripa Parivar for secure wallet payments, 50% discount eligibility on astrologer consultations, and verified seva video proofs.'
+                    'Surakshit wallet payment, jyotish paramarsh par 50% vishesh chhoot aur seva video proof paane ke liye GauKripa Parivar se judein.'
                   )}
                 </p>
               </div>
@@ -755,7 +755,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <form onSubmit={handleSignupSubmit} autoComplete="off" className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                    {tr('पूरा नाम', 'Full Name / Devotee Name')} <span className="text-rose-600">*</span>
+                    {tr('पूरा नाम', 'Poora Naam / Bhakt ka Naam')} <span className="text-rose-600">*</span>
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
@@ -765,7 +765,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder={tr('जैसे: रमेश शर्मा', 'e.g. Ramesh Sharma')}
+                      placeholder={tr('जैसे: रमेश शर्मा', 'Jaise: Ramesh Sharma')}
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                     />
                   </div>
@@ -773,7 +773,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                    {tr('ईमेल पता', 'Email Address')} <span className="text-rose-600">*</span>
+                    {tr('ईमेल पता', 'Email Pata')} <span className="text-rose-600">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
@@ -782,7 +782,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. ramesh@example.com"
+                      placeholder="jaise: ramesh@example.com"
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                     />
                   </div>
@@ -790,7 +790,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                    {tr('मोबाइल नंबर (व्हाट्सएप वीडियो पुष्टि हेतु)', 'Mobile Number (for WhatsApp Sankalp Updates)')}
+                    {tr('मोबाइल नंबर (व्हाट्सएप वीडियो पुष्टि हेतु)', 'Mobile Number (WhatsApp Video Proof ke Liye)')}
                   </label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
@@ -819,7 +819,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder={tr('न्यूनतम 8 अक्षर', 'Min 8 characters')}
+                        placeholder={tr('न्यूनतम 8 अक्षर', 'Kam se kam 8 akshar')}
                         className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                       />
                     </div>
@@ -827,7 +827,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                   <div>
                     <label className="block text-xs font-bold text-[#483d2e] mb-1">
-                      {tr('पासवर्ड पुष्टि करें', 'Confirm Password')} <span className="text-rose-600">*</span>
+                      {tr('पासवर्ड पुष्टि करें', 'Password Dobara Likhein')} <span className="text-rose-600">*</span>
                     </label>
                     <div className="relative">
                       <Lock className="w-4 h-4 text-[#8a7a67] absolute left-3 top-3" />
@@ -837,7 +837,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder={tr('पासवर्ड पुनः लिखें', 'Re-enter password')}
+                        placeholder={tr('पासवर्ड पुनः लिखें', 'Password dobara darj karein')}
                         className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
                       />
                     </div>
@@ -852,8 +852,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <PlusCircle className="w-4 h-4 text-amber-300" />
                   <span>
                     {loading
-                      ? tr('खाता बन रहा है...', 'Creating Account...')
-                      : tr('नया खाता बनाएँ', 'Create Account')}
+                      ? tr('खाता बन रहा है...', 'Account Ban Raha Hai...')
+                      : tr('नया खाता बनाएँ', 'Naya Khata Banayein')}
                   </span>
                 </button>
               </form>
@@ -861,7 +861,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {/* Link to Switch to Sign In */}
               <div className="pt-3 border-t border-[#ebdcb9] text-center">
                 <p className="text-xs text-[#71614e]">
-                  {tr('क्या आपका खाता पहले से है?', 'Already have an account?')}{' '}
+                  {tr('क्या आपका खाता पहले से है?', 'Kya aapka khata pehle se hai?')}{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -871,7 +871,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     }}
                     className="font-bold text-[#1b4b32] underline hover:text-[#0e2c1d] cursor-pointer ml-1"
                   >
-                    {tr('लॉगिन करें', 'Sign In')}
+                    {tr('लॉगिन करें', 'Sign In Karein')}
                   </button>
                 </p>
               </div>

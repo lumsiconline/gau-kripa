@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <ImageCrop
                   cropKey="newNavLogo"
                   className="w-full h-full object-contain"
-                  alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष', 'GauKripa • Gau Aahar Seva & Vedic Astrology')}
+                  alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष', 'GauKripa • Gau Aahar Vyavastha aur Vedic Jyotish')}
                   preserveAspectRatio="xMinYMid meet"
                 />
               </div>
@@ -91,14 +91,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setSevaDropdownOpen(!sevaDropdownOpen)}
               >
-                <span>{tr('गौ-आहार सेवा', 'Gau Aahar Seva')}</span>
+                <span>{tr('गौ-आहार सेवा', 'Gau-Aahar Seva')}</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${sevaDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {sevaDropdownOpen && (
                 <div className="absolute top-full left-0 mt-1 w-80 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
                   <div className="px-3.5 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata & Animal Feed Management (Direct Service)')}
+                    {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata aur Prani Aahar Seva (Pratyaksh Seva)')}
                   </div>
                   {sevaItems.map((item) => (
                     <button
@@ -126,9 +126,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onScrollToJyotish}
                 className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium flex items-center gap-1"
               >
-                <span>{tr('ज्योतिष मार्गदर्शन', 'Jyotish Guidance')}</span>
+                <span>{tr('ज्योतिष मार्गदर्शन', 'Jyotish Salah')}</span>
                 <span className="text-[10px] bg-[#fbf2dd] text-[#8a6828] border border-[#ebdcb9] px-1.5 py-0.2 rounded font-bold">
-                  {tr('5 विषय', '5 Topics')}
+                  {tr('5 विषय', '5 Vishay')}
                 </span>
               </button>
             )}
@@ -144,14 +144,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
                 onClick={() => setRemedyDropdownOpen(!remedyDropdownOpen)}
               >
-                <span>{tr('ग्रह शांति उपाय', 'Grah Remedies')}</span>
+                <span>{tr('ग्रह शांति उपाय', 'Grah Shanti Upay')}</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${remedyDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {remedyDropdownOpen && (
                 <div className="absolute top-full left-0 mt-1 w-72 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
                   <div className="px-3 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    {tr('वैदिक ग्रह-दोष निवारण', 'Vedic Planetary Remedies')}
+                    {tr('वैदिक ग्रह-दोष निवारण', 'Vedic Grah-Dosh Nivaran')}
                   </div>
                   {remedyCategories.map((rem) => (
                     <button
@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onScrollToAstrologers}
               className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
-              {tr('ज्योतिषाचार्य', 'Astrologers')}
+              {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
             </button>
 
             {/* Reviews */}
@@ -183,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenReviews}
               className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
-              {tr('समीक्षाएं एवं पुष्टि', 'Reviews & Proof')}
+              {tr('समीक्षाएं एवं पुष्टि', 'Samiksha & Proof')}
             </button>
 
             {/* About Us */}
@@ -191,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenAbout}
               className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
             >
-              {tr('परिचय', 'About Us')}
+              {tr('परिचय', 'Hamare Baare Mein')}
             </button>
           </nav>
 
@@ -200,7 +200,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Hindi / English Language Switch Button */}
             <div
               role="group"
-              aria-label={tr('भाषा बदलें', 'Switch Language')}
+              aria-label={tr('भाषा बदलें', 'Bhasha Badlein')}
               className="inline-flex items-center rounded-full bg-[#f5ecda] border border-[#dfc99b] p-0.5 shadow-2xs shrink-0"
             >
               <Languages className="w-3.5 h-3.5 text-[#7a5518] ml-1.5 mr-1 hidden sm:block shrink-0" />
@@ -224,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? 'bg-[#1b4b32] text-amber-200 shadow-xs'
                     : 'text-[#5b4831] hover:text-[#1b4b32]'
                 }`}
-                title="Switch to English"
+                title="Hinglish mein dekhein (English)"
               >
                 EN
               </button>
@@ -234,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenCart}
                 className="relative p-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] transition-colors cursor-pointer shrink-0"
-                title={tr('सेवा संकल्प कार्ट देखें', 'View Seva Sankalp Cart')}
+                title={tr('सेवा संकल्प कार्ट देखें', 'Seva Sankalp Cart Dekhein')}
               >
                 <Heart className="w-5 h-5 fill-[#1b4b32]" />
                 <span className="absolute -top-1 -right-1 bg-[#d94828] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -248,10 +248,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAstrologerDashboard}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#fdf5e2] hover:bg-[#faedd0] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
-                title={tr('ज्योतिष लाइव चैट डैशबोर्ड खोलें', 'Open Astrologer Live Chat Dashboard')}
+                title={tr('ज्योतिष लाइव चैट डैशबोर्ड खोलें', 'Jyotish Live Chat Dashboard Kholein')}
               >
                 <span>🔮</span>
-                <span className="hidden md:inline">{tr('ज्योतिष डेस्क', 'Astro Desk')}</span>
+                <span className="hidden md:inline">{tr('ज्योतिष डेस्क', 'Jyotish Desk')}</span>
               </button>
             )}
 
@@ -259,7 +259,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAdminDashboard}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 border border-amber-300/40 text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs hover:scale-102 shrink-0"
-                title={tr('एडमिन डैशबोर्ड खोलें', 'Open Admin Dashboard')}
+                title={tr('एडमिन डैशबोर्ड खोलें', 'Admin Dashboard Kholein')}
               >
                 <span>🛡️</span>
                 <span className="hidden md:inline">{tr('एडमिन डेस्क', 'Admin Desk')}</span>
@@ -270,7 +270,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenAuth}
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#fdf5e2] hover:bg-[#f6ebd1] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
-              title={tr('गौकृपा वॉलेट खोलें', 'Open GauKripa Wallet')}
+              title={tr('गौकृपा वॉलेट खोलें', 'GauKripa Wallet Kholein')}
             >
               <Wallet className="w-3.5 h-3.5 text-amber-700" />
               <span>{tr('वॉलेट', 'Wallet')}</span>
@@ -280,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenAuth}
               className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] border border-[#ebdcb9] text-xs font-bold transition-colors cursor-pointer shrink-0"
-              title={activeUser ? tr('मेरी प्रोफ़ाइल व वॉलेट खोलें', 'Open my profile & wallet') : tr('साइन इन या नया खाता बनाएँ', 'Sign in or create an account')}
+              title={activeUser ? tr('मेरी प्रोफ़ाइल व वॉलेट खोलें', 'Meri Profile aur Wallet Kholein') : tr('साइन इन या नया खाता बनाएँ', 'Sign In ya Naya Account Banayein')}
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">
@@ -292,7 +292,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="xl:hidden p-2 text-[#1b4b32] hover:bg-[#f3ebd3] rounded-lg cursor-pointer shrink-0"
-              aria-label={tr('मेनू खोलें', 'Toggle navigation')}
+              aria-label={tr('मेनू खोलें', 'Menu Kholein')}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -323,7 +323,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className="py-2 px-2 text-center rounded-lg bg-[#fbf2dd] border border-[#ebdcb9] text-[#8a6828] text-xs font-bold"
               >
-                {tr('ज्योतिष सेवाएँ', 'Jyotish Services')}
+                {tr('ज्योतिष सेवाएँ', 'Jyotish Sevaein')}
               </button>
             )}
             <button
@@ -333,7 +333,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="py-2 px-2 text-center rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
             >
-              {tr('ज्योतिषाचार्य', 'Astrologers')}
+              {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
             </button>
           </div>
 
@@ -355,7 +355,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => { setMobileMenuOpen(false); onLogout(); }}
                 className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
-                title={tr('लॉगआउट', 'Logout')}
+                title={tr('लॉगआउट', 'Logout Karein')}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -364,7 +364,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="space-y-1">
             <div className="text-[11px] font-bold text-[#8b7355] uppercase tracking-wider px-2 py-1">
-              {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata & Animal Feed Services')}
+              {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata aur Prani Aahar Seva')}
             </div>
             {sevaItems.map((item) => (
               <button
@@ -389,7 +389,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="font-medium text-[#1b4b32] underline"
             >
-              {tr('गौकृपा परिचय', 'About GauKripa')}
+              {tr('गौकृपा परिचय', 'GauKripa Parichay')}
             </button>
             <button
               onClick={() => {
@@ -398,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="font-medium text-[#1b4b32] underline"
             >
-              {tr('समीक्षाएं एवं वीडियो पुष्टि', 'Reviews & Video Proof')}
+              {tr('समीक्षाएं एवं वीडियो पुष्टि', 'Samiksha & Video Proof')}
             </button>
           </div>
 
@@ -413,7 +413,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   className="py-2 px-3 text-center rounded-xl bg-[#fdf5e2] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold cursor-pointer"
                 >
-                  🔮 {tr('ज्योतिष डेस्क', 'Astrologer Desk')}
+                  🔮 {tr('ज्योतिष डेस्क', 'Jyotish Desk')}
                 </button>
               )}
               {onOpenAdminDashboard && (

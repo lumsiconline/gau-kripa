@@ -382,7 +382,7 @@ async function startServer() {
       date: req.body.date || new Date().toISOString().split('T')[0],
       familyMembers: Array.isArray(req.body.familyMembers) ? req.body.familyMembers : [],
       sankalpWish: req.body.sankalpWish || '',
-      goshala: req.body.goshala || 'Surabhi Seva Dham, Vrindavan',
+      goshala: req.body.goshala || 'GauKripa Pramanit Goshala',
       createdAt: new Date().toISOString()
     };
     db.bookings.unshift(newBooking);

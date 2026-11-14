@@ -308,7 +308,7 @@ const INITIAL_BOOKINGS: DbBooking[] = [
     date: '2026-11-05',
     familyMembers: ['Sunita Bhardwaj', 'Aarav Bhardwaj'],
     sankalpWish: 'Family prosperity and peace',
-    goshala: 'Surabhi Seva Dham, Vrindavan',
+    goshala: 'GauKripa Pramanit Goshala',
     videoProofUrl: 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4',
     photoProofUrls: ['/assets/aistudio/image_a83a3632.png'],
     priestName: 'Pandit Radheshyam Shastri',
@@ -393,7 +393,7 @@ const INITIAL_REVIEWS: DbReview[] = [
     name: 'Vikram Singhania',
     city: 'Varanasi',
     seva: 'Gud-Chana Seva',
-    oneLiner: 'Vrindavan goshala me Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.',
+    oneLiner: 'Pramanit goshala me Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.',
     stars: 5,
     isApproved: true,
     createdAt: '2026-11-04T15:00:00Z'
@@ -436,7 +436,7 @@ export function readDb(): DbSchema {
           extraOccasionFee: 21,
           promoBannerText: '✨ Subh Deepawali Special Offer: 50% Off on Astrologer Consultation with any Seva Booking!',
           bannerEnabled: true,
-          trustName: 'GauKripa Seva Trust • Vrindavan & Mathura'
+          trustName: 'GauKripa Seva Trust'
         },
         reviews: INITIAL_REVIEWS
       };

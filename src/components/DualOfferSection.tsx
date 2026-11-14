@@ -52,21 +52,21 @@ export const DualOfferSection: React.FC<DualOfferSectionProps> = ({
                 <ImageCrop
                   cropKey="kundaliWheel"
                   className="w-full h-full object-cover scale-105"
-                  alt={tr('वैदिक कुंडली चक्र', 'Vedic Kundali Zodiac Wheel')}
+                  alt={tr('वैदिक कुंडली चक्र', 'Vedic Kundali Chakra')}
                 />
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-playfair text-lg sm:text-2xl font-bold text-[#1b4b32] leading-tight">
-                    {tr('ग्रह शांति एवं सात्विक वैदिक उपाय', 'Grah Shanti & Sattvic Vedic Remedies')}
+                    {tr('ग्रह शांति एवं सात्विक वैदिक उपाय', 'Grah Shanti aur Sattvic Vedic Upay')}
                   </h3>
                   <span className="text-amber-500 text-xs hidden sm:inline">✨</span>
                 </div>
                 <p className="text-xs sm:text-sm text-[#6f604c] font-medium mt-1 leading-snug">
                   {tr(
                     'अपनी समस्या चुनें और उचित गौ-आहार सेवा व वैदिक मंत्र उपाय जानें',
-                    'Select your area of concern to view the recommended Gau-Aahar service and Vedic Mantra remedy'
+                    'Apni samasya chunein aur sahi Gau-Aahar seva aur Vedic Mantra upay jaanein'
                   )}
                 </p>
               </div>
@@ -103,7 +103,7 @@ export const DualOfferSection: React.FC<DualOfferSectionProps> = ({
                 onClick={() => onOpenRemedyModal(selectedRemedy)}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
               >
-                <span>{tr('सटीक उपाय व आहार सेवा देखें', 'View Prescribed Remedy & Feed Seva')}</span>
+                <span>{tr('सटीक उपाय व आहार सेवा देखें', 'Sateek Upay aur Aahar Seva Dekhein')}</span>
                 <ArrowRight className="w-4 h-4 text-amber-300" />
               </button>
             </div>
@@ -114,28 +114,28 @@ export const DualOfferSection: React.FC<DualOfferSectionProps> = ({
             <div className="space-y-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold border border-amber-300/30">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{tr('विशेष संयुक्त लाभ', 'Special Dual Benefit')}</span>
+                <span>{tr('विशेष संयुक्त लाभ', 'Vishesh Sanyukt Labh')}</span>
               </div>
 
               <h3 className="font-playfair text-xl sm:text-2xl font-bold text-amber-100 leading-tight">
-                {tr('गौ सेवा के साथ 50% ज्योतिष परामर्श छूट', '50% Off Astrology Consultation with Gau Seva')}
+                {tr('गौ सेवा के साथ 50% ज्योतिष परामर्श छूट', 'Gau Seva ke sath 50% Jyotish Paramarsh Chhoot')}
               </h3>
 
               <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
                 {tr(
                   'जब आप गौमाता के लिए किसी भी आहार सेवा (चारा, गुड़-चना या रोटी) की व्यवस्था करते हैं, तो आपको अनुभवी वैदिक ज्योतिषाचार्य से परामर्श पर स्वतः 50% की विशेष छूट प्राप्त होती है।',
-                  'Whenever you arrange any feed service for Gaumata (Fodder, Gud-Chana, or Rotis), you automatically unlock 50% off on live consultation with our experienced Vedic Astrologers.'
+                  'Jab aap Gaumata ke liye kisi bhi aahar seva (Chara, Gud-Chana ya Roti) ki vyavastha karte hain, to aapko anubhavi Vedic Jyotishacharya se paramarsh par apne-aap 50% ki vishesh chhoot milti hai.'
                 )}
               </p>
 
               <div className="p-3 rounded-2xl bg-black/25 border border-emerald-500/30 text-xs space-y-1">
                 <div className="flex justify-between items-center text-emerald-200">
-                  <span>{tr('सामान्य परामर्श दर:', 'Standard Consultation Rate:')}</span>
+                  <span>{tr('सामान्य परामर्श दर:', 'Samanya Paramarsh Dar:')}</span>
                   <span className="line-through text-stone-300">₹20 / {tr('मिनट', 'min')}</span>
                 </div>
                 <div className="flex justify-between items-center font-bold text-amber-300 text-sm">
-                  <span>{tr('आहार सेवा के उपरांत:', 'After Feed Seva Booking:')}</span>
-                  <span>{tr('केवल ₹10 / मिनट', 'Only ₹10 / min')}</span>
+                  <span>{tr('आहार सेवा के उपरांत:', 'Aahar Seva Book Karne ke Baad:')}</span>
+                  <span>{tr('केवल ₹10 / मिनट', 'Sirf ₹10 / min')}</span>
                 </div>
               </div>
             </div>
@@ -145,7 +145,7 @@ export const DualOfferSection: React.FC<DualOfferSectionProps> = ({
                 onClick={onBookSevaWithDiscount}
                 className="w-full py-3 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
               >
-                <span>{tr('आहार सेवा व्यवस्था कर छूट पाएं', 'Book Feed Service & Unlock 50% Off')}</span>
+                <span>{tr('आहार सेवा व्यवस्था कर छूट पाएं', 'Apni Seva Book Karein aur 50% Chhoot Paayein')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

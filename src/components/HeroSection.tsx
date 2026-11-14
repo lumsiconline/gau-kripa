@@ -27,7 +27,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <ImageCrop
             cropKey="diwaliHeroBanner"
             className="w-full h-full object-cover scale-102"
-            alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष मार्गदर्शन', 'GauKripa • Gaumata Feed Seva & Vedic Astrology')}
+            alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष मार्गदर्शन', 'GauKripa • Gaumata Aahar Vyavastha aur Vedic Jyotish')}
             preserveAspectRatio="xMidYMid slice"
           />
 
@@ -39,10 +39,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Floating Auspicious Badge in Top-Right */}
         <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-20 text-right pointer-events-none hidden sm:block">
           <p className="font-script text-2xl sm:text-3xl text-amber-200 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] rotate-[-2deg]">
-            {tr('“गौ सेवा से ही सुख-शांति है...”', '“Gau Seva brings peace & harmony...”')}
+            {tr('“गौ सेवा से ही सुख-शांति है...”', '“Gau Seva se hi sukh-shanti hai...”')}
           </p>
           <span className="text-[11px] font-hindi text-amber-300/90 tracking-wider">
-            {tr('गौमाता आहार व्यवस्था • वैदिक ज्योतिष • आध्यात्मिक परामर्श', 'Gaumata Feed Management • Vedic Astrology • Spiritual Guidance')}
+            {tr('गौमाता आहार व्यवस्था • वैदिक ज्योतिष • आध्यात्मिक परामर्श', 'Gaumata Aahar Vyavastha • Vedic Jyotish • Adhyatmik Paramarsh')}
           </span>
         </div>
 
@@ -53,27 +53,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="inline-flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-amber-950/90 via-amber-900/80 to-amber-950/90 border border-amber-400/60 shadow-[0_0_25px_rgba(255,215,0,0.35)] backdrop-blur-md">
             <span className="text-xl sm:text-2xl animate-pulse">🙏</span>
             <span className="font-hindi text-xl sm:text-2xl lg:text-3xl font-black tracking-wide golden-text-glow leading-none">
-              {tr('गौकृपा (GauKripa)', 'GauKripa (गौकृपा)')}
+              {tr('गौकृपा (GauKripa)', 'GauKripa')}
             </span>
             <span className="text-lg sm:text-xl text-amber-300">✨</span>
             <span className="hidden md:inline-block text-xs font-semibold text-amber-100/90 border-l border-amber-400/40 pl-2.5 ml-1">
-              {tr('आहार व्यवस्था एवं ज्योतिष मार्गदर्शन', 'Feed Management & Astrology Guidance')}
+              {tr('आहार व्यवस्था एवं ज्योतिष मार्गदर्शन', 'Aahar Vyavastha & Jyotish Margdarshan')}
             </span>
           </div>
 
           {/* Main Headline */}
           <div className="space-y-2">
             <h1 className="font-playfair text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight drop-shadow-md">
-              {tr('गौमाता आहार व्यवस्था एवं', 'Gaumata Feed Arrangement &')} <br />
+              {tr('गौमाता आहार व्यवस्था एवं', 'Gaumata Aahar Vyavastha aur')} <br />
               <span className="text-amber-300">
-                {tr('वैदिक ज्योतिष मार्गदर्शन', 'Vedic Astrology Guidance')}
+                {tr('वैदिक ज्योतिष मार्गदर्शन', 'Vedic Jyotish Margdarshan')}
               </span>
             </h1>
 
             <p className="font-hindi text-sm sm:text-base text-amber-100/95 font-medium leading-relaxed drop-shadow-sm max-w-2xl">
               {tr(
                 'प्रमाणित गौशालाओं में गौमाता के लिए शुद्ध एवं पौष्टिक आहार प्रबंधन (चारा, गुड़-चना, ताजी रोटियाँ) तथा अनुभवी आचार्यों द्वारा जन्म कुंडली, प्रेम, विवाह एवं करियर का प्रामाणिक ज्योतिष परामर्श।',
-                'Direct management of fresh & nutritious feed for cows at verified goshalas (Fodder, Gud-Chana, Fresh Rotis) alongside authentic Vedic Astrology consultations for Birth Chart, Love, Marriage, and Career.'
+                'Pramanit goshalayon mein Gaumata ke liye shuddh aur paushtik aahar prabandhan (Chara, Gud-Chana, Taazi Roti) aur anubhavi acharyon dwara Janam Kundali, Love, Marriage aur Career ka pramanik Jyotish paramarsh.'
               )}
             </p>
           </div>
@@ -85,14 +85,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <span>
                 {tr(
                   'प्रत्यक्ष आहार प्रबंधन (5 किलो चारा ₹251, गुड़-चना ₹151, 4 रोटियां ₹51)',
-                  'Direct Feed Service (5 kg Fodder ₹251, Gud-Chana ₹151, 4 Rotis ₹51)'
+                  'Pratyaksh Aahar Seva (5 kg Chara ₹251, Gud-Chana ₹151, 4 Roti ₹51)'
                 )}
               </span>
             </div>
             <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-3 py-1 rounded-full border border-amber-400/30">
               <Video className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span>
-                {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर', 'Feed Distribution Video Proof on WhatsApp')}
+                {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर', 'Aahar Vitaran ka Video Proof WhatsApp par')}
               </span>
             </div>
           </div>
@@ -116,10 +116,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
               <div>
                 <div className="text-xs font-bold text-white group-hover:text-amber-200 leading-tight">
-                  {tr('गौमाता आहार सेवा', 'Gaumata Feed Seva')}
+                  {tr('गौमाता आहार सेवा', 'Gaumata Aahar Seva')}
                 </div>
                 <div className="text-[11px] text-stone-300">
-                  {tr('चारा, गुड़-चना, रोटी', 'Fodder, Gud-Chana, Roti')}
+                  {tr('चारा, गुड़-चना, रोटी', 'Chara, Gud-Chana, Roti')}
                 </div>
               </div>
             </button>
@@ -134,7 +134,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
               <div>
                 <div className="text-xs font-bold text-white group-hover:text-amber-200 leading-tight">
-                  {tr('वैदिक ज्योतिष', 'Vedic Astrology')}
+                  {tr('वैदिक ज्योतिष', 'Vedic Jyotish')}
                 </div>
                 <div className="text-[11px] text-stone-300">
                   {tr('कुंडली, प्रेम, करियर', 'Kundali, Love, Career')}
@@ -155,7 +155,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {tr('ग्रह-नक्षत्र शांति', 'Grah-Nakshatra Shanti')}
                 </div>
                 <div className="text-[11px] text-stone-300">
-                  {tr('वैदिक सात्विक उपाय', 'Sattvic Vedic Remedies')}
+                  {tr('वैदिक सात्विक उपाय', 'Sattvic Vedic Upay')}
                 </div>
               </div>
             </button>
@@ -168,7 +168,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-sm shadow-[0_0_20px_rgba(27,75,50,0.6)] border border-emerald-400/40 transition-all cursor-pointer group"
             >
               <span className="font-hindi text-base font-bold text-amber-300">
-                {tr('आहार सेवा व्यवस्था करें', 'Arrange Feed Service')}
+                {tr('आहार सेवा व्यवस्था करें', 'Apni Seva Book Karein')}
               </span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-300" />
             </button>
@@ -178,7 +178,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-amber-500/25 hover:bg-amber-500/35 active:scale-98 text-amber-200 font-bold text-sm border border-amber-400/50 backdrop-blur-md transition-all cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>{tr('ज्योतिष परामर्श लें', 'Consult Astrologer')}</span>
+              <span>{tr('ज्योतिष परामर्श लें', 'Jyotish Paramarsh Lein')}</span>
             </button>
           </div>
 

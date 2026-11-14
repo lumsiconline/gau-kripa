@@ -44,7 +44,7 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
             </svg>
 
             <span className="text-xs font-bold uppercase tracking-widest text-[#8a6828] bg-[#fbf2dd] px-3.5 py-1 rounded-full border border-[#ebdcb9]">
-              {tr('वैदिक ज्योतिष एवं आध्यात्मिक परामर्श', 'Vedic Astrology & Spiritual Guidance')}
+              {tr('वैदिक ज्योतिष एवं आध्यात्मिक परामर्श', 'Vedic Jyotish aur Adhyatmik Paramarsh')}
             </span>
 
             <svg className="w-8 h-4 text-[#4a6b49] rotate-180" viewBox="0 0 40 20" fill="currentColor">
@@ -54,13 +54,13 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
           </div>
 
           <h2 className="font-playfair text-2xl sm:text-4xl font-black text-[#153e29] leading-tight">
-            {tr('वैदिक ज्योतिष मार्गदर्शन सेवाएँ', 'Vedic Astrology Guidance Services')}
+            {tr('वैदिक ज्योतिष मार्गदर्शन सेवाएँ', 'Vedic Jyotish Margdarshan Sevaein')}
           </h2>
 
           <p className="text-xs sm:text-base text-[#6b5a45] font-medium leading-relaxed">
             {tr(
               'अनुभवी वैदिक आचार्यों द्वारा आपकी जन्म कुंडली, ग्रह-दशा एवं व्यक्तिगत प्रश्नों का गोपनीय, प्रामाणिक और सटीक समाधान।',
-              'Confidential, authentic, and accurate solutions for your birth chart, planetary transits, and personal life questions by experienced Vedic Acharyas.'
+              'Anubhavi Vedic Acharyon dwara aapki Janam Kundali, Grah-Dasha aur niji prashnon ka gopniya, pramanik aur sateek samadhan.'
             )}
           </p>
         </div>
@@ -102,7 +102,7 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
                 {/* Key Consultation Topics */}
                 <div className="mt-4 pt-3.5 border-t border-[#f2e7cd] space-y-1.5">
                   <div className="text-[11px] font-bold text-[#8a6828] uppercase tracking-wide">
-                    {tr('मुख्य परामर्श बिंदु:', 'Key Consultation Topics:')}
+                    {tr('मुख्य परामर्श बिंदु:', 'Mukhya Paramarsh Bindu:')}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {cat.topics.map((topic, tIdx) => (
@@ -124,7 +124,7 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
                   className="w-full py-2.5 px-4 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer group-hover:bg-[#153e29]"
                 >
                   <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
-                  <span>{tr('परामर्श प्राप्त करें', 'Get Consultation')}</span>
+                  <span>{tr('परामर्श प्राप्त करें', 'Paramarsh Lein')}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-amber-300 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -136,24 +136,24 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
             <div className="relative z-10 space-y-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-200 text-[11px] font-bold border border-amber-300/30">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                <span>{tr('100% गोपनीय एवं प्रामाणिक', '100% Confidential & Authentic')}</span>
+                <span>{tr('100% गोपनीय एवं प्रामाणिक', '100% Gopniya aur Pramanik')}</span>
               </div>
 
               <h3 className="font-playfair text-xl sm:text-2xl font-bold text-amber-100 leading-tight">
-                {tr('सीधे वैदिक ज्योतिषाचार्य से बात करें', 'Speak Directly with a Vedic Astrologer')}
+                {tr('सीधे वैदिक ज्योतिषाचार्य से बात करें', 'Seedhe Vedic Jyotishacharya se Baat Karein')}
               </h3>
 
               <p className="text-xs text-emerald-100/90 leading-relaxed">
                 {tr(
                   'अपने जीवन के महत्वपूर्ण निर्णयों, जन्म कुंडली व ग्रह गोचर के व्यक्तिगत प्रश्नों पर लाइव चैट अथवा फोन कॉल द्वारा तुरंत मार्गदर्शन प्राप्त करें।',
-                  'Receive instant live chat or audio guidance on important life decisions, birth chart readings, and planetary transits.'
+                  'Apne jeevan ke mahatvapurna faislon, Janam Kundali aur Grah Gochar ke niji prashnon par Live Chat se turant margdarshan paayein.'
                 )}
               </p>
 
               <div className="pt-2 text-xs space-y-1.5 text-emerald-200 font-medium">
-                <p>✓ {tr('सटीक जन्म समय व कुंडली मिलान', 'Accurate Birth Time & Kundali Matching')}</p>
-                <p>✓ {tr('सरल, सात्विक एवं वैदिक ग्रह उपाय', 'Simple, Sattvic Vedic Remedies')}</p>
-                <p>✓ {tr('प्रथम गौ सेवा के साथ 50% विशेष छूट', '50% Special Discount After Gau Seva')}</p>
+                <p>✓ {tr('सटीक जन्म समय व कुंडली मिलान', 'Sateek Janam Samay aur Kundali Milan')}</p>
+                <p>✓ {tr('सरल, सात्विक एवं वैदिक ग्रह उपाय', 'Saral, Sattvic aur Vedic Grah Upay')}</p>
+                <p>✓ {tr('प्रथम गौ सेवा के साथ 50% विशेष छूट', 'Pehli Gau Seva ke sath 50% Vishesh Chhoot')}</p>
               </div>
             </div>
 
@@ -162,7 +162,7 @@ export const JyotishServicesSection: React.FC<JyotishServicesSectionProps> = ({
                 onClick={onGeneralConsult}
                 className="w-full py-2.5 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
               >
-                <span>{tr('अभी ज्योतिषी से जुड़ें', 'Connect with Astrologer Now')}</span>
+                <span>{tr('अभी ज्योतिषी से जुड़ें', 'Abhi Jyotishi se Judein')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
