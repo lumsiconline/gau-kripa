@@ -2,20 +2,20 @@
 
 @layer base {
   :root {
-    --color-primary: #1b4b32;
-    --color-primary-dark: #123824;
-    --color-primary-light: #2c6947;
-    --color-gold: #e59f2c;
-    --color-gold-dark: #c4821a;
-    --color-cream: #fbf6ea;
-    --color-cream-light: #fefcf7;
-    --color-cream-card: #f8f1de;
+    --color-primary: #b54c0d;
+    --color-primary-dark: #8f3906;
+    --color-primary-light: #cf631f;
+    --color-gold: #f0b33a;
+    --color-gold-dark: #c98515;
+    --color-cream: #fbf6ee;
+    --color-cream-light: #fffdf9;
+    --color-cream-card: #f6ebd9;
   }
 
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: #f7f2e5;
-    color: #2c332d;
+    background-color: #fbf6ee;
+    color: #2e1a0c;
     overflow-x: hidden;
   }
 }

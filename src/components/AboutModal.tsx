@@ -42,7 +42,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
         {/* Content */}
         <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm text-[#483c2e] leading-relaxed">
           <div className="h-48 rounded-2xl overflow-hidden border border-[#ebdcb9] bg-[#f6ebd3] p-1.5 flex items-center justify-center">
-            <ImageCrop cropKey="heroCows" className="w-full h-full rounded-xl" preserveAspectRatio="xMidYMid meet" alt="GauKripa Goshala" />
+            <ImageCrop cropKey="heroCows" className="w-full h-full rounded-xl" preserveAspectRatio="xMidYMid meet" alt="Gaumata Hara Chara Seva" />
           </div>
 
           <p>
@@ -55,8 +55,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
 
           <p>
             {tr(
-              'व्यस्त शहरी जीवन में अनेक परिवार घर बैठे प्रमाणित गौशालाओं में गौमाता को ताजा चारा, गुड़-चना या रोटी खिलाने की व्यवस्था करना चाहते हैं और अनुभवी वैदिक आचार्यों से कुंडली व ग्रह-नक्षत्र परामर्श लेना चाहते हैं। गौकृपा 100% पारदर्शिता के साथ यह सेवा आपके नाम व गोत्र संकल्प सहित पूर्ण करता है।',
-              'Vyast jeevan mein kai parivar ghar baithe pramanit goshalayon mein Gaumata ko taaza chara, gud-chana ya roti khilane ki vyavastha karna chahte hain aur anubhavi Vedic acharyon se Kundali aur Grah-Nakshatra paramarsh lena chahte hain. GauKripa 100% pardarshita ke sath yeh seva aapke naam aur Gotra Sankalp sahit poori karta hai.'
+              'व्यस्त जीवन में अनेक परिवार घर बैठे गाय को ताजा हरा चारा, गुड़-चना या रोटी खिलाने की व्यवस्था करना चाहते हैं और अनुभवी वैदिक आचार्यों से कुंडली व ग्रह-नक्षत्र परामर्श लेना चाहते हैं। गौकृपा 100% पारदर्शिता के साथ यह सेवा आपके नाम व गोत्र संकल्प सहित पूर्ण करता है।',
+              'Vyast jeevan mein kai parivar ghar baithe Gaumata ko taaza hara chara, gud-chana ya roti khilane ki vyavastha karna chahte hain aur anubhavi Vedic acharyon se Kundali aur Grah-Nakshatra paramarsh lena chahte hain. GauKripa 100% pardarshita ke sath yeh seva aapke naam aur Gotra Sankalp sahit poori karta hai.'
             )}
           </p>
 
@@ -98,7 +98,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, onExplo
         {/* Footer */}
         <div className="p-4 bg-[#f8f1de] border-t border-[#ebdcb9] flex items-center justify-between shrink-0">
           <span className="text-xs text-[#6e5d48]">
-            {tr('देशभर की प्रमाणित एवं सहयोगी गौशालाएं।', 'Desh bhar ki pramanit aur sahyogi goshalayein.')}
+            {tr('प्रत्यक्ष गाय को हरा चारा एवं आहार सेवा।', 'Pratyaksh Gaumata Hara Chara aur Aahar Seva.')}
           </span>
           <button
             onClick={() => {

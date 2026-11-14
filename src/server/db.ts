@@ -161,7 +161,7 @@ const INITIAL_SERVICES: DbService[] = [
     minQty: 1,
     benefit: 'Helps reduce Surya Dosh & brings confidence & success.',
     cropKey: 'sevaChara',
-    detailedDescription: 'Fresh, juicy green grass, sorghum, and clover harvested early morning and offered with sacred devotion to Gaumata in certified Vedic goshalas.',
+    detailedDescription: 'Fresh, juicy green hara chara harvested early morning and fed directly with sacred devotion to Gaumata.',
     vedicSignificance: 'According to the Bhavishya Purana, feeding fresh green fodder to Kamadhenu pleases Lord Surya, dispelling lethargy and opening paths to authority and respect.',
     isActive: true,
     category: 'cow'
@@ -308,7 +308,7 @@ const INITIAL_BOOKINGS: DbBooking[] = [
     date: '2026-11-05',
     familyMembers: ['Sunita Bhardwaj', 'Aarav Bhardwaj'],
     sankalpWish: 'Family prosperity and peace',
-    goshala: 'GauKripa Pramanit Goshala',
+    goshala: 'Pratyaksh Gaumata Hara Chara Seva',
     videoProofUrl: 'https://assets.mixkit.co/videos/preview/mixkit-cows-in-a-field-grazing-43283-large.mp4',
     photoProofUrls: ['/assets/aistudio/image_a83a3632.png'],
     priestName: 'Pandit Radheshyam Shastri',
@@ -393,7 +393,7 @@ const INITIAL_REVIEWS: DbReview[] = [
     name: 'Vikram Singhania',
     city: 'Varanasi',
     seva: 'Gud-Chana Seva',
-    oneLiner: 'Pramanit goshala me Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.',
+    oneLiner: 'Gaumata ko hara chara aur Gud-Chana khilate hue Pandit ji ne hamare gotra ke sath sankalp padha, 100% genuine trust hai.',
     stars: 5,
     isApproved: true,
     createdAt: '2026-11-04T15:00:00Z'

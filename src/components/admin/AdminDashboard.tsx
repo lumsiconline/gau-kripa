@@ -862,7 +862,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                         {tr('श्रद्धालु सेवा बुकिंग एवं वीडियो प्रमाण', 'Shraddhalu Seva Booking aur Video Proof')}
                       </h2>
                       <p className="text-xs text-[#71614e]">
-                        {tr('संकल्प स्थिति ट्रैक करें, वैदिक गौशाला पुरोहित नियुक्त करें, और वास्तविक वीडियो व फोटो प्रमाण अपलोड करें।', 'Sankalp status track karein, Vedic goshala purohit niyukt karein aur asli video/photo proof upload karein.')}
+                        {tr('संकल्प स्थिति ट्रैक करें, वैदिक पुरोहित नियुक्त करें, और वास्तविक वीडियो व फोटो प्रमाण अपलोड करें।', 'Sankalp status track karein, Vedic purohit niyukt karein aur asli video/photo proof upload karein.')}
                       </p>
                     </div>
 
@@ -1504,7 +1504,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
               <div>
                 <label className="block text-xs font-bold text-[#453728] mb-1">
-                  {tr('गौशाला प्रमुख / पुरोहित का नाम', 'Goshala Pramukh / Purohit ka Naam')}
+                  {tr('सेवा प्रमुख / पुरोहित का नाम', 'Seva Pramukh / Purohit ka Naam')}
                 </label>
                 <input
                   type="text"

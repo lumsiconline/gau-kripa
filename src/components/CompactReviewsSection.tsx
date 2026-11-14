@@ -48,8 +48,8 @@ const INDIA_REVIEWS: Review[] = [
     cityEn: 'Varanasi',
     sevaHi: 'गुड़-चना आहार व्यवस्था',
     sevaEn: 'Gud-Chana Aahar Seva',
-    oneLinerHi: 'प्रमाणित गौशाला में हमारे नाम व गोत्र के साथ गुड़-चना आहार खिलाया गया, 100% पारदर्शी और विश्वसनीय सेवा है।',
-    oneLinerEn: 'Pramanit goshala mein hamare naam aur Gotra ke sath Gud-Chana aahar khilaya gaya, 100% genuine aur vishwasniya seva hai.',
+    oneLinerHi: 'गाय को हरा चारा और गुड़-चना हमारे नाम व गोत्र के साथ खिलाया गया, 100% पारदर्शी और विश्वसनीय सेवा है।',
+    oneLinerEn: 'Gaumata ko hara chara aur Gud-Chana hamare naam aur Gotra ke sath khilaya gaya, 100% genuine aur vishwasniya seva hai.',
     stars: 5,
   },
   {
@@ -123,23 +123,20 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
   const { lang, tr } = useLanguage();
 
   return (
-    <section className="bg-[#f7f0df] border-b border-[#ebdcb9] py-5 sm:py-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-[#fbf6ee] py-5 sm:py-6 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-3.5 sm:px-6">
         
         {/* Compact Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[#8b5a0a]">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[#b54c0d]">
+              <Sparkles className="w-3.5 h-3.5 text-[#e5a024]" />
               <span>{tr('4.9/5 रेटिंग', '4.9/5 Rating')}</span>
             </span>
             <span className="text-[#d9ba78] hidden sm:inline">•</span>
-            <h3 className="font-playfair text-base sm:text-lg font-bold text-[#1b4b32]">
+            <h3 className="font-playfair text-base sm:text-lg font-bold text-[#2e1a0c]">
               {tr('देशभर से ग्राहकों एवं यजमानों के अनुभव', 'Desh Bhar se Bhakton aur Yajmanon ke Anubhav')}
             </h3>
-            <span className="text-xs text-[#6e5f4a] font-medium hidden md:inline">
-              {tr('(आहार सेवा एवं ज्योतिष परामर्श समीक्षाएं)', '(Pramanit Aahar Seva aur Jyotish Samiksha)')}
-            </span>
           </div>
         </div>
 
@@ -157,20 +154,20 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
             return (
               <div
                 key={rev.id}
-                className="snap-start shrink-0 w-[268px] sm:w-[296px] bg-[#fffdf9] border border-[#ebdcb9] hover:border-[#1b4b32]/40 rounded-2xl p-3 transition-colors flex flex-col justify-between"
+                className="snap-start shrink-0 w-[264px] sm:w-[292px] bg-white border border-[#ede0ca] hover:border-[#d3ae7a] rounded-2xl p-3 transition-colors flex flex-col justify-between shadow-2xs"
               >
                 {/* Reviewer Header */}
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded-full bg-[#1b4b32] text-amber-200 text-[10px] font-bold flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#b54c0d] text-amber-100 text-[10px] font-bold flex items-center justify-center shrink-0">
                       {name.charAt(0)}
                     </div>
                     <div className="min-w-0 truncate">
-                      <span className="text-xs font-bold text-[#1b4b32] truncate block">
+                      <span className="text-xs font-bold text-[#2e1a0c] truncate block">
                         {name}
                       </span>
                       <span className="text-[10px] text-[#786a55] block truncate">
-                        📍 {city} • <span className="text-[#8b5a0a] font-medium">{seva}</span>
+                        📍 {city} • <span className="text-[#b54c0d] font-medium">{seva}</span>
                       </span>
                     </div>
                   </div>
@@ -182,8 +179,8 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
                         <Star key={i} className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <span className="text-[9px] text-emerald-800 font-semibold flex items-center gap-0.5 mt-0.5">
-                      <CheckCircle className="w-2.5 h-2.5 text-emerald-700" />
+                    <span className="text-[9px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-0.5">
+                      <CheckCircle className="w-2.5 h-2.5 text-emerald-600" />
                       <span>{tr('सत्यापित', 'Satyapit')}</span>
                     </span>
                   </div>
@@ -191,7 +188,7 @@ export const CompactReviewsSection: React.FC<CompactReviewsSectionProps> = () =>
 
                 {/* Review Text */}
                 <p
-                  className="text-xs text-[#3d3326] italic font-medium leading-snug line-clamp-2 sm:line-clamp-2 border-t border-[#f2e7cd] pt-1.5"
+                  className="text-xs text-[#4a3626] italic font-medium leading-snug line-clamp-2 border-t border-[#f4e8d6] pt-1.5"
                   title={oneLiner}
                 >
                   &ldquo;{oneLiner}&rdquo;

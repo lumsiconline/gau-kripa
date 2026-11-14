@@ -335,18 +335,18 @@ export const LiveSevaBookingPopup: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed bottom-2.5 left-2.5 sm:bottom-3.5 sm:left-3.5 z-40 w-auto min-w-[168px] max-w-[210px] sm:max-w-[230px] bg-[#fffdf7]/95 backdrop-blur-md border border-[#d9ba78] rounded-xl shadow-lg px-2.5 py-2 pr-6 transition-all duration-300 ${
+      className={`fixed bottom-20 left-3 md:bottom-3.5 md:left-3.5 z-40 w-auto min-w-[168px] max-w-[210px] sm:max-w-[230px] bg-[#fffdf9]/95 backdrop-blur-md border border-[#e3c79e] rounded-xl shadow-lg px-2.5 py-2 pr-6 transition-all duration-300 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
       }`}
     >
       <div className="min-w-0 space-y-0.5">
-        <p className="text-[11px] font-bold text-[#153e29] leading-tight truncate">
+        <p className="text-[11px] font-bold text-[#2e1a0c] leading-tight truncate">
           {name}
         </p>
-        <p className="text-[10px] font-semibold text-[#6e5c44] leading-tight truncate">
+        <p className="text-[10px] font-semibold text-[#6e5540] leading-tight truncate">
           {city}
         </p>
-        <p className="text-[10px] font-bold text-[#1b4b32] leading-tight truncate pt-0.5">
+        <p className="text-[10px] font-bold text-[#b54c0d] leading-tight truncate pt-0.5">
           {sevaName}
         </p>
       </div>

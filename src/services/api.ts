@@ -243,13 +243,19 @@ function unwrapRow(row: any): any {
 function sanitizeLegacyLocationText(val?: string): string {
   if (!val) return '';
   return String(val)
-    .replace(/Surabhi\s*(Gau\s*)?Seva\s*Dham,?\s*Vrindavan/gi, 'GauKripa Pramanit Goshala')
-    .replace(/सुरभि\s*(गौ\s*)?सेवा\s*धाम,?\s*(वृन्दावन|वृंदावन)/g, 'गौकृपा प्रमाणित गौशाला')
-    .replace(/परिक्रमा\s*मार्ग,?\s*रमण\s*रेती,?\s*(वृन्दावन|वृंदावन)[^.]*\.?/g, 'गौकृपा प्रमाणित गौशाला')
-    .replace(/Parikrama\s*Marg,?\s*Raman\s*Reti,?\s*Vrindavan[^.]*\.?/gi, 'GauKripa Pramanit Goshala')
+    .replace(/Surabhi\s*(Gau\s*)?Seva\s*Dham,?\s*Vrindavan/gi, 'Pratyaksh Gaumata Hara Chara Seva')
+    .replace(/सुरभि\s*(गौ\s*)?सेवा\s*धाम,?\s*(वृन्दावन|वृंदावन)/g, 'प्रत्यक्ष गाय हरा चारा सेवा')
+    .replace(/परिक्रमा\s*मार्ग,?\s*रमण\s*रेती,?\s*(वृन्दावन|वृंदावन)[^.]*\.?/g, 'प्रत्यक्ष गाय हरा चारा सेवा')
+    .replace(/Parikrama\s*Marg,?\s*Raman\s*Reti,?\s*Vrindavan[^.]*\.?/gi, 'Pratyaksh Gaumata Hara Chara Seva')
     .replace(/•\s*Vrindavan\s*&?\s*Mathura/gi, '')
-    .replace(/Vrindavan\s*goshala/gi, 'Pramanit goshala')
-    .replace(/(वृन्दावन|वृंदावन)\s*गौशाला/g, 'प्रमाणित गौशाला')
+    .replace(/Vrindavan\s*goshalas?/gi, 'Pratyaksh Gaumata Hara Chara Seva')
+    .replace(/(वृन्दावन|वृंदावन)\s*गौशाला(ओं|एं)?/g, 'प्रत्यक्ष गाय हरा चारा सेवा')
+    .replace(/GauKripa\s*Pramanit\s*G[ao]u?shala/gi, 'Pratyaksh Gaumata Hara Chara Seva')
+    .replace(/गौकृपा\s*प्रमाणित\s*गौशाला/g, 'प्रत्यक्ष गाय हरा चारा सेवा')
+    .replace(/\bPramanit\s*G[ao]u?shala\b/gi, 'Gaumata Hara Chara Seva')
+    .replace(/प्रमाणित\s*गौशाला(ओं|एं)?/g, 'गाय को हरा चारा सेवा')
+    .replace(/\bG[ao]u?shala(s|yon|yein)?\b/gi, 'Gaumata Hara Chara Seva')
+    .replace(/गौशाला(ओं|एं)?|गोशाला(ओं|एं)?/g, 'गाय को हरा चारा सेवा')
     .replace(/\bVrindavan\b/gi, 'GauKripa')
     .replace(/वृन्दावन|वृंदावन/g, 'गौकृपा')
     .replace(/\bSurabhi\b/gi, 'GauKripa')
@@ -323,7 +329,7 @@ function mapBookingRow(raw: any): BookingRecord {
     date: row.date,
     familyMembers: Array.isArray(row.family_members ?? row.familyMembers) ? (row.family_members ?? row.familyMembers) : [],
     sankalpWish: row.sankalp_wish ?? row.sankalpWish ?? undefined,
-    goshala: sanitizeLegacyLocationText(row.goshala) || 'GauKripa Pramanit Goshala',
+    goshala: sanitizeLegacyLocationText(row.goshala) || 'Pratyaksh Gaumata Hara Chara Seva',
     videoProofUrl: row.video_proof_url ?? row.videoProofUrl ?? undefined,
     photoProofUrls: Array.isArray(row.photo_proof_urls ?? row.photoProofUrls) ? (row.photo_proof_urls ?? row.photoProofUrls) : undefined,
     priestName: row.priest_name ?? row.priestName ?? undefined,
@@ -887,7 +893,7 @@ export const api = {
       date: booking.date || new Date().toISOString().split('T')[0],
       familyMembers: booking.familyMembers || [],
       sankalpWish: booking.sankalpWish,
-      goshala: sanitizeLegacyLocationText(booking.goshala) || 'GauKripa Pramanit Goshala',
+      goshala: sanitizeLegacyLocationText(booking.goshala) || 'Pratyaksh Gaumata Hara Chara Seva',
       orderId: booking.orderId,
       paymentId: booking.paymentId,
       createdAt: new Date().toISOString()

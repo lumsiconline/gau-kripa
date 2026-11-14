@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { Home, HeartHandshake, Sparkles, User } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { SevaServicesSection } from './components/SevaServicesSection';
-import { JyotishServicesSection } from './components/JyotishServicesSection';
 import { DualOfferSection } from './components/DualOfferSection';
 import { AstrologerSection } from './components/AstrologerSection';
 import { WhyChooseUsStrip } from './components/WhyChooseUsStrip';
@@ -15,7 +15,6 @@ import {
   SevaItem,
   ASTROLOGERS,
   Astrologer,
-  JyotishCategory,
   getLocalizedSevaItems,
   getLocalizedAstrologers,
 } from './data/sevaData';
@@ -24,6 +23,7 @@ import { AstrologerConsultationModal } from './components/AstrologerConsultation
 import { GrahRemedyModal } from './components/GrahRemedyModal';
 import { ProofGalleryModal } from './components/ProofGalleryModal';
 import { AuthModal, AuthUser } from './components/AuthModal';
+import { ProfileDashboard, ProfileTab } from './components/ProfileDashboard';
 import { AboutModal } from './components/AboutModal';
 import { SevaParivarModal } from './components/SevaParivarModal';
 import { ContactModal } from './components/ContactModal';
@@ -86,22 +86,27 @@ export default function App() {
   const [pendingAction, setPendingAction] = useState<
     | { type: 'seva'; item: SevaItem; discount: boolean }
     | { type: 'astrologer'; astrologer: Astrologer; mode: 'chat' | 'call'; concern?: string }
+    | { type: 'profile'; tab: ProfileTab }
     | null
   >(null);
 
-  // Current Active View: Website (Devotee Portal) vs Admin Console vs Astrologer Desk
-  // Protected: Only Super Admin can access admin/astrologer dashboards
-  const [currentView, setCurrentView] = useState<'website' | 'admin' | 'astrologer'>(() => {
+  const [profileTab, setProfileTab] = useState<ProfileTab>('overview');
+
+  // Current Active View: Website vs Profile Dashboard vs Admin Console vs Astrologer Desk
+  const [currentView, setCurrentView] = useState<'website' | 'profile' | 'admin' | 'astrologer'>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       if ((hash === '#admin' || hash === '#astrologer' || hash === '#astro') && isSuperAdmin) {
         return hash === '#admin' ? 'admin' : 'astrologer';
       }
+      if (hash === '#profile' && currentUser) {
+        return 'profile';
+      }
     }
     return 'website';
   });
 
-  const navigateTo = (view: 'website' | 'admin' | 'astrologer') => {
+  const navigateTo = (view: 'website' | 'profile' | 'admin' | 'astrologer') => {
     if ((view === 'admin' || view === 'astrologer') && !isSuperAdmin) {
       setAuthPromptMessage(
         tr(
@@ -113,10 +118,18 @@ export default function App() {
       return;
     }
 
+    if (view === 'profile' && !currentUser) {
+      setPendingAction({ type: 'profile', tab: 'overview' });
+      setAuthPromptMessage(null);
+      setAuthModalOpen(true);
+      return;
+    }
+
     setCurrentView(view);
     if (typeof window !== 'undefined') {
       if (view === 'admin') window.location.hash = 'admin';
       else if (view === 'astrologer') window.location.hash = 'astrologer';
+      else if (view === 'profile') window.location.hash = 'profile';
       else {
         history.pushState(null, '', window.location.pathname);
       }
@@ -152,13 +165,21 @@ export default function App() {
         } else {
           setCurrentView('astrologer');
         }
+      } else if (hash === '#profile') {
+        if (currentUser) {
+          setCurrentView('profile');
+        } else {
+          setPendingAction({ type: 'profile', tab: 'overview' });
+          setAuthModalOpen(true);
+          setCurrentView('website');
+        }
       } else {
         setCurrentView('website');
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isSuperAdmin, lang]);
+  }, [isSuperAdmin, currentUser, lang]);
 
   // Modal visibility states
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
@@ -178,17 +199,11 @@ export default function App() {
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [parivarModalOpen, setParivarModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [activeBottomTab, setActiveBottomTab] = useState<'home' | 'seva' | 'jyotish' | 'profile'>('home');
 
   // Smooth scroll helpers
   const scrollToAstrologers = () => {
     const el = document.getElementById('astrologers-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const scrollToJyotish = () => {
-    const el = document.getElementById('jyotish-guidance');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -240,17 +255,31 @@ export default function App() {
     setAstroModalOpen(true);
   };
 
-  const handleSelectJyotishCategory = (category: JyotishCategory) => {
-    handleConnectAstrologer(localizedAstrologers[0], 'chat', category.title);
+  const handleOpenProfile = (tab: ProfileTab = 'overview') => {
+    setAuthPromptMessage(null);
+    if (!currentUser) {
+      setPendingAction({ type: 'profile', tab });
+      setAuthModalOpen(true);
+      return;
+    }
+    setProfileTab(tab);
+    navigateTo('profile');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  const handleUserLogin = (user: AuthUser) => {
-    setCurrentUser(user);
+  const handleUpdateUser = (updatedUser: AuthUser) => {
+    setCurrentUser(updatedUser);
     try {
-      localStorage.setItem('gaukripa_user', JSON.stringify(user));
+      localStorage.setItem('gaukripa_user', JSON.stringify(updatedUser));
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleUserLogin = (user: AuthUser) => {
+    handleUpdateUser(user);
 
     if (pendingAction) {
       if (pendingAction.type === 'seva') {
@@ -262,6 +291,13 @@ export default function App() {
         setAstroMode(pendingAction.mode);
         setSelectedConcern(pendingAction.concern);
         setAstroModalOpen(true);
+      } else if (pendingAction.type === 'profile') {
+        setProfileTab(pendingAction.tab);
+        setCurrentView('profile');
+        if (typeof window !== 'undefined') {
+          window.location.hash = 'profile';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
       setPendingAction(null);
     }
@@ -272,6 +308,7 @@ export default function App() {
     setCurrentUser(null);
     api.logout().catch(console.error);
     setCurrentView('website');
+    setActiveBottomTab('home');
     if (typeof window !== 'undefined') {
       history.pushState(null, '', window.location.pathname);
     }
@@ -307,33 +344,70 @@ export default function App() {
     );
   }
 
+  if (currentView === 'profile' && currentUser) {
+    return (
+      <>
+        <ProfileDashboard
+          currentUser={currentUser}
+          initialTab={profileTab}
+          onTabChange={setProfileTab}
+          onUpdateUser={handleUpdateUser}
+          onLogout={handleUserLogout}
+          onBackToWebsite={() => {
+            setActiveBottomTab('home');
+            navigateTo('website');
+          }}
+          onBookSevaClick={() => handleOpenSevaBooking(localizedSevaItems[0])}
+          onOpenProofGallery={() => setProofGalleryOpen(true)}
+          onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
+          onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
+        />
+
+        <SevaBookingModal
+          initialSeva={activeBookingSeva}
+          isOpen={bookingModalOpen}
+          onClose={() => setBookingModalOpen(false)}
+          hasAstrologerDiscount={hasAstrologerDiscount}
+        />
+
+        <ProofGalleryModal
+          isOpen={proofGalleryOpen}
+          onClose={() => setProofGalleryOpen(false)}
+          onBookSevaClick={() => {
+            setProofGalleryOpen(false);
+            handleOpenSevaBooking(localizedSevaItems[0]);
+          }}
+        />
+      </>
+    );
+  }
+
   const displayAstrologer =
     localizedAstrologers.find((a) => a.id === activeAstrologer?.id) || localizedAstrologers[0] || ASTROLOGERS[0];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7f2e5] text-[#2c332d] selection:bg-[#e5a024] selection:text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#fbf6ee] text-[#2e1a0c] selection:bg-[#f0b33a] selection:text-[#2e1a0c]">
       
-      {/* Main Top Navigation - Portals ONLY passed if Super Admin */}
+      {/* Main Top Navigation */}
       <Navbar
-        onOpenAuth={() => { setAuthPromptMessage(null); setAuthModalOpen(true); }}
+        onOpenAuth={() => handleOpenProfile('overview')}
+        onOpenProfileTab={handleOpenProfile}
         activeUser={currentUser}
         onLogout={handleUserLogout}
         onSelectSeva={handleOpenSevaById}
         onSelectRemedy={handleOpenRemedy}
         onScrollToAstrologers={scrollToAstrologers}
-        onScrollToJyotish={scrollToJyotish}
         onOpenAbout={() => setAboutModalOpen(true)}
         onOpenReviews={() => setProofGalleryOpen(true)}
-        onOpenAdminDashboard={isSuperAdmin ? () => navigateTo('admin') : undefined}
-        onOpenAstrologerDashboard={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
       />
 
       {/* Hero Section */}
       <main className="flex-1">
         <HeroSection
           onBookSevaToday={() => handleOpenSevaBooking(localizedSevaItems[0])}
+          onExploreServices={scrollToSevaServices}
           onExploreAstrology={scrollToAstrologers}
-          onExploreRemedies={() => handleOpenRemedy('career')}
+          onOpenProofGallery={() => setProofGalleryOpen(true)}
         />
 
         {/* Our Seva Services Section */}
@@ -341,16 +415,10 @@ export default function App() {
           onBookSeva={(item) => handleOpenSevaBooking(item)}
         />
 
-        {/* Vedic Jyotish Guidance Services Section */}
-        <JyotishServicesSection
-          onSelectCategory={handleSelectJyotishCategory}
-          onGeneralConsult={() => handleConnectAstrologer(localizedAstrologers[0], 'chat')}
-        />
-
-        {/* Find Your Grah Remedy & Special Offer Banner */}
+        {/* Vedic Jyotish Margdarshan Section */}
         <DualOfferSection
           onOpenRemedyModal={handleOpenRemedy}
-          onBookSevaWithDiscount={() => handleOpenSevaBooking(localizedSevaItems[0], true)}
+          onConsultAstrologer={() => handleConnectAstrologer(localizedAstrologers[0], 'chat')}
         />
 
         {/* Connect with Our Expert Astrologers Section */}
@@ -376,37 +444,77 @@ export default function App() {
         onOpenAbout={() => setAboutModalOpen(true)}
         onOpenServices={scrollToSevaServices}
         onOpenAstrology={scrollToAstrologers}
-        onOpenJyotish={scrollToJyotish}
         onOpenReviews={() => setProofGalleryOpen(true)}
         onOpenContact={() => setContactModalOpen(true)}
         onOpenAdmin={isSuperAdmin ? () => navigateTo('admin') : undefined}
         onOpenAstrologer={isSuperAdmin ? () => navigateTo('astrologer') : undefined}
       />
 
+      {/* Floating Mobile Bottom Navigation Bar (Home | Seva | Jyotish | Profile) */}
+      <nav
+        aria-label={tr('मुख्य नेविगेशन', 'Mukhya Navigation')}
+        className="md:hidden fixed bottom-2.5 left-3 right-3 z-40 bg-white/95 backdrop-blur-md border border-[#e7d6be] rounded-2xl shadow-[0_8px_28px_rgba(80,45,12,0.14)] px-2 py-1.5 grid grid-cols-4"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setActiveBottomTab('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+            activeBottomTab === 'home' ? 'text-[#b54c0d]' : 'text-[#5b4634]'
+          }`}
+        >
+          <Home className={`w-4 h-4 ${activeBottomTab === 'home' ? 'fill-[#b54c0d]/20 text-[#b54c0d]' : ''}`} />
+          <span>{tr('होम', 'Home')}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveBottomTab('seva');
+            scrollToSevaServices();
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+            activeBottomTab === 'seva' ? 'text-[#b54c0d]' : 'text-[#5b4634]'
+          }`}
+        >
+          <HeartHandshake className="w-4 h-4" />
+          <span>{tr('सेवा', 'Seva')}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveBottomTab('jyotish');
+            const el = document.getElementById('jyotish-margdarshan') || document.getElementById('astrologers-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+            activeBottomTab === 'jyotish' ? 'text-[#b54c0d]' : 'text-[#5b4634]'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>{tr('ज्योतिष', 'Jyotish')}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveBottomTab('profile');
+            handleOpenProfile('overview');
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+            activeBottomTab === 'profile' ? 'text-[#b54c0d]' : 'text-[#5b4634]'
+          }`}
+        >
+          <User className="w-4 h-4" />
+          <span>{tr('प्रोफ़ाइल', 'Profile')}</span>
+        </button>
+      </nav>
+
       {/* Continuous Shuffled Seva Booking Popup (20 states/cities, every 4s) */}
       <LiveSevaBookingPopup />
-
-      {/* Floating Quick Access Dock - EXCLUSIVELY FOR SUPER ADMIN (bankush014@gmail.com) */}
-      {isSuperAdmin && (
-        <aside aria-label={tr('पोर्टल नेविगेशन', 'Portal Navigation')} className="fixed bottom-4 right-4 z-40 flex items-center gap-2 bg-[#1b4b32]/95 backdrop-blur-md p-1.5 rounded-full shadow-2xl border-2 border-[#e5ca8a] animate-in fade-in">
-          <button
-            onClick={() => navigateTo('admin')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer whitespace-nowrap"
-            title={tr('एडमिन डैशबोर्ड खोलें', 'Admin Dashboard Kholein')}
-          >
-            <span className="text-sm">🛡️</span>
-            <span>{tr('एडमिन डैशबोर्ड', 'Admin Dashboard')}</span>
-          </button>
-          <button
-            onClick={() => navigateTo('astrologer')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-amber-200 font-semibold text-xs transition-all cursor-pointer whitespace-nowrap"
-            title={tr('ज्योतिष डेस्क खोलें', 'Jyotish Desk Kholein')}
-          >
-            <span className="text-sm">🔮</span>
-            <span>{tr('ज्योतिष डेस्क', 'Jyotish Desk')}</span>
-          </button>
-        </aside>
-      )}
 
       {/* Interactive Modals */}
       <SevaBookingModal

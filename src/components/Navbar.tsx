@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
-import { User, ChevronDown, Menu, X, Heart, LogOut, Wallet, Languages } from 'lucide-react';
+import {
+  User,
+  Bell,
+  ChevronDown,
+  Menu,
+  X,
+  Wallet,
+  HeartHandshake,
+  History,
+  CreditCard,
+  FileText,
+  Users,
+  Sparkles,
+  HelpCircle,
+  LogOut,
+  ArrowRight,
+  Home,
+  Info,
+} from 'lucide-react';
 import { AuthUser } from './AuthModal';
-import { ImageCrop } from './ImageCrop';
+import { ProfileTab } from './ProfileDashboard';
 import { getLocalizedSevaItems, getLocalizedRemedyCategories } from '../data/sevaData';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavbarProps {
   onOpenAuth: () => void;
+  onOpenProfileTab?: (tab: ProfileTab) => void;
   activeUser: AuthUser | null;
   onLogout?: () => void;
   onSelectSeva: (sevaId: string) => void;
@@ -23,414 +42,474 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
+  onOpenProfileTab,
   activeUser,
   onLogout,
   onSelectSeva,
   onSelectRemedy,
   onScrollToAstrologers,
-  onScrollToJyotish,
   onOpenAbout,
   onOpenReviews,
-  onOpenCart,
-  cartCount = 0,
-  onOpenAdminDashboard,
-  onOpenAstrologerDashboard,
 }) => {
   const { lang, setLang, tr } = useLanguage();
   const [sevaDropdownOpen, setSevaDropdownOpen] = useState(false);
   const [remedyDropdownOpen, setRemedyDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const sevaItems = getLocalizedSevaItems(lang);
   const remedyCategories = getLocalizedRemedyCategories(lang);
 
+  const getUserInitials = (name?: string) => {
+    const parts = (name || 'GK').trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+    }
+    return (parts[0]?.slice(0, 2) || 'GK').toUpperCase();
+  };
+
+  const openProfileSection = (tab: ProfileTab) => {
+    setDrawerOpen(false);
+    if (onOpenProfileTab) {
+      onOpenProfileTab(tab);
+    } else {
+      onOpenAuth();
+    }
+  };
+
+  const profileMenuItems: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'overview', label: tr('प्रोफ़ाइल अवलोकन', 'Profile Overview'), icon: <User className="w-4 h-4" /> },
+    { id: 'wallet', label: tr('मेरा वॉलेट', 'Mera Wallet'), icon: <Wallet className="w-4 h-4" /> },
+    { id: 'seva', label: tr('मेरी सेवा', 'Meri Seva'), icon: <HeartHandshake className="w-4 h-4" /> },
+    { id: 'history', label: tr('सेवा इतिहास', 'Seva History'), icon: <History className="w-4 h-4" /> },
+    { id: 'payments', label: tr('भुगतान इतिहास', 'Payment History'), icon: <CreditCard className="w-4 h-4" /> },
+    { id: 'details', label: tr('मेरा विवरण', 'My Details'), icon: <FileText className="w-4 h-4" /> },
+    { id: 'family', label: tr('मेरा परिवार', 'My Family'), icon: <Users className="w-4 h-4" /> },
+    { id: 'jyotish', label: tr('मेरा ज्योतिष', 'My Jyotish'), icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'notifications', label: tr('सूचनाएँ', 'Notifications'), icon: <Bell className="w-4 h-4" /> },
+    { id: 'support', label: tr('सहायता केंद्र', 'Help & Support'), icon: <HelpCircle className="w-4 h-4" /> },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 bg-[#fffdf5] border-b border-[#ebdcb9] shadow-xs">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-2">
-          
-          {/* Brand Logo Lockup */}
-          <div className="flex items-center shrink-0">
+    <>
+      <header className="sticky top-0 z-50 bg-[#fbf6ee]/95 backdrop-blur-md border-b border-[#eadbc4]">
+        <div className="max-w-5xl mx-auto px-3.5 sm:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
+            {/* Left: Golden Gau Emblem + GauKripa Wordmark */}
             <a
               href="#"
-              className="flex items-center group cursor-pointer py-1"
+              className="flex items-center gap-2 shrink-0 group cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <div className="h-12 sm:h-14 w-40 sm:w-52 overflow-hidden">
-                <ImageCrop
-                  cropKey="newNavLogo"
-                  className="w-full h-full object-contain"
-                  alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष', 'GauKripa • Gau Aahar Vyavastha aur Vedic Jyotish')}
-                  preserveAspectRatio="xMinYMid meet"
-                />
+              <svg
+                className="w-9 h-8 sm:w-10 sm:h-9 text-[#d86416] shrink-0"
+                viewBox="0 0 64 52"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M22 10c3-4 6-6 10-6s7 2 10 6" strokeOpacity="0.55" />
+                <path d="M16 14c1-4 4-6 7-7" strokeOpacity="0.4" />
+                <path d="M48 14c-1-4-4-6-7-7" strokeOpacity="0.4" />
+                <path d="M22 17c-4-5-3-10 1-12" />
+                <path d="M42 17c4-5 3-10-1-12" />
+                <path d="M20 20c-7-1-12 2-13 6 4 2 9 2 12 0" />
+                <path d="M44 20c7-1 12 2 13 6-4 2-9 2-12 0" />
+                <path d="M21 18c-2 8-2 15 2 22 2 4 5 6 9 6s7-2 9-6c4-7 4-14 2-22-4-3-18-3-22 0z" />
+                <path d="M32 18v5" stroke="#b54c0d" strokeWidth="2.2" />
+                <circle cx="26.5" cy="26" r="1.3" fill="currentColor" stroke="none" />
+                <circle cx="37.5" cy="26" r="1.3" fill="currentColor" stroke="none" />
+                <path d="M26 37c2 1.5 10 1.5 12 0" />
+                <circle cx="29" cy="40" r="1" fill="currentColor" stroke="none" />
+                <circle cx="35" cy="40" r="1" fill="currentColor" stroke="none" />
+              </svg>
+
+              <span className="font-playfair text-xl sm:text-2xl font-bold text-[#2b1507] tracking-tight leading-none">
+                GauKripa
+              </span>
+            </a>
+
+            {/* Center Desktop Navigation Links — Clean Unified Style */}
+            <nav className="hidden lg:flex items-center gap-1 text-[13px] font-semibold text-[#5a3b24]">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="px-3 py-1.5 rounded-lg text-[#b54c0d] hover:bg-[#f4e8d6] transition-colors font-semibold whitespace-nowrap"
+              >
+                {tr('मुख्य पृष्ठ', 'Home')}
+              </a>
+
+              {/* Hamari Seva Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => setSevaDropdownOpen(true)}
+                onMouseLeave={() => setSevaDropdownOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSevaDropdownOpen(!sevaDropdownOpen)}
+                  className="px-3 py-1.5 rounded-lg hover:text-[#b54c0d] hover:bg-[#f4e8d6] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer"
+                >
+                  <span>{tr('हमारी सेवा', 'Hamari Seva')}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${sevaDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {sevaDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-76 bg-[#fffdf9] rounded-2xl shadow-xl border border-[#eadbc4] py-2 z-50">
+                    <div className="px-3.5 py-1.5 border-b border-[#f3e6d0] text-[10px] font-bold text-[#8a613b] uppercase tracking-wider">
+                      {tr('प्रत्यक्ष गौ-आहार सेवा', 'Pratyaksh Gau-Aahar Seva')}
+                    </div>
+                    {sevaItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setSevaDropdownOpen(false);
+                          onSelectSeva(item.id);
+                        }}
+                        className="w-full text-left px-3.5 py-2 hover:bg-[#faf0df] flex items-center justify-between text-xs transition-colors cursor-pointer border-b border-[#f8efe0] last:border-b-0"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="font-semibold text-[#2b1507] truncate">{item.title}</div>
+                          <div className="text-[10px] text-[#7c5d41] truncate">{item.planetTag}</div>
+                        </div>
+                        <span className="font-bold text-[#d86416] text-[11px] whitespace-nowrap">{item.priceDisplay}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </a>
-          </div>
 
-          {/* Center Navigation Links (Responsive) */}
-          <nav className="hidden xl:flex items-center gap-1 text-[13px] font-semibold text-[#253328]">
-            {/* Home Pill */}
-            <a
-              href="#"
-              className="px-3.5 py-1.5 rounded-full bg-[#1b4b32] text-white font-medium shadow-xs hover:bg-[#153e29] transition-all whitespace-nowrap"
-            >
-              {tr('मुख्य पृष्ठ', 'Home')}
-            </a>
+              {/* Vedic Jyotish Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => setRemedyDropdownOpen(true)}
+                onMouseLeave={() => setRemedyDropdownOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setRemedyDropdownOpen(!remedyDropdownOpen)}
+                  className="px-3 py-1.5 rounded-lg hover:text-[#b54c0d] hover:bg-[#f4e8d6] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer"
+                >
+                  <span>{tr('वैदिक ज्योतिष', 'Vedic Jyotish')}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${remedyDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-            {/* Gau Seva Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setSevaDropdownOpen(true)}
-              onMouseLeave={() => setSevaDropdownOpen(false)}
-            >
+                {remedyDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-72 bg-[#fffdf9] rounded-2xl shadow-xl border border-[#eadbc4] py-2 z-50">
+                    <div className="px-3.5 py-1.5 border-b border-[#f3e6d0] text-[10px] font-bold text-[#8a613b] uppercase tracking-wider">
+                      {tr('वैदिक ग्रह-दोष निवारण', 'Vedic Grah-Dosh Nivaran')}
+                    </div>
+                    {remedyCategories.map((rem) => (
+                      <button
+                        key={rem.id}
+                        type="button"
+                        onClick={() => {
+                          setRemedyDropdownOpen(false);
+                          onSelectRemedy(rem.id);
+                        }}
+                        className="w-full text-left px-3.5 py-2 hover:bg-[#faf0df] text-xs transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span className="font-medium text-[#2b1507]">{rem.title}</span>
+                        <span className="text-[10px] text-[#8a4d19] bg-[#f7e7ca] px-1.5 py-0.5 rounded font-semibold">
+                          {tr('उपाय', 'Upay')}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
-                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
-                onClick={() => setSevaDropdownOpen(!sevaDropdownOpen)}
+                onClick={onScrollToAstrologers}
+                className="px-3 py-1.5 rounded-lg hover:text-[#b54c0d] hover:bg-[#f4e8d6] transition-colors whitespace-nowrap cursor-pointer"
               >
-                <span>{tr('गौ-आहार सेवा', 'Gau-Aahar Seva')}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${sevaDropdownOpen ? 'rotate-180' : ''}`} />
+                {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
               </button>
 
-              {sevaDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-80 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
-                  <div className="px-3.5 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata aur Prani Aahar Seva (Pratyaksh Seva)')}
+              <button
+                type="button"
+                onClick={onOpenAbout}
+                className="px-3 py-1.5 rounded-lg hover:text-[#b54c0d] hover:bg-[#f4e8d6] transition-colors whitespace-nowrap cursor-pointer"
+              >
+                {tr('परिचय', 'About')}
+              </button>
+            </nav>
+
+            {/* Right Controls: Clean [ EN | हिं ] + Notification Bell + Profile Circle + Three-Line Menu */}
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+              {/* Language Switch */}
+              <div
+                role="group"
+                aria-label={tr('भाषा बदलें', 'Bhasha Badlein')}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#fffdf9] border border-[#dfd0b8] pl-1 pr-2.5 py-1 shadow-2xs"
+              >
+                <button
+                  type="button"
+                  onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+                  aria-label={tr('अंग्रेजी/हिन्दी बदलें', 'EN / Hindi Switch')}
+                  className="relative w-7 h-4.5 sm:w-8 sm:h-5 rounded-full bg-[#e4ddd3] border border-[#d4cabd] transition-colors cursor-pointer shrink-0 flex items-center px-0.5"
+                >
+                  <span
+                    className={`w-3.5 h-3.5 rounded-full shadow-xs transition-transform duration-200 ${
+                      lang === 'hi' ? 'translate-x-2.5 sm:translate-x-3 bg-[#d86416]' : 'translate-x-0 bg-white'
+                    }`}
+                  />
+                </button>
+                <div className="flex items-center gap-1 text-[11px] sm:text-xs font-bold select-none">
+                  <button
+                    type="button"
+                    onClick={() => setLang('en')}
+                    className={`cursor-pointer transition-colors ${
+                      lang === 'en' ? 'text-[#2b1507] font-extrabold' : 'text-[#8c7660] hover:text-[#2b1507]'
+                    }`}
+                  >
+                    EN
+                  </button>
+                  <span className="text-[#cbb9a1]">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setLang('hi')}
+                    className={`cursor-pointer transition-colors ${
+                      lang === 'hi' ? 'text-[#d86416] font-extrabold' : 'text-[#8c7660] hover:text-[#2b1507]'
+                    }`}
+                  >
+                    हिं
+                  </button>
+                </div>
+              </div>
+
+              {/* Notification Bell */}
+              <button
+                type="button"
+                onClick={onOpenReviews}
+                aria-label={tr('सूचनाएँ और वीडियो प्रमाण', 'Notifications & Video Proof')}
+                title={tr('सूचनाएँ और वीडियो प्रमाण', 'Notifications & Video Proof')}
+                className="relative p-1.5 rounded-full text-[#2b1507] hover:bg-[#f2e5d2] transition-colors cursor-pointer shrink-0"
+              >
+                <Bell className="w-5 h-5 stroke-[1.8]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d86416] ring-2 ring-[#fbf6ee]" />
+              </button>
+
+              {/* Clean Profile Avatar Button */}
+              <button
+                type="button"
+                onClick={() => openProfileSection('overview')}
+                aria-label={activeUser ? tr('मेरी प्रोफ़ाइल खोलें', 'Open Profile Dashboard') : tr('साइन इन करें', 'Sign In Karein')}
+                title={activeUser ? `${activeUser.name} • ${tr('प्रोफ़ाइल डैशबोर्ड', 'Profile Dashboard')}` : tr('साइन इन / प्रोफ़ाइल', 'Sign In / Profile')}
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 overflow-hidden ${
+                  activeUser
+                    ? 'bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-xs shadow-xs'
+                    : 'bg-[#fffdf9] border border-[#dfd0b8] hover:bg-[#f5ead8] text-[#2b1507]'
+                }`}
+              >
+                {activeUser ? (
+                  <span>{getUserInitials(activeUser.name)}</span>
+                ) : (
+                  <User className="w-4 h-4 stroke-[2]" />
+                )}
+              </button>
+
+              {/* Three-Line Menu Button (Both Desktop & Mobile) */}
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                aria-label={tr('मेनू खोलें', 'Open Menu')}
+                title={tr('प्रोफ़ाइल एवं मेनू', 'Profile & Menu')}
+                className="p-2 rounded-xl text-[#2b1507] hover:bg-[#f2e5d2] transition-colors cursor-pointer shrink-0"
+              >
+                <Menu className="w-5 h-5 stroke-[2]" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Three-Line Slide-Over Drawer (Desktop & Mobile) */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div
+            className="fixed inset-0 bg-[#2b1507]/35 backdrop-blur-[1px]"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside className="relative z-10 w-80 max-w-[88vw] bg-white h-full border-l border-[#eadbc4] shadow-2xl flex flex-col">
+            {/* Drawer Header */}
+            <div className="px-5 py-4 border-b border-[#f1e5d3] flex items-center justify-between bg-[#fbf6ee]">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-7 h-6 text-[#d86416] shrink-0"
+                  viewBox="0 0 64 52"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M22 17c-4-5-3-10 1-12" />
+                  <path d="M42 17c4-5 3-10-1-12" />
+                  <path d="M21 18c-2 8-2 15 2 22 2 4 5 6 9 6s7-2 9-6c4-7 4-14 2-22-4-3-18-3-22 0z" />
+                  <path d="M32 18v5" stroke="#b54c0d" strokeWidth="2.4" />
+                  <circle cx="26.5" cy="26" r="1.4" fill="currentColor" stroke="none" />
+                  <circle cx="37.5" cy="26" r="1.4" fill="currentColor" stroke="none" />
+                </svg>
+                <span className="font-playfair font-bold text-lg text-[#2b1507]">GauKripa</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="p-1.5 rounded-lg text-[#5a3b24] hover:bg-[#efe2ce] cursor-pointer"
+                aria-label={tr('मेनू बंद करें', 'Close Menu')}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* User Profile Card inside 3-Line Menu */}
+            <div className="p-4 border-b border-[#f1e5d3]">
+              {activeUser ? (
+                <button
+                  type="button"
+                  onClick={() => openProfileSection('overview')}
+                  className="w-full p-3.5 rounded-2xl bg-[#fbf6ee] border border-[#eadbc4] hover:border-[#d86416] transition-colors flex items-center gap-3 text-left cursor-pointer"
+                >
+                  <div className="w-11 h-11 rounded-full bg-[#d86416] text-white font-bold text-sm flex items-center justify-center shrink-0">
+                    {getUserInitials(activeUser.name)}
                   </div>
-                  {sevaItems.map((item) => (
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-[#2b1507] truncate">{activeUser.name}</p>
+                    <p className="text-[11px] text-[#7c5d41] truncate">
+                      {activeUser.phone ? `+91 ${activeUser.phone.replace(/\D/g, '').slice(-10)}` : activeUser.email}
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#d86416] shrink-0" />
+                </button>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-[#fbf6ee] border border-[#eadbc4] space-y-2.5">
+                  <p className="text-xs font-semibold text-[#5a3b24]">
+                    {tr(
+                      'अपना वॉलेट, सेवा बुकिंग और प्रोफ़ाइल देखने के लिए लॉगिन करें।',
+                      'Apna Wallet, Seva Booking aur Profile dekhne ke liye Sign In karein.'
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      onOpenAuth();
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-[#d86416] hover:bg-[#b54c0d] text-white text-xs font-bold cursor-pointer transition-colors"
+                  >
+                    {tr('साइन इन / नया खाता बनाएँ', 'Sign In / Create Account')}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable Drawer Menu Sections */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-4">
+              {/* Profile Sections (matching the Profile Dashboard sidebar) */}
+              <div>
+                <p className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#8c7660]">
+                  {tr('मेरी प्रोफ़ाइल व सेवाएँ', 'Profile Dashboard')}
+                </p>
+                <div className="space-y-0.5">
+                  {profileMenuItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        setSevaDropdownOpen(false);
-                        onSelectSeva(item.id);
-                      }}
-                      className="w-full text-left px-3.5 py-2.5 hover:bg-[#f6efe0] flex items-center justify-between text-xs transition-colors cursor-pointer border-b border-[#f9f3e5] last:border-b-0"
+                      type="button"
+                      onClick={() => openProfileSection(item.id)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#2b1507] hover:bg-[#fdf5ea] hover:text-[#d86416] transition-colors cursor-pointer text-left"
                     >
-                      <div>
-                        <div className="font-semibold text-[#1b4b32]">{item.title}</div>
-                        <div className="text-[11px] text-[#786c5a]">{item.planetTag}</div>
-                      </div>
-                      <span className="font-bold text-[#c4821a] text-[11px] whitespace-nowrap ml-2">{item.priceDisplay}</span>
+                      <span className="text-[#7c5d41]">{item.icon}</span>
+                      <span>{item.label}</span>
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* Jyotish Services Nav Link */}
-            {onScrollToJyotish && (
-              <button
-                onClick={onScrollToJyotish}
-                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium flex items-center gap-1"
-              >
-                <span>{tr('ज्योतिष मार्गदर्शन', 'Jyotish Salah')}</span>
-                <span className="text-[10px] bg-[#fbf2dd] text-[#8a6828] border border-[#ebdcb9] px-1.5 py-0.2 rounded font-bold">
-                  {tr('5 विषय', '5 Vishay')}
-                </span>
-              </button>
-            )}
-
-            {/* Grah Shanti Upay Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setRemedyDropdownOpen(true)}
-              onMouseLeave={() => setRemedyDropdownOpen(false)}
-            >
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer font-medium"
-                onClick={() => setRemedyDropdownOpen(!remedyDropdownOpen)}
-              >
-                <span>{tr('ग्रह शांति उपाय', 'Grah Shanti Upay')}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${remedyDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {remedyDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-72 bg-[#fffdf9] rounded-xl shadow-xl border border-[#ebdcb9] py-2 z-50">
-                  <div className="px-3 py-1.5 border-b border-[#f0e3c5] text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider">
-                    {tr('वैदिक ग्रह-दोष निवारण', 'Vedic Grah-Dosh Nivaran')}
-                  </div>
-                  {remedyCategories.map((rem) => (
-                    <button
-                      key={rem.id}
-                      onClick={() => {
-                        setRemedyDropdownOpen(false);
-                        onSelectRemedy(rem.id);
-                      }}
-                      className="w-full text-left px-3.5 py-2 hover:bg-[#f6efe0] text-xs transition-colors flex items-center justify-between cursor-pointer"
-                    >
-                      <span className="font-medium text-[#2d3a31]">{rem.title}</span>
-                      <span className="text-[10px] text-[#8b7355] bg-[#eedec0] px-1.5 py-0.5 rounded">{tr('वैदिक', 'Vedic')}</span>
-                    </button>
-                  ))}
+              {/* Website Navigation Links */}
+              <div className="pt-2 border-t border-[#f1e5d3]">
+                <p className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#8c7660]">
+                  {tr('वेबसाइट नेविगेशन', 'Website Navigation')}
+                </p>
+                <div className="space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#2b1507] hover:bg-[#fdf5ea] transition-colors cursor-pointer text-left"
+                  >
+                    <Home className="w-4 h-4 text-[#7c5d41]" />
+                    <span>{tr('मुख्य पृष्ठ', 'Home')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      onSelectSeva(sevaItems[0]?.id || 'gau-chara');
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#2b1507] hover:bg-[#fdf5ea] transition-colors cursor-pointer text-left"
+                  >
+                    <HeartHandshake className="w-4 h-4 text-[#7c5d41]" />
+                    <span>{tr('गौ-आहार सेवा बुक करें', 'Book Hamari Seva')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      onScrollToAstrologers();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#2b1507] hover:bg-[#fdf5ea] transition-colors cursor-pointer text-left"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#7c5d41]" />
+                    <span>{tr('ज्योतिषाचार्य', 'Jyotishacharya')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      onOpenAbout();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#2b1507] hover:bg-[#fdf5ea] transition-colors cursor-pointer text-left"
+                  >
+                    <Info className="w-4 h-4 text-[#7c5d41]" />
+                    <span>{tr('हमारे बारे में', 'About GauKripa')}</span>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Connect with Astrologer */}
-            <button
-              onClick={onScrollToAstrologers}
-              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
-            >
-              {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
-            </button>
-
-            {/* Reviews */}
-            <button
-              onClick={onOpenReviews}
-              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
-            >
-              {tr('समीक्षाएं एवं पुष्टि', 'Samiksha & Proof')}
-            </button>
-
-            {/* About Us */}
-            <button
-              onClick={onOpenAbout}
-              className="px-3 py-1.5 rounded-lg hover:text-[#1b4b32] hover:bg-[#f6efe0] transition-colors whitespace-nowrap cursor-pointer font-medium"
-            >
-              {tr('परिचय', 'Hamare Baare Mein')}
-            </button>
-          </nav>
-
-          {/* Action Area: Language Switch, Cart, Portals, Wallet, Sign In */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Hindi / English Language Switch Button */}
-            <div
-              role="group"
-              aria-label={tr('भाषा बदलें', 'Bhasha Badlein')}
-              className="inline-flex items-center rounded-full bg-[#f5ecda] border border-[#dfc99b] p-0.5 shadow-2xs shrink-0"
-            >
-              <Languages className="w-3.5 h-3.5 text-[#7a5518] ml-1.5 mr-1 hidden sm:block shrink-0" />
-              <button
-                type="button"
-                onClick={() => setLang('hi')}
-                className={`px-2 sm:px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  lang === 'hi'
-                    ? 'bg-[#1b4b32] text-amber-200 shadow-xs'
-                    : 'text-[#5b4831] hover:text-[#1b4b32]'
-                }`}
-                title="हिन्दी में देखें"
-              >
-                हिन्दी
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang('en')}
-                className={`px-2 sm:px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  lang === 'en'
-                    ? 'bg-[#1b4b32] text-amber-200 shadow-xs'
-                    : 'text-[#5b4831] hover:text-[#1b4b32]'
-                }`}
-                title="Hinglish mein dekhein (English)"
-              >
-                EN
-              </button>
-            </div>
-
-            {cartCount > 0 && onOpenCart && (
-              <button
-                onClick={onOpenCart}
-                className="relative p-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] transition-colors cursor-pointer shrink-0"
-                title={tr('सेवा संकल्प कार्ट देखें', 'Seva Sankalp Cart Dekhein')}
-              >
-                <Heart className="w-5 h-5 fill-[#1b4b32]" />
-                <span className="absolute -top-1 -right-1 bg-[#d94828] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              </button>
-            )}
-
-            {/* Portal buttons for Astrologer and Admin (Only passed when Super Admin) */}
-            {onOpenAstrologerDashboard && (
-              <button
-                onClick={onOpenAstrologerDashboard}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#fdf5e2] hover:bg-[#faedd0] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
-                title={tr('ज्योतिष लाइव चैट डैशबोर्ड खोलें', 'Jyotish Live Chat Dashboard Kholein')}
-              >
-                <span>🔮</span>
-                <span className="hidden md:inline">{tr('ज्योतिष डेस्क', 'Jyotish Desk')}</span>
-              </button>
-            )}
-
-            {onOpenAdminDashboard && (
-              <button
-                onClick={onOpenAdminDashboard}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 border border-amber-300/40 text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs hover:scale-102 shrink-0"
-                title={tr('एडमिन डैशबोर्ड खोलें', 'Admin Dashboard Kholein')}
-              >
-                <span>🛡️</span>
-                <span className="hidden md:inline">{tr('एडमिन डेस्क', 'Admin Desk')}</span>
-              </button>
-            )}
-
-            {/* Customer Wallet button */}
-            <button
-              onClick={onOpenAuth}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#fdf5e2] hover:bg-[#f6ebd1] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs shrink-0"
-              title={tr('गौकृपा वॉलेट खोलें', 'GauKripa Wallet Kholein')}
-            >
-              <Wallet className="w-3.5 h-3.5 text-amber-700" />
-              <span>{tr('वॉलेट', 'Wallet')}</span>
-            </button>
-
-            {/* Customer sign-in / profile */}
-            <button
-              onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-[#f1e6cb] hover:bg-[#ebdcb9] text-[#1b4b32] border border-[#ebdcb9] text-xs font-bold transition-colors cursor-pointer shrink-0"
-              title={activeUser ? tr('मेरी प्रोफ़ाइल व वॉलेट खोलें', 'Meri Profile aur Wallet Kholein') : tr('साइन इन या नया खाता बनाएँ', 'Sign In ya Naya Account Banayein')}
-            >
-              <User className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                {activeUser ? activeUser.name.split(' ')[0] : tr('प्रवेश करें', 'Sign In')}
-              </span>
-            </button>
-
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 text-[#1b4b32] hover:bg-[#f3ebd3] rounded-lg cursor-pointer shrink-0"
-              aria-label={tr('मेनू खोलें', 'Menu Kholein')}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden bg-[#fffdf8] border-b border-[#ebdcb9] px-4 pt-3 pb-6 space-y-3">
-          
-          <div className="grid grid-cols-3 gap-2 pb-2">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="py-2 px-2 text-center rounded-lg bg-[#1b4b32] text-white text-xs font-semibold"
-            >
-              {tr('मुख्य पृष्ठ', 'Home')}
-            </button>
-            {onScrollToJyotish && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onScrollToJyotish();
-                }}
-                className="py-2 px-2 text-center rounded-lg bg-[#fbf2dd] border border-[#ebdcb9] text-[#8a6828] text-xs font-bold"
-              >
-                {tr('ज्योतिष सेवाएँ', 'Jyotish Sevaein')}
-              </button>
-            )}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onScrollToAstrologers();
-              }}
-              className="py-2 px-2 text-center rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
-            >
-              {tr('ज्योतिषाचार्य', 'Jyotishacharya')}
-            </button>
-          </div>
-
-          <div className="flex gap-2 pb-2 border-b border-[#ebdcb9]">
-            <button
-              onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
-              className="flex-1 py-2 px-3 rounded-lg bg-[#1b4b32] text-white text-xs font-semibold flex items-center justify-center gap-2"
-            >
-              <User className="w-4 h-4" /> {activeUser ? activeUser.name.split(' ')[0] : tr('लॉगिन / पंजीकरण', 'Sign In / Sign Up')}
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
-              className="py-2 px-3 rounded-lg bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
-            >
-              <Wallet className="w-3.5 h-3.5" />
-              <span>{tr('वॉलेट', 'Wallet')}</span>
-            </button>
+            {/* Bottom Logout Action */}
             {activeUser && onLogout && (
-              <button
-                onClick={() => { setMobileMenuOpen(false); onLogout(); }}
-                className="py-2 px-3 rounded-lg bg-[#f3ebd3] text-[#1b4b32] text-xs font-semibold"
-                title={tr('लॉगआउट', 'Logout Karein')}
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+              <div className="p-3 border-t border-[#f1e5d3]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{tr('लॉग आउट', 'Logout')}</span>
+                </button>
+              </div>
             )}
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-[11px] font-bold text-[#8b7355] uppercase tracking-wider px-2 py-1">
-              {tr('गौमाता एवं प्राणी आहार व्यवस्था (प्रत्यक्ष सेवा)', 'Gaumata aur Prani Aahar Seva')}
-            </div>
-            {sevaItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onSelectSeva(item.id);
-                }}
-                className="w-full text-left px-3 py-2 text-xs text-[#2d3a31] hover:bg-[#f6efe0] rounded-md flex justify-between items-center"
-              >
-                <span className="font-medium">{item.title}</span>
-                <span className="text-xs font-bold text-[#c4821a]">{item.priceDisplay}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="pt-2 border-t border-[#f0e3c5] flex justify-around text-xs">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAbout();
-              }}
-              className="font-medium text-[#1b4b32] underline"
-            >
-              {tr('गौकृपा परिचय', 'GauKripa Parichay')}
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenReviews();
-              }}
-              className="font-medium text-[#1b4b32] underline"
-            >
-              {tr('समीक्षाएं एवं वीडियो पुष्टि', 'Samiksha & Video Proof')}
-            </button>
-          </div>
-
-          {/* Quick Access to Portals in Mobile (Super Admin Only) */}
-          {(onOpenAstrologerDashboard || onOpenAdminDashboard) && (
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#ebdcb9]">
-              {onOpenAstrologerDashboard && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAstrologerDashboard();
-                  }}
-                  className="py-2 px-3 text-center rounded-xl bg-[#fdf5e2] text-[#8b5a0a] border border-[#e5ca8a] text-xs font-bold cursor-pointer"
-                >
-                  🔮 {tr('ज्योतिष डेस्क', 'Jyotish Desk')}
-                </button>
-              )}
-              {onOpenAdminDashboard && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAdminDashboard();
-                  }}
-                  className="py-2 px-3 text-center rounded-xl bg-[#1b4b32] text-amber-200 text-xs font-bold cursor-pointer"
-                >
-                  🛡️ {tr('एडमिन कंसोल', 'Admin Console')}
-                </button>
-              )}
-            </div>
-          )}
+          </aside>
         </div>
       )}
-    </header>
+    </>
   );
 };

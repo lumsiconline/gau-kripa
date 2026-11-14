@@ -51,7 +51,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
           city: 'Indore',
           stars: 5,
           date: '2 hafte pehle',
-          text: 'Hamari masik Gau-Aahar vyavastha GauKripa ke madhyam se sahi samay par chal rahi hai. Pramanit goshala se har mahine Gotra Sankalp aur aahar vitaran ka video proof mil jata hai.',
+          text: 'Hamari masik Gaumata Hara Chara aur Gau-Aahar vyavastha GauKripa ke madhyam se sahi samay par chal rahi hai. Har mahine Gotra Sankalp aur hara chara vitaran ka video proof mil jata hai.',
           seva: 'Masik Gau-Aahar Seva'
         }
       ]
@@ -77,7 +77,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
           city: 'इंदौर',
           stars: 5,
           date: '2 सप्ताह पहले',
-          text: 'हमारी मासिक गौ-आहार व्यवस्था गौकृपा के माध्यम से सुचारू रूप से चल रही है। प्रमाणित गौशाला से हर माह गोत्र संकल्प एवं आहार वितरण की वीडियो पुष्टि समय पर मिल जाती है।',
+          text: 'हमारी मासिक गाय को हरा चारा एवं गौ-आहार व्यवस्था गौकृपा के माध्यम से सुचारू रूप से चल रही है। हर माह गोत्र संकल्प एवं आहार वितरण की वीडियो पुष्टि समय पर मिल जाती है।',
           seva: 'मासिक गौ-आहार व्यवस्था'
         }
       ];
@@ -144,7 +144,7 @@ export const ProofGalleryModal: React.FC<ProofGalleryModalProps> = ({
                   cropKey="sevaChara"
                   className="w-full h-full opacity-80"
                   preserveAspectRatio="xMidYMid meet"
-                  alt={tr('गौशाला आहार वितरण वीडियो', 'Goshala Aahar Vitaran Video')}
+                  alt={tr('गाय को हरा चारा वितरण वीडियो', 'Gaumata Hara Chara Vitaran Video')}
                 />
 
                 {/* Video Play Overlay */}

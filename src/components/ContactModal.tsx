@@ -68,8 +68,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
               <div>
                 <strong>{tr('सेवा नेटवर्क एवं सहायता केंद्र:', 'Seva Network aur Sahayata Kendra:')}</strong>{' '}
                 {tr(
-                  'देशभर की प्रमाणित एवं सहयोगी गौशालाओं के माध्यम से प्रत्यक्ष गौ-आहार सेवा व्यवस्था।',
-                  'Desh bhar ki pramanit aur sahyogi goshalayon ke madhyam se pratyaksh Gau-Aahar seva vyavastha.'
+                  'गाय को ताजा हरा चारा, गुड़-चना और रोटी खिलाने की प्रत्यक्ष सेवा व्यवस्था।',
+                  'Gaumata ko taaza hara chara, gud-chana aur roti khilane ki pratyaksh seva vyavastha.'
                 )}
               </div>
             </div>

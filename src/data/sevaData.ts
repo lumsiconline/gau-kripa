@@ -31,9 +31,9 @@ export const SEVA_ITEMS_HI: SevaItem[] = [
     minQty: 1,
     benefit: 'गौमाता को 5 किलो हरा व पौष्टिक चारा उपलब्ध कराने की सेवा। सूर्य ग्रह दोष शांति व यश-कीर्ति वृद्धि।',
     cropKey: 'sevaChara',
-    detailedDescription: 'प्रमाणित गौशाला में गौमाता के लिए 5 किलोग्राम ताजा, पौष्टिक हरा चारा व सूखा चारा आहार व्यवस्था। सेवा उपरांत आपके नाम व गोत्र से आहार वितरण की वीडियो पुष्टि व्हाट्सएप पर भेजी जाती है।',
-    vedicSignificance: 'शास्त्रों के अनुसार गौमाता को तृप्त आहार कराने से सभी 33 कोटि देवी-देवताओं का आशीर्वाद प्राप्त होता है और सूर्य ग्रह की कृपा से जीवन में तेज और सफलता मिलती है।',
-    fulfilmentDetails: 'प्रमाणित गौशाला में 5 किलो ताजे चारे का प्रत्यक्ष आहार प्रबंधन + गोत्र संकल्प + आहार वितरण की वीडियो पुष्टि।'
+    detailedDescription: 'गाय को 5 किलोग्राम ताजा, पौष्टिक हरा चारा खिलाने की प्रत्यक्ष सेवा व्यवस्था। सेवा उपरांत आपके नाम व गोत्र से हरा चारा वितरण की वीडियो पुष्टि व्हाट्सएप पर भेजी जाती है।',
+    vedicSignificance: 'शास्त्रों के अनुसार गौमाता को ताजा हरा चारा खिलाने से सभी 33 कोटि देवी-देवताओं का आशीर्वाद प्राप्त होता है और सूर्य ग्रह की कृपा से जीवन में तेज और सफलता मिलती है।',
+    fulfilmentDetails: 'गाय को 5 किलो ताजा हरा चारा खिलाने की प्रत्यक्ष सेवा + गोत्र संकल्प + वीडियो पुष्टि।'
   },
   {
     id: 'gau-gud-chana',
@@ -130,9 +130,9 @@ export const SEVA_ITEMS_EN: SevaItem[] = [
     minQty: 1,
     benefit: 'Gaumata ko 5 kg taaza aur paushtik hara chara khilane ki pratyaksh seva. Surya Grah dosh shanti aur yash-kirti mein vriddhi.',
     cropKey: 'sevaChara',
-    detailedDescription: 'Pramanit goshala mein Gaumata ke liye 5 kg taaza hara chara aur sookha chara aahar vyavastha. Seva poori hone ke baad aapke naam aur Gotra ke sath aahar vitaran ka video proof WhatsApp par bheja jata hai.',
-    vedicSignificance: 'Shastron ke anusar Gaumata ko tript aahar karane se sabhi 33 koti devi-devtaon ka aashirwad milta hai aur Surya Grah ki kripa se jeevan mein tej aur safalta milti hai.',
-    fulfilmentDetails: 'Pramanit goshala mein 5 kg taaze chare ki pratyaksh vyavastha + Gotra Sankalp + WhatsApp par video confirmation.'
+    detailedDescription: 'Gaumata ko 5 kg taaza aur paushtik hara chara khilane ki pratyaksh seva vyavastha. Seva poori hone ke baad aapke naam aur Gotra ke sath hara chara vitaran ka video proof WhatsApp par bheja jata hai.',
+    vedicSignificance: 'Shastron ke anusar Gaumata ko taaza hara chara khilane se sabhi 33 koti devi-devtaon ka aashirwad milta hai aur Surya Grah ki kripa se jeevan mein tej aur safalta milti hai.',
+    fulfilmentDetails: 'Gaumata ko 5 kg taaza hara chara khilane ki pratyaksh seva + Gotra Sankalp + WhatsApp par video confirmation.'
   },
   {
     id: 'gau-gud-chana',
@@ -589,7 +589,7 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
     sevaTitle: 'गौमाता के लिए चारा व्यवस्था (25 किलो)',
     date: 'आज, प्रातः 07:15',
     time: 'ब्रह्ममुहूर्त सेवा',
-    goshalaName: 'गौकृपा प्रमाणित गौशाला',
+    goshalaName: 'प्रत्यक्ष गाय हरा चारा सेवा',
     certificateId: 'GK-SANKALP-9021'
   },
   {
@@ -599,7 +599,7 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
     sevaTitle: 'गौमाता के लिए रोटी व्यवस्था (20 रोटियां)',
     date: 'आज, प्रातः 08:30',
     time: 'प्रातः गौ आरती',
-    goshalaName: 'गौ प्रेम धाम, मथुरा',
+    goshalaName: 'गौकृपा प्रत्यक्ष गौ-सेवा',
     certificateId: 'GK-SANKALP-9022'
   },
   {
@@ -609,7 +609,7 @@ export const RECENT_PROOFS_HI: SevaProof[] = [
     sevaTitle: 'गौमाता का गुड़-चना आहार (5 थाली)',
     date: 'कल, सायं 06:45',
     time: 'संध्या बेला',
-    goshalaName: 'गौकृपा प्रमाणित गौशाला',
+    goshalaName: 'प्रत्यक्ष गाय हरा चारा एवं आहार सेवा',
     certificateId: 'GK-SANKALP-9023'
   },
   {
@@ -632,7 +632,7 @@ export const RECENT_PROOFS_EN: SevaProof[] = [
     sevaTitle: 'Gaumata Hara Chara Seva (25 kg)',
     date: 'Aaj, Subah 07:15 AM',
     time: 'Brahmamuhurta Seva',
-    goshalaName: 'GauKripa Pramanit Goshala',
+    goshalaName: 'Pratyaksh Gaumata Hara Chara Seva',
     certificateId: 'GK-SANKALP-9021'
   },
   {
@@ -642,7 +642,7 @@ export const RECENT_PROOFS_EN: SevaProof[] = [
     sevaTitle: 'Gaumata Taazi Roti Seva (20 Roti)',
     date: 'Aaj, Subah 08:30 AM',
     time: 'Subah Gau Aarati',
-    goshalaName: 'Gau Prem Dham, Mathura',
+    goshalaName: 'GauKripa Pratyaksh Gau Seva',
     certificateId: 'GK-SANKALP-9022'
   },
   {
@@ -652,7 +652,7 @@ export const RECENT_PROOFS_EN: SevaProof[] = [
     sevaTitle: 'Gaumata Gud-Chana Aahar (5 Thali)',
     date: 'Kal, Shaam 06:45 PM',
     time: 'Sandhya Bela',
-    goshalaName: 'GauKripa Pramanit Goshala',
+    goshalaName: 'Pratyaksh Gaumata Hara Chara Seva',
     certificateId: 'GK-SANKALP-9023'
   },
   {

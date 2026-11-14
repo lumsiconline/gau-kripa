@@ -1,187 +1,124 @@
 import React from 'react';
-import { ArrowRight, Sparkles, Video, CheckCircle2, MessageSquare } from 'lucide-react';
+import { ArrowRight, Video, Flame, Compass } from 'lucide-react';
 import { ImageCrop } from './ImageCrop';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeroSectionProps {
   onBookSevaToday: () => void;
+  onExploreServices: () => void;
   onExploreAstrology: () => void;
-  onExploreRemedies: () => void;
+  onOpenProofGallery: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onBookSevaToday,
+  onExploreServices,
   onExploreAstrology,
-  onExploreRemedies,
+  onOpenProofGallery,
 }) => {
   const { tr } = useLanguage();
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#1a0f06]">
-      
-      {/* Main Festive Hero Banner Container */}
-      <div className="relative w-full max-w-[1600px] mx-auto min-h-[540px] sm:min-h-[600px] lg:min-h-[660px] flex items-center">
-        
-        {/* Background Image Layer */}
-        <div className="absolute inset-0 select-none overflow-hidden">
-          <ImageCrop
-            cropKey="diwaliHeroBanner"
-            className="w-full h-full object-cover scale-102"
-            alt={tr('गौकृपा • गौमाता आहार व्यवस्था एवं वैदिक ज्योतिष मार्गदर्शन', 'GauKripa • Gaumata Aahar Vyavastha aur Vedic Jyotish')}
-            preserveAspectRatio="xMidYMid slice"
-          />
+    <section className="w-full bg-[#fbf6ee] pt-3 sm:pt-5 pb-3">
+      <div className="max-w-5xl mx-auto px-3.5 sm:px-6 space-y-2.5 sm:space-y-3">
 
-          {/* Deep warm vignetting for maximum text readability and golden illumination */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/92 via-black/70 to-transparent pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/40 pointer-events-none" />
-        </div>
+        {/* Rounded Terracotta-Saffron Hero Banner Card */}
+        <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_12px_32px_rgba(140,60,12,0.16)] bg-gradient-to-br from-[#a94207] via-[#bf5511] to-[#d9842b] min-h-[235px] sm:min-h-[290px] lg:min-h-[320px] flex items-center">
 
-        {/* Floating Auspicious Badge in Top-Right */}
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-20 text-right pointer-events-none hidden sm:block">
-          <p className="font-script text-2xl sm:text-3xl text-amber-200 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] rotate-[-2deg]">
-            {tr('“गौ सेवा से ही सुख-शांति है...”', '“Gau Seva se hi sukh-shanti hai...”')}
-          </p>
-          <span className="text-[11px] font-hindi text-amber-300/90 tracking-wider">
-            {tr('गौमाता आहार व्यवस्था • वैदिक ज्योतिष • आध्यात्मिक परामर्श', 'Gaumata Aahar Vyavastha • Vedic Jyotish • Adhyatmik Paramarsh')}
-          </span>
-        </div>
-
-        {/* Content Container (Left-aligned over the warm glow) */}
-        <div className="relative z-20 w-full px-4 sm:px-8 lg:px-12 py-10 sm:py-14 max-w-3xl space-y-4 sm:space-y-5">
-          
-          {/* Highlighted Golden Brand Tag */}
-          <div className="inline-flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-amber-950/90 via-amber-900/80 to-amber-950/90 border border-amber-400/60 shadow-[0_0_25px_rgba(255,215,0,0.35)] backdrop-blur-md">
-            <span className="text-xl sm:text-2xl animate-pulse">🙏</span>
-            <span className="font-hindi text-xl sm:text-2xl lg:text-3xl font-black tracking-wide golden-text-glow leading-none">
-              {tr('गौकृपा (GauKripa)', 'GauKripa')}
-            </span>
-            <span className="text-lg sm:text-xl text-amber-300">✨</span>
-            <span className="hidden md:inline-block text-xs font-semibold text-amber-100/90 border-l border-amber-400/40 pl-2.5 ml-1">
-              {tr('आहार व्यवस्था एवं ज्योतिष मार्गदर्शन', 'Aahar Vyavastha & Jyotish Margdarshan')}
-            </span>
+          {/* Right-side Garlanded Gau Mata Portrait seamlessly blended into saffron gradient */}
+          <div className="absolute inset-y-0 right-0 w-[56%] sm:w-[52%] lg:w-[48%] select-none pointer-events-none">
+            <ImageCrop
+              cropKey="heroBannerCow"
+              className="w-full h-full"
+              preserveAspectRatio="xMidYMid slice"
+              alt={tr('गौमाता सेवा एवं वैदिक ज्योतिष मार्गदर्शन', 'Gaumata Seva aur Vedic Jyotish Margdarshan')}
+            />
+            {/* Smooth gradient blend from saffron card left into cow sunlit right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#b44909] via-[#b44909]/65 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#963805]/45 via-transparent to-transparent" />
           </div>
 
-          {/* Main Headline */}
-          <div className="space-y-2">
-            <h1 className="font-playfair text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight drop-shadow-md">
-              {tr('गौमाता आहार व्यवस्था एवं', 'Gaumata Aahar Vyavastha aur')} <br />
-              <span className="text-amber-300">
-                {tr('वैदिक ज्योतिष मार्गदर्शन', 'Vedic Jyotish Margdarshan')}
-              </span>
+          {/* Left Content Column */}
+          <div className="relative z-10 w-[72%] sm:w-[60%] lg:w-[58%] p-5 sm:p-8 lg:p-10 space-y-2.5 sm:space-y-3.5">
+            <h1 className="font-playfair text-[22px] sm:text-3xl lg:text-[40px] font-bold leading-[1.15] tracking-tight drop-shadow-xs">
+              <span className="text-[#f9c959]">{tr('गौमाता आहार', 'Gaumata Aahar')}</span>{' '}
+              <span className="text-white">{tr('व्यवस्था', 'Vyavastha')}</span>
+              <br />
+              <span className="text-white">{tr('और', 'aur')}</span>{' '}
+              <span className="text-[#f9c959]">{tr('वैदिक ज्योतिष', 'Vedic Jyotish')}</span>
+              <br />
+              <span className="text-white">{tr('मार्गदर्शन', 'Margdarshan')}</span>
             </h1>
 
-            <p className="font-hindi text-sm sm:text-base text-amber-100/95 font-medium leading-relaxed drop-shadow-sm max-w-2xl">
+            <p className="text-[11px] sm:text-sm text-[#fff0dc]/95 font-medium leading-snug max-w-md">
               {tr(
-                'प्रमाणित गौशालाओं में गौमाता के लिए शुद्ध एवं पौष्टिक आहार प्रबंधन (चारा, गुड़-चना, ताजी रोटियाँ) तथा अनुभवी आचार्यों द्वारा जन्म कुंडली, प्रेम, विवाह एवं करियर का प्रामाणिक ज्योतिष परामर्श।',
-                'Pramanit goshalayon mein Gaumata ke liye shuddh aur paushtik aahar prabandhan (Chara, Gud-Chana, Taazi Roti) aur anubhavi acharyon dwara Janam Kundali, Love, Marriage aur Career ka pramanik Jyotish paramarsh.'
+                'प्रमाणित गौमाता सेवा और आपके जीवन के लिए वैदिक ज्योतिष मार्गदर्शन।',
+                'Pramanit Gaumata seva aur aapke jeevan ke liye Vedic Jyotish margdarshan.'
               )}
             </p>
-          </div>
 
-          {/* Service Trust Highlights */}
-          <div className="flex flex-wrap items-center gap-3 py-1 text-xs text-amber-200 font-medium">
-            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-3 py-1 rounded-full border border-amber-400/30">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>
-                {tr(
-                  'प्रत्यक्ष आहार प्रबंधन (5 किलो चारा ₹251, गुड़-चना ₹151, 4 रोटियां ₹51)',
-                  'Pratyaksh Aahar Seva (5 kg Chara ₹251, Gud-Chana ₹151, 4 Roti ₹51)'
-                )}
-              </span>
+            {/* Primary Pill CTA + Underlined Text Link */}
+            <div className="pt-1 flex flex-wrap items-center gap-3.5 sm:gap-5">
+              <button
+                type="button"
+                onClick={onBookSevaToday}
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-gradient-to-b from-[#fad062] to-[#df991d] hover:brightness-105 active:scale-98 text-[#361b05] font-bold text-xs sm:text-sm shadow-[0_6px_16px_rgba(45,20,0,0.25)] transition-all cursor-pointer whitespace-nowrap"
+              >
+                {tr('सेवा शुरू करें', 'Seva Shuru Karein')}
+              </button>
+
+              <button
+                type="button"
+                onClick={onExploreServices}
+                className="inline-flex items-center gap-1 text-white hover:text-[#ffe19c] underline underline-offset-4 text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
+              >
+                <span>{tr('सेवाएँ देखें', 'Explore Services')}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-3 py-1 rounded-full border border-amber-400/30">
-              <Video className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>
-                {tr('आहार वितरण की वीडियो पुष्टि WhatsApp पर', 'Aahar Vitaran ka Video Proof WhatsApp par')}
-              </span>
-            </div>
           </div>
+        </div>
 
-          {/* 3 Iconic Feature Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 max-w-2xl">
-            {/* Feature 1: Gau Aahar Vyavastha */}
-            <button
-              onClick={onBookSevaToday}
-              className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-amber-400/30 backdrop-blur-md transition-all text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-amber-300 shrink-0 group-hover:scale-105 transition-transform">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M7 6c-1.5-1-3-1-4 0-.5 2 0 4 1 5" />
-                  <path d="M17 6c1.5-1 3-1 4 0 .5 2 0 4-1 5" />
-                  <rect x="6" y="8" width="12" height="12" rx="4" />
-                  <circle cx="9.5" cy="13.5" r="1.2" fill="currentColor" />
-                  <circle cx="14.5" cy="13.5" r="1.2" fill="currentColor" />
-                  <path d="M9 17h6" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-xs font-bold text-white group-hover:text-amber-200 leading-tight">
-                  {tr('गौमाता आहार सेवा', 'Gaumata Aahar Seva')}
-                </div>
-                <div className="text-[11px] text-stone-300">
-                  {tr('चारा, गुड़-चना, रोटी', 'Chara, Gud-Chana, Roti')}
-                </div>
-              </div>
-            </button>
+        {/* 3 White Feature Pill Cards Tucked Neatly Underneath */}
+        <div className="bg-[#f4e8d6] border border-[#ead9bf] rounded-2xl p-1.5 sm:p-2 grid grid-cols-3 gap-1.5 sm:gap-2.5">
+          <button
+            type="button"
+            onClick={onExploreServices}
+            className="bg-white hover:bg-[#fffaf2] rounded-xl px-2 sm:px-3.5 py-2 sm:py-2.5 flex items-center justify-center gap-1.5 sm:gap-2.5 shadow-2xs border border-[#efe2ce] transition-colors cursor-pointer group"
+          >
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#b54c0d] text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Flame className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-[#2e1a0c] leading-tight text-left truncate">
+              {tr('प्रत्यक्ष सेवा', 'Pratyaksh Seva')}
+            </span>
+          </button>
 
-            {/* Feature 2: Vedic Jyotish Guidance */}
-            <button
-              onClick={onExploreAstrology}
-              className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-amber-400/30 backdrop-blur-md transition-all text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-amber-300 shrink-0 group-hover:scale-105 transition-transform">
-                <MessageSquare className="w-5 h-5 text-amber-300" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-white group-hover:text-amber-200 leading-tight">
-                  {tr('वैदिक ज्योतिष', 'Vedic Jyotish')}
-                </div>
-                <div className="text-[11px] text-stone-300">
-                  {tr('कुंडली, प्रेम, करियर', 'Kundali, Love, Career')}
-                </div>
-              </div>
-            </button>
+          <button
+            type="button"
+            onClick={onOpenProofGallery}
+            className="bg-white hover:bg-[#fffaf2] rounded-xl px-2 sm:px-3.5 py-2 sm:py-2.5 flex items-center justify-center gap-1.5 sm:gap-2.5 shadow-2xs border border-[#efe2ce] transition-colors cursor-pointer group"
+          >
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#b54c0d] text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Video className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-[#2e1a0c] leading-tight text-left truncate">
+              {tr('वीडियो पुष्टि', 'Video Proof')}
+            </span>
+          </button>
 
-            {/* Feature 3: Grah Shanti Upay */}
-            <button
-              onClick={onExploreRemedies}
-              className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-amber-400/30 backdrop-blur-md transition-all text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-amber-300 shrink-0 group-hover:scale-105 transition-transform">
-                <Sparkles className="w-5 h-5 text-amber-300" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-white group-hover:text-amber-200 leading-tight">
-                  {tr('ग्रह-नक्षत्र शांति', 'Grah-Nakshatra Shanti')}
-                </div>
-                <div className="text-[11px] text-stone-300">
-                  {tr('वैदिक सात्विक उपाय', 'Sattvic Vedic Upay')}
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Primary Action Buttons */}
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            <button
-              onClick={onBookSevaToday}
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-sm shadow-[0_0_20px_rgba(27,75,50,0.6)] border border-emerald-400/40 transition-all cursor-pointer group"
-            >
-              <span className="font-hindi text-base font-bold text-amber-300">
-                {tr('आहार सेवा व्यवस्था करें', 'Apni Seva Book Karein')}
-              </span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-300" />
-            </button>
-
-            <button
-              onClick={onExploreAstrology}
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-amber-500/25 hover:bg-amber-500/35 active:scale-98 text-amber-200 font-bold text-sm border border-amber-400/50 backdrop-blur-md transition-all cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>{tr('ज्योतिष परामर्श लें', 'Jyotish Paramarsh Lein')}</span>
-            </button>
-          </div>
-
+          <button
+            type="button"
+            onClick={onExploreAstrology}
+            className="bg-white hover:bg-[#fffaf2] rounded-xl px-2 sm:px-3.5 py-2 sm:py-2.5 flex items-center justify-center gap-1.5 sm:gap-2.5 shadow-2xs border border-[#efe2ce] transition-colors cursor-pointer group"
+          >
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#d88924] text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Compass className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-[#2e1a0c] leading-tight text-left truncate">
+              {tr('ज्योतिष मार्गदर्शन', 'Jyotish Margdarshan')}
+            </span>
+          </button>
         </div>
 
       </div>

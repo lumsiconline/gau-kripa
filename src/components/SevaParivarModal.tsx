@@ -55,8 +55,8 @@ export const SevaParivarModal: React.FC<SevaParivarModalProps> = ({ isOpen, onCl
               </h4>
               <p className="text-xs text-[#6e5d48]">
                 {tr(
-                  'प्रतिदिन प्रातःकालीन प्रमाणित गौशाला दर्शन, एकादशी तिथि सूचना और शुभ वैदिक पंचांग सीधे अपने व्हाट्सएप पर प्राप्त करें।',
-                  'Roz subah pramanit goshala darshan, Ekadashi tithi suchna aur shubh Vedic Panchang seedhe apne WhatsApp par paayein.'
+                  'प्रतिदिन प्रातःकालीन गाय को हरा चारा सेवा दर्शन, एकादशी तिथि सूचना और शुभ वैदिक पंचांग सीधे अपने व्हाट्सएप पर प्राप्त करें।',
+                  'Roz subah Gaumata hara chara seva darshan, Ekadashi tithi suchna aur shubh Vedic Panchang seedhe apne WhatsApp par paayein.'
                 )}
               </p>
             </div>

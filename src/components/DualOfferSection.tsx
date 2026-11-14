@@ -1,159 +1,108 @@
-import React, { useState } from 'react';
-import { ArrowRight, Briefcase, Heart, Leaf, Coins, Shield, Home as HomeIcon, Check, Sparkles } from 'lucide-react';
-import { ImageCrop } from './ImageCrop';
-import { getLocalizedRemedyCategories } from '../data/sevaData';
+import React from 'react';
+import { Compass, Heart, TrendingUp } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface DualOfferSectionProps {
   onOpenRemedyModal: (remedyId: string) => void;
-  onBookSevaWithDiscount: () => void;
+  onConsultAstrologer: () => void;
 }
 
 export const DualOfferSection: React.FC<DualOfferSectionProps> = ({
   onOpenRemedyModal,
-  onBookSevaWithDiscount,
+  onConsultAstrologer,
 }) => {
-  const { lang, tr } = useLanguage();
-  const remedyCategories = getLocalizedRemedyCategories(lang);
-  const [selectedRemedy, setSelectedRemedy] = useState<string>('career');
+  const { tr } = useLanguage();
 
-  const getIcon = (id: string) => {
-    switch (id) {
-      case 'career':
-        return <Briefcase className="w-3.5 h-3.5 text-blue-600 shrink-0" />;
-      case 'love':
-        return <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />;
-      case 'health':
-        return <Leaf className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
-      case 'finance':
-        return <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
-      case 'negativity':
-        return <Shield className="w-3.5 h-3.5 text-indigo-600 shrink-0" />;
-      case 'family':
-        return <HomeIcon className="w-3.5 h-3.5 text-amber-700 shrink-0" />;
-      default:
-        return <Briefcase className="w-3.5 h-3.5 shrink-0" />;
-    }
-  };
+  const cards = [
+    {
+      id: 'family',
+      icon: <Compass className="w-5 h-5 sm:w-6 sm:h-6 text-[#c97e2c]" />,
+      title: tr('कुंडली', 'Kundali'),
+      desc: tr('जन्म कुंडली एवं दोष निवारण', 'Janam Kundali & Dosh Nivaran'),
+    },
+    {
+      id: 'love',
+      icon: <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#c97e2c]" />,
+      title: tr('प्रेम व विवाह', 'Love'),
+      desc: tr('विवाह एवं संबंध मार्गदर्शन', 'Vivah & Relationship Guidance'),
+    },
+    {
+      id: 'career',
+      icon: <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-[#c97e2c]" />,
+      title: tr('करियर', 'Career'),
+      desc: tr('व्यापार व नौकरी मार्गदर्शन', 'Business & Job Margdarshan'),
+    },
+  ];
 
   return (
-    <section className="py-8 sm:py-12 bg-[#f7eed8]/50 border-b border-[#ebdcb9]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Unified Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-          
-          {/* Left Card: Find Your Grah Remedy */}
-          <div className="lg:col-span-7 bg-[#fefcf8] rounded-2xl p-4 sm:p-5 border border-[#e4d4ad] shadow-xs flex flex-col justify-between gap-3.5">
-            
-            {/* Top row: Full Uncropped Kundali Wheel + Title */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 shrink-0 rounded-2xl overflow-hidden border border-[#d9ba78] shadow-xs bg-[#2d1b06] p-0.5">
-                <ImageCrop
-                  cropKey="kundaliWheel"
-                  className="w-full h-full rounded-xl"
-                  preserveAspectRatio="xMidYMid meet"
-                  alt={tr('वैदिक कुंडली चक्र', 'Vedic Kundali Chakra')}
-                />
-              </div>
+    <section id="jyotish-margdarshan" className="py-4 sm:py-7 bg-[#fbf6ee]">
+      <div className="max-w-5xl mx-auto px-3.5 sm:px-6">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#fdf8ee] to-[#f8e6bd] border border-[#e7cb93] p-4 sm:p-6 shadow-[0_8px_24px_rgba(140,85,20,0.08)] overflow-hidden">
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-playfair text-base sm:text-xl font-bold text-[#1b4b32] leading-tight">
-                    {tr('ग्रह शांति एवं सात्विक वैदिक उपाय', 'Grah Shanti aur Sattvic Vedic Upay')}
+          {/* Subtle Decorative Mandala Watermarks in Corners */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 120 120"
+            className="absolute -top-6 -right-6 w-28 h-28 text-[#d9a648]/25 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
+            <circle cx="60" cy="60" r="52" strokeDasharray="4 4" />
+            <circle cx="60" cy="60" r="38" />
+            <circle cx="60" cy="60" r="22" strokeDasharray="3 3" />
+          </svg>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 120 120"
+            className="absolute -bottom-8 -left-6 w-28 h-28 text-[#d9a648]/25 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
+            <circle cx="60" cy="60" r="52" strokeDasharray="4 4" />
+            <circle cx="60" cy="60" r="36" />
+          </svg>
+
+          {/* Centered Title */}
+          <h2 className="relative z-10 font-playfair text-xl sm:text-2xl font-bold text-[#2e1a0c] text-center mb-3.5 sm:mb-4">
+            {tr('वैदिक ज्योतिष मार्गदर्शन', 'Vedic Jyotish Margdarshan')}
+          </h2>
+
+          {/* 3 Clean White Topic Cards */}
+          <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-4 mb-3.5 sm:mb-4">
+            {cards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => onOpenRemedyModal(card.id)}
+                className="bg-white/95 hover:bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-[#ead6b2] hover:border-[#c97e2c] shadow-2xs hover:shadow-sm transition-all text-left flex flex-col justify-between cursor-pointer group"
+              >
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#fdf3e1] border border-[#f2dcaf] flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+                  {card.icon}
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-base font-bold text-[#2e1a0c] leading-tight">
+                    {card.title}
                   </h3>
-                  <span className="text-amber-500 text-xs hidden sm:inline">✨</span>
+                  <p className="text-[10px] sm:text-xs text-[#6e5540] leading-snug mt-0.5 line-clamp-2">
+                    {card.desc}
+                  </p>
                 </div>
-                <p className="text-xs text-[#6f604c] font-medium mt-1 leading-snug">
-                  {tr(
-                    'अपनी समस्या चुनें और उचित गौ-आहार सेवा व वैदिक मंत्र उपाय जानें',
-                    'Apni samasya chunein aur sahi Gau-Aahar seva aur Vedic Mantra upay jaanein'
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* 6 Selectable Problem Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              {remedyCategories.map((rem) => {
-                const isSelected = selectedRemedy === rem.id;
-                return (
-                  <button
-                    key={rem.id}
-                    type="button"
-                    onClick={() => setSelectedRemedy(rem.id)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-1.5 transition-all text-left border cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#1b4b32] text-white border-[#1b4b32] shadow-xs'
-                        : 'bg-[#f8f2e2] text-[#332b21] border-[#ebdcb9] hover:bg-[#efe3c5]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      {getIcon(rem.id)}
-                      <span className="leading-tight">{rem.title}</span>
-                    </div>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-amber-300 shrink-0 ml-1" />}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* CTA Row */}
-            <div className="pt-0.5 flex items-center justify-between gap-2">
-              <button
-                onClick={() => onOpenRemedyModal(selectedRemedy)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-[#1b4b32] hover:bg-[#153e29] active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
-              >
-                <span>{tr('सटीक उपाय व आहार सेवा देखें', 'Sateek Upay aur Aahar Seva Dekhein')}</span>
-                <ArrowRight className="w-4 h-4 text-amber-300" />
               </button>
-            </div>
+            ))}
           </div>
 
-          {/* Right Card: Dual Benefit Offer */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-[#1b4b32] to-[#123824] text-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#276342] flex flex-col justify-between gap-3.5">
-            <div className="space-y-2.5">
-              <div className="inline-flex items-center gap-1.5 text-amber-300 text-[11px] font-bold uppercase tracking-wide">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{tr('विशेष संयुक्त लाभ', 'Vishesh Sanyukt Labh')}</span>
-              </div>
-
-              <h3 className="font-playfair text-lg sm:text-xl font-bold text-amber-100 leading-tight">
-                {tr('गौ सेवा के साथ 50% ज्योतिष परामर्श छूट', 'Gau Seva ke sath 50% Jyotish Paramarsh Chhoot')}
-              </h3>
-
-              <p className="text-xs text-emerald-100/90 leading-relaxed">
-                {tr(
-                  'जब आप गौमाता के लिए किसी भी आहार सेवा (चारा, गुड़-चना या रोटी) की व्यवस्था करते हैं, तो आपको अनुभवी वैदिक ज्योतिषाचार्य से परामर्श पर स्वतः 50% की विशेष छूट प्राप्त होती है।',
-                  'Jab aap Gaumata ke liye kisi bhi aahar seva (Chara, Gud-Chana ya Roti) ki vyavastha karte hain, to aapko anubhavi Vedic Jyotishacharya se paramarsh par apne-aap 50% ki vishesh chhoot milti hai.'
-                )}
-              </p>
-
-              <div className="pt-2 border-t border-emerald-500/30 text-xs space-y-1">
-                <div className="flex justify-between items-center text-emerald-200">
-                  <span>{tr('सामान्य परामर्श दर:', 'Samanya Paramarsh Dar:')}</span>
-                  <span className="line-through text-stone-300">₹20 / {tr('मिनट', 'min')}</span>
-                </div>
-                <div className="flex justify-between items-center font-bold text-amber-300 text-sm">
-                  <span>{tr('आहार सेवा के उपरांत:', 'Aahar Seva Book Karne ke Baad:')}</span>
-                  <span>{tr('केवल ₹10 / मिनट', 'Sirf ₹10 / min')}</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <button
-                onClick={onBookSevaWithDiscount}
-                className="w-full py-2.5 px-4 rounded-full bg-[#e5a024] hover:bg-[#d4901a] active:scale-98 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
-              >
-                <span>{tr('आहार सेवा व्यवस्था कर छूट पाएं', 'Apni Seva Book Karein aur 50% Chhoot Paayein')}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          {/* Full-Width Terracotta Consult Button */}
+          <button
+            type="button"
+            onClick={onConsultAstrologer}
+            className="relative z-10 w-full py-2.5 sm:py-3 px-5 rounded-xl bg-gradient-to-r from-[#a64108] via-[#b84c0e] to-[#a64108] hover:brightness-105 active:scale-99 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+          >
+            {tr('वैदिक ज्योतिष परामर्श लें', 'Consult Vedic Jyotish')}
+          </button>
 
         </div>
-
       </div>
     </section>
   );

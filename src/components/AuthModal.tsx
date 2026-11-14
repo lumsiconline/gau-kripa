@@ -254,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         description: tr('गौकृपा सुरक्षित वॉलेट रिचार्ज', 'GauKripa Surakshit Wallet Recharge'),
         prefill: { name: currentUser?.name || tr('भक्त', 'Bhakt'), email: currentUser?.email || '', contact: cleanPhone },
         notes: { purpose: 'GauKripa wallet recharge', phone: cleanPhone },
-        theme: { color: '#1b4b32' },
+        theme: { color: '#d86416' },
         handler: async (response: any) => {
           try {
             const result = await api.verifyWalletPayment({
@@ -319,10 +319,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       <div className="relative w-full max-w-lg bg-[#fffdfa] rounded-3xl shadow-2xl border-2 border-[#ebdcb9] overflow-hidden my-6 max-h-[90vh] flex flex-col">
         
         {/* Header */}
-        <div className="bg-[#1b4b32] text-white px-6 py-4 flex items-center justify-between border-b border-[#296344] shrink-0">
+        <div className="bg-[#d86416] text-white px-6 py-4 flex items-center justify-between border-b border-[#b54c0d] shrink-0">
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-amber-300" />
-            <h3 className="font-playfair text-lg font-bold text-amber-200">
+            <User className="w-5 h-5 text-white" />
+            <h3 className="font-playfair text-lg font-bold text-white">
               {currentUser
                 ? isSuperAdmin
                   ? tr('सुपर एडमिन कंसोल एवं प्रोफ़ाइल', 'Super Admin Console aur Profile')
@@ -337,7 +337,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-full hover:bg-white/15 text-white/90 hover:text-white transition-colors cursor-pointer"
             aria-label={tr('बंद करें', 'Band Karein')}
           >
             <X className="w-5 h-5" />
@@ -346,8 +346,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Custom prompt message if redirected */}
         {customMessage && !currentUser && (
-          <div className="bg-amber-100/90 border-b border-amber-300 text-[#684b16] px-5 py-2.5 text-xs font-semibold flex items-center gap-2 shrink-0">
-            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+          <div className="bg-[#fdf5ea] border-b border-[#eadbc4] text-[#68421b] px-5 py-2.5 text-xs font-semibold flex items-center gap-2 shrink-0">
+            <AlertCircle className="w-4 h-4 text-[#d86416] shrink-0" />
             <span>{customMessage}</span>
           </div>
         )}
@@ -364,8 +364,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }}
               className={`flex-1 py-3 text-xs sm:text-sm font-bold transition-all text-center cursor-pointer border-b-2 ${
                 authMode === 'login'
-                  ? 'border-[#1b4b32] text-[#1b4b32] bg-[#fffdfa]'
-                  : 'border-transparent text-[#7c6a53] hover:text-[#1b4b32]'
+                  ? 'border-[#d86416] text-[#d86416] bg-[#fffdfa]'
+                  : 'border-transparent text-[#7c6a53] hover:text-[#2b1507]'
               }`}
             >
               {tr('लॉगिन (Sign In)', 'Sign In (Login)')}
@@ -379,8 +379,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }}
               className={`flex-1 py-3 text-xs sm:text-sm font-bold transition-all text-center cursor-pointer border-b-2 flex items-center justify-center gap-1.5 ${
                 authMode === 'signup'
-                  ? 'border-[#1b4b32] text-[#1b4b32] bg-[#fffdfa]'
-                  : 'border-transparent text-[#7c6a53] hover:text-[#1b4b32]'
+                  ? 'border-[#d86416] text-[#d86416] bg-[#fffdfa]'
+                  : 'border-transparent text-[#7c6a53] hover:text-[#2b1507]'
               }`}
             >
               <span>{tr('नया खाता बनाएँ (Sign Up)', 'Naya Khata Banayein (Sign Up)')}</span>
@@ -397,24 +397,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="space-y-4">
               
               {/* Profile Card */}
-              <div className="p-4 rounded-2xl bg-[#faf3e2] border border-[#ebdcb9] flex items-center gap-3 shadow-2xs">
-                <div
-                  className={`w-14 h-14 rounded-full ${
-                    isSuperAdmin ? 'bg-amber-600 text-amber-100' : 'bg-[#1b4b32] text-white'
-                  } font-bold text-xl flex items-center justify-center shadow-xs shrink-0`}
-                >
-                  {isSuperAdmin ? '👑' : currentUser.name.charAt(0).toUpperCase()}
+              <div className="p-4 rounded-2xl bg-[#fbf6ee] border border-[#ebdcb9] flex items-center gap-3 shadow-2xs">
+                <div className="w-14 h-14 rounded-full bg-[#d86416] text-white font-bold text-xl flex items-center justify-center shadow-xs shrink-0">
+                  {currentUser.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="font-bold text-base text-[#1b4b32] truncate">{currentUser.name}</h4>
+                    <h4 className="font-bold text-base text-[#2b1507] truncate">{currentUser.name}</h4>
                     {isSuperAdmin ? (
-                      <span className="text-[10px] font-black tracking-wider uppercase bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full shadow-xs shrink-0">
+                      <span className="text-[10px] font-bold tracking-wider uppercase bg-[#fdf1da] text-[#8a4d19] border border-[#e5c285] px-2.5 py-0.5 rounded-full shrink-0">
                         {tr('सुपर एडमिन', 'SUPER ADMIN')}
                       </span>
                     ) : (
-                      <span className="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 shrink-0">
-                        {tr('सत्यापित भक्त', 'Satyapit Bhakt')}
+                      <span className="text-[10px] text-[#8a4d19] font-bold bg-[#fdf1da] px-2.5 py-0.5 rounded-full border border-[#e5c285] shrink-0">
+                        {tr('गौकृपा सदस्य', 'GauKripa Member')}
                       </span>
                     )}
                   </div>
@@ -428,24 +424,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {/* REAL WALLET — funds are credited only after Razorpay server verification */}
               <div className="p-4 rounded-2xl bg-white border border-[#ebdcb9] shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[#1b4b32] font-bold text-sm">
-                      <Coins className="w-4 h-4 text-amber-600" />
+                    <div className="flex items-center gap-2 text-[#2b1507] font-bold text-sm">
+                      <Coins className="w-4 h-4 text-[#d86416]" />
                       <span>{tr('मेरा गौकृपा वॉलेट', 'Mera GauKripa Wallet')}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-1">
+                    <span className="text-[10px] font-bold text-[#8a4d19] bg-[#fdf5ea] border border-[#eadbc4] rounded-full px-2 py-1">
                       {tr('सुरक्षित', 'Surakshit')}
                     </span>
                   </div>
-                  <div className="rounded-xl bg-[#1b4b32] text-white p-4">
-                    <p className="text-[11px] text-emerald-100">{tr('उपलब्ध शेष राशि', 'Uplabdh Balance')}</p>
-                    <p className="text-3xl font-black tracking-tight">₹{(wallet?.balance || 0).toFixed(2)}</p>
+                  <div className="rounded-xl bg-[#2b1507] text-white p-4">
+                    <p className="text-[11px] text-[#e7cfb4]">{tr('उपलब्ध शेष राशि', 'Uplabdh Balance')}</p>
+                    <p className="text-3xl font-black tracking-tight tabular-nums">₹{(wallet?.balance || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-[#483d2e] mb-2">{tr('त्वरित रिचार्ज', 'Quick Recharge')}</p>
                     <div className="grid grid-cols-3 gap-2">
                       {[50, 100, 250].map((amount) => (
                         <button key={amount} type="button" onClick={() => { setTopupAmount(amount); setCustomTopup(''); setErrorMsg(null); }}
-                          className={`py-2 rounded-lg border text-xs font-bold cursor-pointer ${!customTopup && topupAmount === amount ? 'bg-[#e5a024] border-[#d4901a] text-slate-950' : 'bg-[#fffcf5] border-[#ebdcb9] text-[#1b4b32]'}`}>
+                          className={`py-2 rounded-lg border text-xs font-bold cursor-pointer ${!customTopup && topupAmount === amount ? 'bg-[#d86416] border-[#b54c0d] text-white' : 'bg-[#fffcf5] border-[#ebdcb9] text-[#2b1507]'}`}>
                           ₹{amount}
                         </button>
                       ))}
@@ -458,13 +454,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <input type="number" min="50" max="100000" step="1" value={customTopup}
                       onChange={(e) => { setCustomTopup(e.target.value); setErrorMsg(null); }}
                       placeholder={tr('₹50 या अधिक दर्ज करें', '₹50 ya adhik darj karein')}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-sm font-semibold focus:outline-hidden focus:border-[#1b4b32]" />
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-sm font-semibold focus:outline-hidden focus:border-[#d86416]" />
                     <p className="text-[10px] text-[#8a7a67] mt-1">
                       {tr('न्यूनतम रिचार्ज ₹50। अधिकतम ₹1,00,000 तक।', 'Kam se kam recharge ₹50. Adhiktam ₹1,00,000 tak.')}
                     </p>
                   </div>
                   {sessionNeedsRefresh && (
-                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-900 space-y-2">
+                    <div className="p-3 rounded-xl bg-[#fdf5ea] border border-[#e5c285] text-xs text-[#68421b] space-y-2">
                       <p className="font-semibold">
                         {tr(
                           'सुरक्षित लाइव भुगतान सर्वर से जुड़ने के लिए कृपया एक बार पुनः साइन इन करें।',
@@ -483,7 +479,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           setErrorMsg(null);
                           setTopupSuccess(null);
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 font-bold text-xs cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-xs cursor-pointer"
                       >
                         {tr('पुनः साइन इन करें', 'Dobara Sign In Karein')}
                       </button>
@@ -492,7 +488,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {topupSuccess && <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0" />{topupSuccess}</div>}
                   {errorMsg && <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800">{errorMsg}</div>}
                   <button type="button" onClick={handleWalletRecharge} disabled={topupLoading || (!customTopup.trim() && topupAmount < 50)}
-                    className="w-full py-3 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-sm shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                    className="w-full py-3 rounded-xl bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-sm shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
                     <PlusCircle className="w-4 h-4" />
                     {topupLoading
                       ? tr('सुरक्षित भुगतान प्रक्रिया जारी…', 'Surakshit Payment Jaari Hai…')
@@ -509,8 +505,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       const isDebit = transaction.type === 'debit';
                       return (
                         <div key={transaction.id} className="flex items-center justify-between py-1.5 text-xs border-b border-[#f7f0e4] last:border-0">
-                          <div><p className="font-semibold text-[#1b4b32]">{transaction.description}</p><p className="text-[10px] text-[#8a7a67]">{new Date(transaction.date).toLocaleString()}</p></div>
-                          <span className={`font-bold ${isDebit ? 'text-rose-700' : 'text-emerald-700'}`}>
+                          <div><p className="font-semibold text-[#2b1507]">{transaction.description}</p><p className="text-[10px] text-[#8a7a67]">{new Date(transaction.date).toLocaleString()}</p></div>
+                          <span className={`font-bold tabular-nums ${isDebit ? 'text-rose-700' : 'text-emerald-700'}`}>
                             {isDebit ? '-' : '+'}₹{Number(transaction.amount).toFixed(2)}
                           </span>
                         </div>
@@ -521,17 +517,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               {/* Super Admin Management Consoles */}
               {isSuperAdmin && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#2a1c0d] to-[#3a2813] text-white space-y-2 border border-amber-600/40 shadow-xs">
+                <div className="p-4 rounded-2xl bg-[#fbf6ee] text-[#2b1507] space-y-2 border border-[#eadbc4] shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-[#b54c0d] uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-[#d86416]" />
                       {tr('सुपर एडमिन पोर्टल', 'Super Admin Portal')}
                     </span>
-                    <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-[#fdf1da] text-[#8a4d19] border border-[#e5c285] font-bold px-2 py-0.5 rounded-full">
                       {tr('पूर्ण अधिकार', 'POORN ADHIKAR')}
                     </span>
                   </div>
-                  <p className="text-[11px] text-amber-100/80">
+                  <p className="text-[11px] text-[#6d5137]">
                     {tr(
                       'सेवा सूची, वीडियो प्रमाण, ज्योतिषी भुगतान और लाइव चैट कतार प्रबंधन का पूरा नियंत्रण आपके पास है।',
                       'Seva suchi, video proof, jyotish bhugtan aur live chat prabandhan ka poora niyantran aapke paas hai.'
@@ -545,9 +541,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           onClose();
                           onOpenAdmin();
                         }}
-                        className="py-2.5 px-3 rounded-xl bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-transform active:scale-95"
+                        className="py-2.5 px-3 rounded-xl bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-transform active:scale-95"
                       >
-                        <span>🛡️</span>
                         <span>{tr('एडमिन कंसोल', 'Admin Console')}</span>
                       </button>
                     )}
@@ -558,9 +553,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           onClose();
                           onOpenAstrologer();
                         }}
-                        className="py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-amber-200 border border-white/20 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-transform active:scale-95"
+                        className="py-2.5 px-3 rounded-xl bg-white hover:bg-[#f7efe3] text-[#2b1507] border border-[#dfd0b8] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                       >
-                        <span>🔮</span>
                         <span>{tr('ज्योतिषी डेस्क', 'Jyotishi Desk')}</span>
                       </button>
                     )}
@@ -574,7 +568,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <span className="flex items-center gap-1">
                     <History className="w-3.5 h-3.5" /> {tr('हाल की सेवा बुकिंग एवं संकल्प', 'Haal ki Seva Booking aur Sankalp')}
                   </span>
-                  <span className="text-[#c4821a]">{tr('गौकृपा प्रमाणित सेवा', 'GauKripa Pramanit Seva')}</span>
+                  <span className="text-[#b54c0d]">{tr('गौकृपा प्रमाणित सेवा', 'GauKripa Pramanit Seva')}</span>
                 </div>
                 {recentBookings.length > 0 ? (
                   <div className="space-y-1.5">
@@ -584,13 +578,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         className="p-3 rounded-xl bg-white border border-[#ebdcb9] text-xs flex items-center justify-between shadow-2xs"
                       >
                         <div>
-                          <div className="font-bold text-[#1b4b32]">{b.sevaTitle}</div>
+                          <div className="font-bold text-[#2b1507]">{b.sevaTitle}</div>
                           <div className="text-[11px] text-[#71614e]">
                             {tr('गोत्र:', 'Gotra:')} {b.gotra || tr('कश्यप', 'Kashyap')} • {b.date || tr('हाल ही में', 'Haal hi mein')}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-amber-700">₹{b.amount}</div>
+                          <div className="font-bold text-[#b54c0d] tabular-nums">₹{b.amount}</div>
                           <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                             {b.status === 'completed' ? tr('सत्यापित', 'Satyapit') : tr('सक्रिय', 'Sakriya')}
                           </span>
@@ -628,7 +622,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-2 rounded-full bg-[#1b4b32] text-white font-bold text-xs hover:bg-[#153e29] cursor-pointer shadow-xs transition-colors"
+                  className="px-6 py-2 rounded-xl bg-[#d86416] text-white font-bold text-xs hover:bg-[#b54c0d] cursor-pointer shadow-xs transition-colors"
                 >
                   {tr('पूर्ण', 'Poorn')}
                 </button>
@@ -675,7 +669,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="jaise: bhakt@example.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                     />
                   </div>
                 </div>
@@ -692,7 +686,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                     />
                   </div>
                 </div>
@@ -700,7 +694,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-full bg-[#e5a024] hover:bg-[#d4901a] text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50 mt-2"
+                  className="w-full py-3 rounded-xl bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50 mt-2"
                 >
                   <KeyRound className="w-4 h-4" />
                   <span>
@@ -722,7 +716,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       setErrorMsg(null);
                       setSuccessMsg(null);
                     }}
-                    className="font-bold text-[#1b4b32] underline hover:text-[#0e2c1d] cursor-pointer ml-1"
+                    className="font-bold text-[#d86416] underline hover:text-[#b54c0d] cursor-pointer ml-1"
                   >
                     {tr('नया खाता बनाएँ', 'Naya Khata Banayein (Sign Up)')}
                   </button>
@@ -766,7 +760,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={tr('जैसे: रमेश शर्मा', 'Jaise: Ramesh Sharma')}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                     />
                   </div>
                 </div>
@@ -783,7 +777,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="jaise: ramesh@example.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                     />
                   </div>
                 </div>
@@ -801,7 +795,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="9876543210"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                     />
                   </div>
                 </div>
@@ -820,7 +814,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={tr('न्यूनतम 8 अक्षर', 'Kam se kam 8 akshar')}
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                       />
                     </div>
                   </div>
@@ -838,7 +832,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder={tr('पासवर्ड पुनः लिखें', 'Password dobara darj karein')}
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#1b4b32] font-medium"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#ebdcb9] bg-[#fffcf5] text-xs focus:outline-hidden focus:border-[#d86416] font-medium"
                       />
                     </div>
                   </div>
@@ -847,9 +841,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-full bg-[#1b4b32] hover:bg-[#153e29] text-amber-200 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50 mt-2"
+                  className="w-full py-3 rounded-xl bg-[#d86416] hover:bg-[#b54c0d] text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50 mt-2"
                 >
-                  <PlusCircle className="w-4 h-4 text-amber-300" />
+                  <PlusCircle className="w-4 h-4 text-white" />
                   <span>
                     {loading
                       ? tr('खाता बन रहा है...', 'Account Ban Raha Hai...')
@@ -869,7 +863,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       setErrorMsg(null);
                       setSuccessMsg(null);
                     }}
-                    className="font-bold text-[#1b4b32] underline hover:text-[#0e2c1d] cursor-pointer ml-1"
+                    className="font-bold text-[#d86416] underline hover:text-[#b54c0d] cursor-pointer ml-1"
                   >
                     {tr('लॉगिन करें', 'Sign In Karein')}
                   </button>

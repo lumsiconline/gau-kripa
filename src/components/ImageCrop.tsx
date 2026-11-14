@@ -39,6 +39,16 @@ export const CROPS: Record<string, CropBounds> = {
     sourceWidth: 1563,
     sourceHeight: 600,
   },
+  // Right-side garlanded Gau Mata crop for compact rounded hero card
+  heroBannerCow: {
+    x: 565,
+    y: 95,
+    w: 580,
+    h: 490,
+    src: BANNER_HERO_SRC,
+    sourceWidth: 1563,
+    sourceHeight: 600,
+  },
   newNavLogo: {
     x: 24,
     y: 4,
